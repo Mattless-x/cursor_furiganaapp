@@ -1,0 +1,123 @@
+name: SRE Workbook — Daily Chunk Delivery
+
+on:
+  schedule:
+    - cron: '0 0 * * *'   # 9:00 AM JST (00:00 UTC)
+    - cron: '0 4 * * *'   # 1:00 PM JST (04:00 UTC)
+    - cron: '0 11 * * *'  # 8:00 PM JST (11:00 UTC)
+  workflow_dispatch:
+    inputs:
+      chunk_override:
+        description: 'Force a specific chunk number (1-100). Leave empty for auto.'
+        required: false
+        default: ''
+
+jobs:
+  send-chunk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Calculate and send chunk
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          CHUNK_OVERRIDE: ${{ github.event.inputs.chunk_override }}
+        run: |
+          python3 << 'PYEOF'
+          import os
+          import math
+          import urllib.request
+          import urllib.parse
+          import json
+          from datetime import datetime, timezone, timedelta
+
+          TOKEN = os.environ["TELEGRAM_BOT_TOKEN"]
+          CHAT_ID = os.environ["TELEGRAM_CHAT_ID"]
+          OVERRIDE = os.environ.get("CHUNK_OVERRIDE", "").strip()
+
+          START_DATE = datetime(2026, 6, 15, tzinfo=timezone.utc)
+          JST = timezone(timedelta(hours=9))
+
+          now_utc = datetime.now(timezone.utc)
+          now_jst = now_utc.astimezone(JST)
+
+          if OVERRIDE:
+              chunk_num = int(OVERRIDE)
+              print(f"Manual override: chunk {chunk_num}")
+          else:
+              days_elapsed = (now_utc.replace(hour=0,minute=0,second=0,microsecond=0)
+                              - START_DATE.replace(hour=0,minute=0,second=0,microsecond=0)).days
+              hour_utc = now_utc.hour
+              # Slot based on which cron triggered this run
+              if hour_utc < 4:
+                  slot = 0  # 9 AM JST
+              elif hour_utc < 11:
+                  slot = 1  # 1 PM JST
+              else:
+                  slot = 2  # 8 PM JST
+
+              chunk_num = days_elapsed * 3 + slot + 1
+              print(f"Days elapsed: {days_elapsed}, slot: {slot}, chunk: {chunk_num}")
+
+          if chunk_num < 1 or chunk_num > 100:
+              print(f"Chunk {chunk_num} out of range — nothing to send.")
+              exit(0)
+
+          chunk_file = f"book_chunks/chunk_{chunk_num:03d}.txt"
+          with open(chunk_file, "r") as f:
+              content = f.read()
+
+          def send_message(text):
+              url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
+              payload = json.dumps({
+                  "chat_id": CHAT_ID,
+                  "text": text,
+                  "parse_mode": "HTML"
+              }).encode()
+              req = urllib.request.Request(url, data=payload,
+                                          headers={"Content-Type": "application/json"})
+              with urllib.request.urlopen(req) as resp:
+                  result = json.load(resp)
+                  if not result.get("ok"):
+                      raise RuntimeError(f"Telegram error: {result}")
+
+          # Header message
+          jst_str = now_jst.strftime("%Y-%m-%d %H:%M JST")
+          header = (f"📚 <b>SRE Workbook — Chunk {chunk_num}/100</b>\n"
+                    f"<i>{jst_str}</i>\n"
+                    f"{'─' * 30}")
+          send_message(header)
+
+          # Split content into ≤4000-char chunks at paragraph boundaries
+          MAX = 4000
+          paragraphs = content.split("\n\n")
+          current = ""
+          parts = []
+          for para in paragraphs:
+              candidate = (current + "\n\n" + para).strip() if current else para
+              if len(candidate) <= MAX:
+                  current = candidate
+              else:
+                  if current:
+                      parts.append(current)
+                  # If single paragraph itself is too long, hard-split it
+                  while len(para) > MAX:
+                      parts.append(para[:MAX])
+                      para = para[MAX:]
+                  current = para
+          if current:
+              parts.append(current)
+
+          print(f"Sending chunk {chunk_num} in {len(parts)} message(s)...")
+          for i, part in enumerate(parts, 1):
+              send_message(part)
+              print(f"  Sent part {i}/{len(parts)}")
+
+          # Footer
+          remaining = 100 - chunk_num
+          footer = f"✅ Chunk {chunk_num}/100 delivered. {remaining} chunk(s) remaining."
+          send_message(footer)
+          print("Done.")
+          PYEOF
