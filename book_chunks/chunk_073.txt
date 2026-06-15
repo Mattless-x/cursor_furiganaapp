@@ -1,0 +1,100 @@
+=== The Site Reliability Workbook ===
+=== Chunk 73/100 ===
+
+gaps in coverage.
+
+
+Artificial load also works poorly in mutable systems. For example, it may be downright dangerous to attempt to generate artificial load on a billing system: the system might start sending callouts to credit card providers, which would then start actively charging customers. While we can avoid testing dangerous code paths, the lack of testing on these paths reduces our test coverage.
+
+
+
+
+
+Traffic Teeing
+
+
+If artificial load is not representative, we could copy the traffic and send it to both the production system and the system in the test environment. This technique is referred to as teeing. While the production system serves the actual traffic and delivers responses to users, the canary deployment serves the copy and discards the responses. You might even compare the canary responses to the actual responses and run further analysis.
+
+
+This strategy can provide representative traffic, but is often more complicated to set up than a more straightforward canary process. Traffic teeing also doesn’t adequately identify risk in stateful systems; copies of traffic may introduce unexpected influences between the seemingly independent deployments. For example, if the canary deployment and production systems share a cache, an artificially inflated cache hit rate would invalidate performance measurements for the canary metrics.
+
+
+
+
+
+
+
+Conclusion
+
+
+You can use a number of tools and approaches to automate your releases and introduce canarying into your pipeline. No single testing methodology is a panacea, and testing strategies should be informed by the requirements and behavior of the system. Canarying can be a simple, robust, and easily integratable way to supplement testing. When you catch system defects early, users are minimally impacted. Canarying can also provide confidence in frequent releases and improve development velocity. Just as testing methodology must evolve alongside system requirements and design, so must canarying.
+
+
+
+1 The authors of this chapter are fans of Jez Humble and David Farley’s book Continuous Delivery: Reliable Software Releases Through Build, Test, and Deployment Automation (Boston: Pearson, 2011).
+2 The fraction of total service load you run on the canary should be proportional to the size of the canary population.
+3 At least as far as availability is concerned. This analysis obviously does not cover the impact of incidents, such as a data leak.
+4 For a sufficiently small canary, where the fraction of service equals the difference between actual availability and SLO, we can canary nonstop with confidence. This is our use of the error budget.
+5 As British statistician George Box said, “Essentially, all models are wrong, but some are useful.” George E. P. Box and Norman R. Draper, Empirical Model-Building and Response Surfaces (New York: John Wiley and Sons, 1987).
+6 See a discussion of real-world outages at http://bit.ly/2LgorFz.
+7 For example, consider resource contention problems, such as database write conflicts or locking in multithreaded applications.
+8 A failed user request isn’t necessarily problematic. User requests can fail because the user requested something unreasonable, such as accessing a nonexistent URL. We need to be disciplined in distinguishing errors like these from problems in the systems.
+
+Processes
+
+Part III. Processes
+
+
+SRE is more than just a collection of technical practices—it’s a culture that requires consistent and logical processes. This section addresses some important elements of processes as applied in SRE: managing operations and development work, recovering from overload, structuring and managing your relationships with development partners and customers, and implementing practical change management.
+
+If you are an SRE leader, this section is your how-to guide for creating the space and environment your teams need to successfully implement the practices covered in Part II.
+
+Identifying and Recovering from Overload
+
+Chapter 17. Identifying and Recovering from Overload
+
+
+By Maria-Hendrike Peetz, Luis Quesada Torres, and Marilia Melo with Diane Bates
+
+
+When an SRE team is running smoothly, team members should feel like they can comfortably handle all of their work. They should be able to work on tickets and still have time to work on long-term projects that make it easier to manage the service in the future. 
+
+
+But sometimes circumstances get in the way of a team’s work goals. Team members take time off for long-term illnesses or move to new teams. Organizations hand down new production-wide programs for SRE. Changes to the service or the larger system introduce new technical challenges. As workload increases, team members start working longer hours to handle tickets and pages and spend less time on engineering work. The whole team starts to feel stressed and frustrated as they work harder but don’t feel like they are making progress. Stress, in turn, causes people to make more mistakes, impacting reliability and, ultimately, end users. In short, the team loses its ability to regulate its daily work and effectively manage the service.
+
+
+At this point, the team needs to find a way out of this overloaded state. They need to rebalance their workload so that team members can focus on essential engineering work.
+
+
+Operational load (or operational workload) is a term that describes the ongoing maintenance tasks that keep systems and services running at optimal performance. There are three distinct types of operational load: pages, tickets, and ongoing operational responsibilities. Pages typically require immediate attention, and tickets related to urgent problems can have tight deadlines. Both pages and urgent tickets interrupt SREs from working on engineering projects that support the team’s operational responsibilities. For that reason, we refer to them as interrupts. Chapter 29 of Site Reliability Engineering discusses techniques to manage the interrupts that naturally arise when a team is maintaining a complex system in a functional state.
+
+
+When operational load outstrips a team’s ability to manage it, the team ends up in a state of operational overload (also called work overload). A team is in a state of operational overload when it can’t make progress toward key priorities because urgent issues continually preempt project work. In addition to detracting from the team’s priorities and service improvements, overload can increase the chance that engineers make errors.1
+
+
+The threshold of operational overload can vary from team to team. Google SRE teams cap operational work at 50% of an engineer’s time. A successful SRE team must have confidence that over the long term, they will be able to complete the engineering projects required to reduce the operational load for the services they manage.
+
+
+This chapter describes how teams at Google progressed from a difficult situation characterized by operational overload to a well-managed workload. Two case studies show the detrimental effect of operational overload on team health, and how the teams made changes to their daily tasks so they could focus on long-term impactful projects. In Case Study 1, overload results when remaining members on a shrinking team are unable to keep up with the workload. In Case Study 2, a team suffers from perceived overload—a state that has the same effects as operational overload, but starts as a misperception of the real workload.
+
+
+While these case studies highlight specific actions that worked for two Google SRE teams, the section “Strategies for Mitigating Overload” provides practices for identifying and mitigating overload that apply to any company or organization. Therefore, this chapter should be useful to managers of overloaded teams, or any SRE team concerned about overload.
+
+
+
+From Load to Overload
+
+
+Regardless of its origin, overload is an occupational stress that can cripple productivity. Left unchecked, it can cause serious illness. For SRE teams, operational load is typically a combination of cognitively difficult tasks (like debugging memory leaks or segmentation faults) and many small tasks that require frequent context switches (working through quota requests, starting binary rollouts, etc.).
+
+
+Work overload often happens when a team doesn’t have enough time to handle all these tasks—an objective reality when the number of tasks assigned to a team can’t be completed within the given deadline for each task. Perceived overload is more subjective, and happens when individuals on the team feel that they have too much work. This usually happens when several organizational or work changes take place over a short period of time, but the team has little opportunity to communicate with leadership about the changes.
+
+
+It’s never clear what problems will develop when you’re on-call, or what your workload will be. On the one hand, a single, seemingly innocent ticket about running out of disk space might lead to an in-depth investigation of a recurring garbage collection job. On the other hand, a pager storm with 20+ pages might turn out to be a case of bad monitoring. When it’s hard to estimate or predict your workload, you can easily fall victim to cognitive biases and misjudge your workload—for example, you might gauge a ticket queue as too large to finish during your on-call shift. Even if you can finish all the tickets quickly and the actual workload is low, you feel overloaded when you first look at the ticket queue. This perceived overload2 itself has a psychological component that affects your approach and attitude toward your work. If you don’t start your day with the preconception that there’s too much work, you’re more likely to dive in and start working your way through the ticket queue. Perhaps you work all day and don’t finish your workload (thus facing work overload), but you make a lot more progress than if you had started your day feeling overwhelmed.
+
+
+Accumulating many interrupts can lead to work overload, but it doesn’t have to. But when frequent interruptions are paired with external stress factors, a large workload (or even a small workload) can easily turn into perceived overload. This stress might stem from the fear of disappointing other team members, job insecurity, work-related or personal conflicts, illness, or health-related issues like the lack of sleep or exercise.
+
+
+If your work isn’t properly prioritized, every task can seem equally urgent, leading to both actual and perceived overload. In the case of actual

@@ -1,0 +1,338 @@
+=== The Site Reliability Workbook ===
+=== Chunk 84/100 ===
+
+ to reliability and integration with existing operational platforms.
+
+ 
+
+ 
+ Is not expected to have operational responsibility on day one. Instead, this responsibility initially sits with the product development team or project team. This may be a significant cultural change that needs support from management.
+
+ 
+
+ 
+ Has clear agreement on the conditions that a service must meet to be onboarded by SRE (see Chapter 32 of Site Reliability Engineering).
+
+ 
+
+ 
+
+ In addition:
+
+
+ 
+ 
+ If the project involves a migration, the team should have a solid understanding of the current and future environments. If you need to recruit team members externally, consider candidates who have knowledge of software engineering and the future environment.
+
+ 
+
+ 
+ Continue to keep the number of new hires to less than a third of the team so that the training effort doesn’t overwhelm existing team members.
+
+ 
+
+ 
+ 
+
+
+
+
+
+Horizontal SRE team
+
+
+
+ Risks
+ The team is perceived as a new “gating” organization that does no real work or adds no real value.
+
+ Mitigations
+ 
+ The team:
+
+
+ 
+ 
+ Is seeded with respected engineers who have relevant subject matter expertise.
+
+ 
+
+ 
+ Undertakes project work that focuses on delivering tools (for monitoring, alerting, rollouts, best practices, checklists). These tools should have a short-term beneficial impact on at least two other teams.
+
+ 
+
+ 
+ Communicates successes and benefits. An SRE team that makes an efficiency breakthrough, automates away toil, or permanently eliminates a source of system unreliability should be celebrated.
+
+ 
+
+ 
+ Sees themselves as enablers, not gatekeepers. Focus on solutions, not just problems.
+
+ 
+
+ 
+ 
+
+
+
+
+
+A team converted in place
+
+
+
+ Risks
+ 
+ The team:
+
+
+ 
+ 
+ Perceives that the conversion process is the start of a slow journey to job losses as automation replaces humans.
+
+ 
+
+ 
+ Doesn’t support the change to an SRE team.
+
+ 
+
+ 
+ Has no slack capacity they can leverage to change the team’s day-to-day activities.
+
+ 
+
+ 
+ Sees no benefit to their day-to-day routine after a few months.
+
+ 
+
+ 
+ Works with systems that do not support scripting or automation.
+
+ 
+
+ 
+ Doesn’t have the software engineering skills to automate their current workload.
+
+ 
+
+ 
+ Doesn’t consistently have the skills needed to evolve toward SRE, or an interest in acquiring the skills.
+
+ 
+
+ 
+ 
+ Mitigations
+ 
+ The team:
+
+
+ 
+ 
+ Secures senior leadership support for the change.
+
+ 
+
+ 
+ Renegotiates responsibilities to create the slack needed to effect change.
+
+ 
+
+ 
+ Manages communication of the change very carefully.
+
+ 
+
+ 
+ Has access to robust personal and technical support throughout the transition.
+
+ 
+
+ 
+ Deals with the concern about job losses head on. In a lot of environments, automation eliminates portions of work, but not jobs as a whole; while this might be a step on the path to job losses, it does at least have the virtue of freeing up time to do something better (and more sellable to a future employer) than nonautomated toil.
+
+ 
+
+ 
+ Can escape operational overload and have more significant impact. If engineers reduce the volume of toil enough to necessitate a smaller team, then their experience should be highly reusable elsewhere in your organization. If their experience can’t be used internally, it should provide an advantage in seeking work elsewhere.
+
+ 
+
+ 
+ Receives training to acquire the skills SREs need. Your product development team can provide product training, while SRE orientation can make use of this book and other external resources.
+
+ 
+
+ 
+ Changes how performance is evaluated—the metrics that assess both the team and individuals. The former should be aligned with SLOs and adoption of other SRE practices; the latter should be aligned with evidence of SRE skills.
+
+ 
+
+ 
+ Adds an experienced SRE or developer to the team.
+
+ 
+
+ 
+ Has the freedom (budget or time) to identify and introduce new open source or cloud-based monitoring and alerting systems to enable automation. Determining whether the existing systems are sufficient should be an early priority.
+
+ 
+
+ 
+ Regularly reviews progress internally and with stakeholders.
+
+ 
+
+ 
+ 
+
+
+
+
+
+
+
+
+
+Norming
+
+
+Norming entails working past the issues raised in “Risks and mitigations” and reaching broad agreement on best practices for the organization’s SRE teams. Teams need to agree on an acceptable level of toil, appropriate alerting thresholds, and important and relevant SRE practices. Teams also need to become self-sufficient at proactively identifying the challenges ahead of the service and setting medium- and long-term goals to improve the service.
+
+
+Teams should reach the following levels of maturity during the norming phase:
+
+
+
+ 
+ SLOs and error budgets are in place, and the error budget policy is exercised following significant incidents. Leadership is interested in SLO measurements.
+
+ 
+
+ 
+ On-call rotations are established and sustainable (see Chapter 8). On-call engineers are compensated for their on-call time. There is sufficient tooling, documentation,2 and training to support any team member during a significant incident.
+
+ 
+
+ 
+ Toil is documented, bounded, and managed. As a result, SREs complete impactful projects that improve reliability and efficiency.
+
+ 
+
+ 
+ Postmortem culture is well established. (See Chapter 10.)
+
+ 
+
+ 
+ The team exhibits most of the tenets listed in Chapter 1.
+
+ 
+
+ 
+ As the team solves initial issues listed in “Storming”, they capture what they learned and prevent repeating problems. The team regularly runs training exercises, such as Wheel of Misfortune or DiRT (Disaster Recovery Testing). (For more information on on-call training, see Chapter 11 in our first book and Chapter 18 in this book.)
+
+ 
+
+ 
+ The product development team benefits from remaining involved in the on-call rotation.
+
+ 
+
+ 
+ The team produces regular reports (e.g., quarterly) for their stakeholders that cover the highlights, lowlights, and key metrics of the reporting period.
+
+ 
+
+
+
+
+Transforming an Existing Team into an SRE Team
+
+
+by Brian Balser, New York Times
+
+
+When the New York Times formed its Delivery and Site Reliability Engineering department, we assembled SRE teams from engineers who had SRE-type skills, such as building tooling and operating production systems. Some teams were “greenfield”: they were designed with SRE in mind with respect to talent, vision, and responsibility. Other teams had existed for several years, and had ended up running production architecture due to a combination of skill sets, interests, and chance.
+
+
+Challenges
+
+
+One of the existing teams transitioning into SRE was in a very challenging position. Over the years, the team had gained ownership and responsibility for managing configurations, change requests, and operations of a core component of our site-wide architecture. They effectively became a service team supporting all of our product development teams. Their work was driven by tickets and production issues, and they were in a continuous reactive mode. They didn’t have time to make improvements, innovate, or do other higher-value strategic work.
+
+
+While the team had many great ideas, it was overloaded with toil and a number of high-priority “blocker” service requests that were typically tied to product launches. This model was not sustainable, and the team would need to grow linearly with products to keep up with this support burden. To exacerbate this situation, the small team had a wealth of institutional knowledge that had accumulated over the years. A high volume of interrupts from teams who needed that information compounded the team’s overload, and a bus factor loomed over the team.
+
+
+Working from First Principles
+
+
+One guiding principle of our SRE organization is to remove ourselves from the critical path and to empower product development teams with self-service solutions. With that in mind, our goal became clear: invert the responsibility model to enable the product development teams to push their own changes. This strategy would both:
+
+
+
+ 
+ Speed up delivery.
+
+ 
+
+ 
+ Free SREs from managing configuration churn, allowing them to make real improvements to the system as a whole.
+
+ 
+
+
+
+Process Improvement
+
+
+We improved our processes through several stages of change:
+
+
+
+ 
+ We embedded an SRE in the development team to help relieve pressure.
+
+ 
+
+ 
+ To enable product development teams to take ownership of their service configuration in isolation, we broke out each service configuration into a team-based repo.
+
+ 
+
+ 
+ We migrated each service from the legacy CI system to our standard Drone CI/CD pipeline. The developer-friendly workflow was completely driven by GitHub events.
+
+ 
+
+ 
+ We onboarded each of the product teams to the new tooling and workflow so they could submit their own change requests without being blocked by a service ticket.
+
+ 
+
+
+
+While these improvements were a big step forward, we hadn’t yet reached our ideal end state. Reviewing pull requests still often required SRE expertise. To make interrupts for time-consuming reviews more manageable, we scheduled daily office hours. This consistent practice allowed us to batch questions and discussions in a more predictive manner, and also provided a venue for sharing knowledge with teams undergoing onboarding.
+
+
+End Result and Next Steps
+
+
+The SRE team is now meeting its initial goal of > 50% project work (versus support-related work). The team still has a wealth of institutional knowledge, but that knowledge is now being propagated more broadly, gradually improving the bus factor and reducing interrupts.
+
+
+Now that we have breathing room for project work, our next steps are to focus on adding more advanced capabilities such as canary deploys, better test tooling, and observability and resilience features. Doing so will give product development teams more confidence in exercising full autonomy over their service configurations without depending on SREs for change management.
+
+
+
+
+Establishing a healthy relationship with your product development team forms the basis of many of these mitigation strategies. Teams should plan work together per your organization’s planning cycle.
+
+
+Before moving on to the next step: pause, celebrate this success, and write a retrospective that covers your journey so far.
+
+

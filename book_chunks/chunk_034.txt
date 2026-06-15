@@ -1,0 +1,294 @@
+=== The Site Reliability Workbook ===
+=== Chunk 34/100 ===
+
+
+
+
+Sustaining a self-perpetuating cycle
+
+
+Rather than spending all our time in the triage/root-cause analysis/postmortem cycle, we now have more time as a team to think about how we move the business forward. Specifically, this translates into projects such as improving our microservices platform and establishing production readiness criteria for our product development teams. The latter includes many of the principles we followed in restructuring our on-call, which is particularly helpful for teams in their first “carry the pager” rodeo. Thus, we perpetuate the cycle of improving on-call for everyone.
+
+
+
+
+
+
+
+
+
+Practical Implementation Details
+
+
+So far, we’ve discussed details about on-call setups, both within Google and outside of Google. But what about specific considerations of being on-call? The following sections discuss these implementation details in more depth:
+
+
+
+ 
+ Pager load—what it is, how it works, and how to manage it
+
+ 
+
+ 
+ How to factor flexibility into on-call scheduling to create a healthier work/life balance for SREs
+
+ 
+
+ 
+ Strategies for improving team dynamics, both within a given SRE team, and with partner teams  
+
+ 
+
+
+
+
+Anatomy of Pager Load
+
+
+Your pager is noisy and it’s making your team unhappy. You’ve read through Chapter 31 in Site Reliability Engineering, and run regular production meetings, both with your team and the developer teams you support. Now everyone knows that your on-call engineers are unhappy. What next?
+
+
+Pager load is the number of paging incidents that an on-call engineer receives over a typical shift length (such as per day or per week). An incident may involve more than one page. Here, we’ll walk through the impact of various factors on pager load, and suggest techniques for minimizing future pager load.
+
+
+
+Appropriate Response Times
+
+
+Engineers shouldn’t have to be at a computer and working on a problem within minutes of receiving a page unless there is a very good reason to do so. While a complete outage of a customer-facing, revenue-generating service typically requires an immediate response, you can deal with less severe issues (for example, failing backups) within a few hours.
+
+
+We recommend checking your current paging setup to see if you actually should be paged for everything that currently triggers a page. You may be paging for issues that would be better served by automated repair (as it’s generally better for a computer to fix a problem than requiring a human to fix it) or a ticket (if it’s not actually high priority). Table 8-1 shows some sample events and appropriate responses.
+
+
+
+
+
+ Table 8-1. Examples of realistic response times
+ 
+ 
+ Incident description
+ Response time
+ SRE impact
+ 
+
+ 
+ 
+ 
+ Revenue-impacting network outage
+ 5 minutes
+ SRE needs to be within arm’s reach of a charged and authenticated laptop with network access at all times; cannot travel; must heavily coordinate with secondary at all times
+ 
+
+ 
+ Customer order batch processing system stuck
+ 30 minutes
+ SRE can leave their home for a quick errand or short commute; secondary does not need to provide coverage during this time
+ 
+
+ 
+ Backups of a database for a pre-launch service are failing
+ Ticket (response during work hours)
+ None
+ 
+
+ 
+
+
+
+Scenario: A team in overload
+
+
+The (hypothetical) Connection SRE Team, responsible for frontend load balancing and terminating end-user connections, found itself in a position of high pager load. They had an established pager budget of two paging incidents per shift, but for the past year they had regularly been receiving five paging incidents per shift. Analysis revealed that fully one-third of shifts were exceeding their pager budget. Members of the team heroically responded to the daily onslaught of pages but couldn’t keep up; there simply was not enough time in the day to find the root cause and properly fix the incoming issues. Some engineers left the team to join less operationally burdened teams. High-quality incident follow-up was rare, since on-call engineers only had time to mitigate immediate problems.
+
+
+The team’s horizon wasn’t entirely bleak: they had a mature monitoring infrastructure that followed SRE best practices. Alerting thresholds were set to align with their SLO, and paging alerts were symptom-based in nature, meaning they fired only when customers were impacted. When senior management were approached with all of this information, they agreed that the team was in operational overload and reviewed the project plan to bring the team back to a healthy state.
+
+
+In less positive news, over time the Connection team had taken ownership of software components from more than 10 developer teams and had hard dependencies on Google’s customer-facing edge and backbone networks. The large number of intergroup relationships was complex and had quietly grown difficult to manage.
+
+
+Despite the team following best practices in structuring their monitoring, many of the pages that they faced were outside their direct control. For example, a black-box probe may have failed due to congestion in the network, causing packet loss. The only action the team could take to mitigate congestion in the backbone was to escalate to the team directly responsible for that network.
+
+
+On top of their operational burden, the team needed to deliver new features to the frontend systems, which would be used by all Google services. To make matters worse, their infrastructure was being migrated from a 10-year-old legacy framework and cluster management system to a better-supported replacement. The team’s services were subject to an unprecedented rate of change, and the changes themselves caused a significant portion of the on-call load.
+
+
+The team clearly needed to combat this excessive pager load using a variety of techniques. The technical program manager and the people manager of the team approached senior management with a project proposal, which senior management reviewed and approved. The team turned their full attention to reducing their pager load, and learned some valuable lessons along the way.
+
+
+
+
+
+Pager load inputs
+
+
+The first step in tackling high pager load is to determine what is causing it. Pager load is influenced by three main factors: bugs5 in production, alerting, and human processes. Each of these factors has several inputs, some of which we discuss in more detail in this section.
+
+
+For production:
+
+
+
+ 
+ The number of existing bugs in production
+
+ 
+
+ 
+ The introduction of new bugs into production
+
+ 
+
+ 
+ The speed with which newly introduced bugs are identified
+
+ 
+
+ 
+ The speed with which bugs are mitigated and removed from production
+
+ 
+
+
+
+For alerting:
+
+
+
+ 
+ The alerting thresholds that trigger a paging alert
+
+ 
+
+ 
+ The introduction of new paging alerts
+
+ 
+
+ 
+ The alignment of a service’s SLO with the SLOs of the services upon which it depends
+
+ 
+
+
+
+For human processes:
+
+
+
+ 
+ The rigor of fixes and follow-up on bugs
+
+ 
+
+ 
+ The quality of data collected about paging alerts
+
+ 
+
+ 
+ The attention paid to pager load trends
+
+ 
+
+ 
+ Human-actuated changes to production
+
+ 
+
+
+
+
+Preexisting bugs
+
+
+No system is perfect. There will always be bugs in production: in your own code, the software and libraries that you build upon, or the interfaces between them. The bugs may not be causing paging alerts right now, but they are definitely present. You can use a few techniques to identify or prevent bugs that haven’t yet caused paging alerts:
+
+
+
+ 
+ Ensure systems are as complicated as they need to be, and no more (see Chapter 7).
+
+ 
+
+ 
+ Regularly update the software or libraries that your system is built upon to take advantage of bug fixes (however, see the next section about new bugs).
+
+ 
+
+ 
+ Perform regular destructive testing or fuzzing (for example, using Netflix’s Chaos Monkey).
+
+ 
+
+ 
+ Perform regular load testing in addition to integration and unit testing.
+
+ 
+
+
+
+
+
+
+New bugs
+
+
+Ideally, the SRE team and its partner developer teams should detect new bugs before they even make it into production. In reality, automated testing misses many bugs, which are then launched to production.
+
+
+Software testing is a large topic well covered elsewhere (e.g., Martin Fowler on Testing). However, software testing techniques are particularly useful in reducing the number of bugs that reach production, and the amount of time they remain in production:
+
+
+
+ 
+ Improve testing over time. In particular, for each bug you discover in production, ask “How could we have detected this bug preproduction?” Make sure the necessary engineering follow-up occurs (see “Rigor of follow-up”).
+
+ 
+
+ 
+ Don’t ignore load testing, which is often treated as lower priority than functional testing. Many bugs manifest only under particular load conditions or with a particular mix of requests.
+
+ 
+
+ 
+ Run staging (testing with production-like but synthetic traffic) in a production-like environment. We briefly discuss generating synthetic traffic in Chapter 5 of this book.
+
+ 
+
+ 
+ Perform canarying (Chapter 16) in a production environment.
+
+ 
+
+ 
+ Have a low tolerance to new bugs. Follow a “detect, roll back, fix, and roll forward” strategy rather than a “detect, continue to roll forward despite identifying the bug, fix, and roll forward again” strategy. (See “Mitigation delay” for more details.)
+
+ 
+
+
+
+This kind of rollback strategy requires predictable and frequent releases so that the cost of rolling back any one release is small. We discuss this and related topics in Site Reliability Engineering, in “Release Engineering”.
+
+
+Some bugs may manifest only as the result of changing client behavior. For example:
+
+
+
+ 
+ Bugs that manifest only under specific levels of load—for example, September back-to-school traffic, Black Friday, Cyber Monday, or that week of the year when Daylight Saving Time means Europe and North America are one hour closer, meaning more of your users are awake and online simultaneously.
+
+ 
+
+ 
+ Bugs that manifest only with a particular mix of requests—for example, servers closer to Asia experiencing a more expensive traffic mix due to language encodings for Asian character sets.
+
+ 
+
+ 
+ Bugs that manifest only when users exercise the system in unexpected ways—for example, Calendar being used by an airline reservation system! Therefore, it is important to expand your testing regimen to test behaviors that do not occur every day.
+
+ 
+
+

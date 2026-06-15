@@ -1,0 +1,142 @@
+=== The Site Reliability Workbook ===
+=== Chunk 5/100 ===
+
+
+
+
+Background on SRE
+
+
+Site Reliability Engineering (SRE) is a term (and associated job role) coined by Ben Treynor Sloss, a VP of engineering at Google.7 As we can see in the previous section, DevOps is a broad set of principles about whole-lifecycle collaboration between operations and product development. SRE is a job role, a set of practices (described next) we’ve found to work, and some beliefs that animate those practices. If you think of DevOps as a philosophy and an approach to working, you can argue that SRE implements some of the philosophy that DevOps describes, and is somewhat closer to a concrete definition of a job or role than, say, “DevOps engineer.”8 So, in a way, class SRE implements interface DevOps.
+
+
+Unlike the DevOps movement, which originated from collaborations between leaders and practitioners at multiple companies, SRE at Google inherited much of its culture from the surrounding company before the term SRE became widely popularized across the industry. Given that trajectory, the discipline as a whole currently does not foreground cultural change by default quite as much as DevOps. (That doesn’t imply anything about whether cultural change is necessary to do SRE in an arbitrary organization, of course.)
+
+
+SRE is defined by the following concrete principles.
+
+
+
+Operations Is a Software Problem
+
+
+The basic tenet of SRE is that doing operations well is a software problem. SRE should therefore use software engineering approaches to solve that problem. This is across a wide field of view, encompassing everything from process and business change to similarly complicated but more traditional software problems, such as rewriting a stack to eliminate single points of failure in business logic.
+
+
+
+
+
+Manage by Service Level Objectives (SLOs)
+
+
+SRE does not attempt to give everything 100% availability. As discussed in our first book, Site Reliability Engineering, this is the wrong target for a number of reasons. Instead, the product team and the SRE team select an appropriate availability target for the service and its user base, and the service is managed to that SLO.9 Deciding on such a target requires strong collaboration from the business. SLOs have cultural implications as well: as collaborative decisions among stakeholders, SLO violations bring teams back to the drawing board, blamelessly.
+
+
+
+
+
+Work to Minimize Toil
+
+
+For SRE, any manual, structurally mandated operational task is abhorrent. (That doesn’t mean we don’t have any such operations: we have plenty of them. We just don’t like them.) We believe that if a machine can perform a desired operation, then a machine often should. This is a distinction (and a value) not often seen in other organizations, where toil is the job, and that’s what you’re paying a person to do. For SRE in the Google context, toil is not the job—it can’t be.  Any time spent on operational tasks means time not spent on project work—and project work is how we make our services more reliable and scalable.
+
+
+Performing operational tasks does, however, by “the wisdom of production,” provide vital input into decisions. This work keeps us grounded by providing real-time feedback from a given system. Sources of toil need to be identifiable so you can minimize or eliminate them. However, if you find yourself in a position of operational underload, you may need to push new features and changes more often so that engineers remain familiar with the workings of the service you support.
+
+
+
+The Wisdom of Production
+
+
+A note on “the wisdom of production”: by this phrase, we mean the wisdom you get from something running in production—the messy details of how it actually behaves, and how software should actually be designed, rather than a whiteboarded view of a service isolated from the facts on the ground. All of the pages you get, the tickets the team gets, and so on, are a direct connection with reality that should inform better system design and behavior.
+
+
+
+
+
+
+
+Automate This Year’s Job Away
+
+
+The real work in this area is determining what to automate, under what conditions, and how to automate it.
+
+
+SRE as practiced in Google has a hard limit of how much time a team member can spend on toil, as opposed to engineering that produces lasting value: 50%. Many people think of this limit as a cap. In fact, it’s much more useful to think of it as a guarantee—an explicit statement, and enabling mechanism, for taking an engineering-based approach to problems rather than just toiling at them over and over.
+
+
+There is an unintuitive and interesting interaction between this benchmark and how it plays out when we think about automation and toil. Over time, an SRE team winds up automating all that it can for a service, leaving behind things that can’t be automated (the Murphy-Beyer effect). Other things being equal, this comes to dominate what an SRE team does unless other actions are taken. In the Google environment, you tend to either add more services, up to some limit that still supports 50% engineering time, or you are so successful at your automation that you can go and do something else completely different instead.
+
+
+
+
+
+Move Fast by Reducing the Cost of Failure
+
+
+One of the main benefits of SRE engagement is not necessarily increased reliability, although obviously that does happen; it is actually improved product development output. Why? Well, a reduced mean time to repair (MTTR) for common faults results in increased product developer velocity, as engineers don’t have to waste time and focus cleaning up after these issues. This follows from the well-known fact that the later in the product lifecycle a problem is discovered, the more expensive it is to fix. SREs are specifically charged with improving undesirably late problem discovery, yielding benefits for the company as a whole.
+
+
+
+
+
+Share Ownership with Developers
+
+
+Rigid boundaries between “application development” and “production” (sometimes called programmers and operators) are counterproductive. This is especially true if the segregation of responsibilities and classification of ops as a cost center leads to power imbalances or discrepancies in esteem or pay.
+
+
+SREs tend to be inclined to focus on production problems rather than business logic problems, but as their approach brings software engineering tools to bear on the problem, they share skill sets with product development teams. In general, an SRE has particular expertise around the availability, latency, performance, efficiency, change management, monitoring, emergency response, and capacity planning of the service(s) they are looking after. Those specific (and usually well-defined) competencies are the bread-and-butter of what SRE does for a product and for the associated product development team.10 Ideally, both product development and SRE teams should have a holistic view of the stack—the frontend, backend, libraries, storage, kernels, and physical machine—and no team should jealously own single components. It turns out that you can get a lot more done if you “blur the lines”11 and have SREs instrument JavaScript, or product developers qualify kernels: knowledge of how to make changes and the authority to do so are much more widespread, and incentives to jealously guard any particular function are removed.
+
+
+In Site Reliability Engineering, we did not make it sufficiently clear that product development teams in Google own their service by default. SRE is neither available nor warranted for the bulk of services, although SRE principles still inform how services are managed throughout Google.12 The ownership model when an SRE team works with a product development team is ultimately a shared model as well.
+
+
+
+
+
+Use the Same Tooling, Regardless of Function or Job Title
+
+
+Tooling is an incredibly important determinant of behavior, and it would be naive to assume that the efficacy of SRE in the Google context has nothing to do with the widely accessible unified codebase, the wide array of software and systems tooling, the highly optimized and proprietary production stack, and so on. Yet we share this absolute assumption with DevOps: teams minding a service13 should use the same tools, regardless of their role in the organization. There is no good way to manage a service that has one tool for the SREs and another for the product developers, behaving differently (and potentially catastrophically so) in different situations. The more divergence you have, the less your company benefits from each effort to improve each individual tool.
+
+
+
+
+
+
+
+Compare and Contrast
+
+
+Looking at the preceding principles, we immediately see quite a lot of commonality in the points outlined:
+
+
+
+ 
+ DevOps and SRE are both contingent on an acceptance that change is necessary in order to improve. Without that, there’s not much room for maneuvering.14
+
+ 
+
+ 
+ Collaboration is front and center for DevOps work. An effective shared ownership model and partner team relationships are necessary for SRE to function. Like DevOps, SRE also has strong values shared across the organization, which can make climbing out of team-based silos slightly easier.
+
+ 
+
+ 
+ Change management is best pursued as small, continual actions, the majority of which are ideally both automatically tested and applied. The critical interaction between change and reliability makes this especially important for SRE.
+
+ 
+
+ 
+ The right tooling is critically important, and tooling to a certain extent determines the scope of your acts. Yet we must not focus too hard on whether something is achieved using some specific set of tools; at the end of the day, API orientation for system management is a more important philosophy that will outlast any particular implementation of it.
+
+ 
+
+ 
+ Measurement is absolutely key to how both DevOps and SRE work. For SRE, SLOs are dominant in determining the actions taken to improve the service. Of course, you can’t have SLOs without measurement (as well as cross-team debate—ideally among product, infrastructure/SRE, and the business). For DevOps, the act of measurement is often used to understand what the outputs of a process are, what the duration of feedback loops is, and so on. Both DevOps and SRE are data-oriented things, whether they are professions or philosophies.
+
+ 
+
+ 
+ The brute reality of managing production services means that bad things happen occasionally, and you have to talk about why. SRE and DevOps both practice blameless postmorte

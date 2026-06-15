@@ -1,0 +1,243 @@
+=== The Site Reliability Workbook ===
+=== Chunk 19/100 ===
+
+
+
+
+Implementing Purposeful Metrics
+
+
+Each exposed metric should serve a purpose. Resist the temptation of exporting a handful of metrics just because they are easy to generate. Instead, think about how these metrics will be used. Metric design, or lack thereof, has implications.
+
+
+Ideally, metric values used for alerting change dramatically only when the system enters a problem state, and don’t change when a system is operating normally.  On the other hand, metrics for debugging don’t have these requirements—they’re intended to provide insight about what is happening when alerts are triggered. Good debugging metrics will point at some aspect of the system that’s potentially causing the issues. When you write a postmortem, think about which additional metrics would have allowed you to diagnose the issue faster.
+
+
+
+
+
+
+
+Testing Alerting Logic
+
+
+In an ideal world, monitoring and alerting code should be subject to the same testing standards as code development. While Prometheus developers are discussing developing unit tests for monitoring, there is currently no broadly adopted system that allows you to do this.
+
+
+At Google, we test our monitoring and alerting using a domain-specific language that allows us to create synthetic time series. We then write assertions based upon the values in a derived time series, or the firing status and label presence of specific alerts.
+
+
+Monitoring and alerting is often a multistage process, which therefore calls for multiple families of unit tests. While this area remains largely underdeveloped, should you want to implement monitoring testing at some point, we recommend a three-tiered approach, as shown in Figure 4-1.
+
+
+
+Figure 4-1. Monitoring testing environment tiers
+
+
+
+
+ 
+ Binary reporting: Check that the exported metric variables change in value under certain conditions as expected.
+
+ 
+
+ 
+ Monitoring configurations: Make sure that rule evaluation produces expected results, and that specific conditions produce the expected alerts.
+
+ 
+
+ 
+ Alerting configurations: Test that generated alerts are routed to a predetermined destination, based on alert label values.
+
+ 
+
+
+
+If you can’t test your monitoring via synthetic means, or there’s a stage of your monitoring you simply can’t test, consider creating a running system that exports well-known metrics, like number of requests and errors. You can use this system to validate derived time series and alerts. It’s very likely that your alerting rules will not fire for months or years after you configure them, and you need to have confidence that when the metric passes a certain threshold, the correct engineers will be alerted with notifications that make sense.
+
+
+
+
+
+Conclusion
+
+
+Because the SRE role is responsible for the reliability of systems in production, SREs are often required to be intimately familiar with a service’s monitoring system and its features. Without this knowledge, SREs might not know where to look, how to identify abnormal behavior, or how to find the information they need during an emergency.
+
+
+We hope that by pointing out monitoring system features we find useful and why, we can help you evaluate how well your monitoring strategy fits your needs, explore some additional features you might be able to leverage, and consider changes you might want to make. You’ll probably find it useful to combine some source of metrics and logging in your monitoring strategy; the exact mix you need is highly context-dependent. Make sure to collect metrics that serve a particular purpose. That purpose may be to enable better capacity planning, assist in debugging, or directly notify you about problems.
+
+
+Once you have monitoring in place, it needs to be visible and useful. To this end, we also recommend testing your monitoring setup. A good monitoring system pays dividends. It is well worth the investment to put substantial thought into what solutions best meet your needs, and to iterate until you get it right.
+
+
+
+1 For example, using promtool to verify that your Prometheus config is syntactically correct.
+2 You can export basic metrics via a common library: an instrumentation framework like OpenCensus, or a service mesh like Istio.
+3 See Chapter 10 of Site Reliability Engineering for Borgmon’s concepts and structure.
+4 This is one case where monitoring via logs is appealing, particularly because production changes are relatively infrequent. Whether you use logs or metrics, these changes should be surfaced in your dashboards so they’re easily accessible for debugging production issues.
+5 See https://opencensus.io/ for a set of libraries that provides this.
+
+Alerting on SLOs
+
+Chapter 5. Alerting on SLOs
+
+
+By Steven Thurgood
+
+with Jess Frame, Anthony Lenton,
+
+Carmela Quinito, Anton Tolchanov, and Nejc Trdin
+
+
+This chapter explains how to turn your SLOs into actionable alerts on significant events. Both our first SRE book and this book talk about implementing SLOs. We believe that having good SLOs that measure the reliability of your platform, as experienced by your customers, provides the highest-quality indication for when an on-call engineer should respond. Here we give specific guidance on how to turn those SLOs into alerting rules so that you can respond to problems before you consume too much of your error budget.
+
+
+Our examples present a series of increasingly complex implementations for alerting metrics and logic; we discuss the utility and shortcomings of each. While our examples use a simple request-driven service and Prometheus syntax, you can apply this approach in any alerting framework.
+
+
+
+Alerting Considerations
+
+
+In order to generate alerts from service level indicators (SLIs) and an error budget, you need a way to combine these two elements into a specific rule. Your goal is to be notified for a significant event: an event that consumes a large fraction of the error budget.
+
+
+Consider the following attributes when evaluating an alerting strategy:
+
+
+
+ Precision
+ The proportion of events detected that were significant. Precision is 100% if every alert corresponds to a significant event. Note that alerting can become particularly sensitive to nonsignificant events during low-traffic periods (discussed in “Low-Traffic Services and Error Budget Alerting”).
+
+ Recall
+ The proportion of significant events detected. Recall is 100% if every significant event results in an alert.
+
+ Detection time
+ How long it takes to send notifications in various conditions. Long detection times can negatively impact the error budget.
+
+ Reset time
+ How long alerts fire after an issue is resolved. Long reset times can lead to confusion or to issues being ignored.
+
+
+
+
+
+
+Ways to Alert on Significant Events
+
+
+Constructing alert rules for your SLOs can become quite complex. Here we present six ways to configure alerting on significant events, in order of increasing fidelity, to arrive at an option that offers good control over the four parameters of precision, recall, detection time, and reset time simultaneously. Each of the following approaches addresses a different problem, and some eventually solve multiple problems at the same time. The first three nonviable attempts work toward the latter three viable alerting strategies, with approach 6 being the most viable and most highly recommended option. The first method is simple to implement but inadequate, while the optimal method provides a complete solution to defend an SLO over both the long and the short term.
+
+
+For the purposes of this discussion, “error budgets” and “error rates” apply to all SLIs, not just those with “error” in their name. In the section “What to Measure: Using SLIs”, we recommend using SLIs that capture the ratio of good events to total events. The error budget gives the number of allowed bad events, and the error rate is the ratio of bad events to total events.
+
+
+
+1: Target Error Rate ≥ SLO Threshold
+
+
+For the most trivial solution, you can choose a small time window (for example, 10 minutes) and alert if the error rate over that window exceeds the SLO.
+
+
+For example, if the SLO is 99.9% over 30 days, alert if the error rate over the previous 10 minutes is ≥ 0.1%:
+
+
+
+- alert: HighErrorRate
+ expr: job:slo_errors_per_request:ratio_rate10m{job="myjob"} >= 0.001
+
+
+Note
+This 10-minute average is calculated in Prometheus with a Recording rule:
+
+
+
+record: job:slo_errors_per_request:ratio_rate10m
+expr:
+ sum(rate(slo_errors[10m])) by (job)
+ /
+ sum(rate(slo_requests[10m])) by (job)
+
+
+If you don’t export slo_errors and slo_requests from your job, you can create the time series by renaming a metric:
+
+
+
+record: slo_errors
+expr: http_errors
+
+
+
+
+Alerting when the recent error rate is equal to the SLO means that the system detects a budget spend of:
+
+
+alerting window sizereporting period
+
+
+Figure 5-1 shows the relationship between detection time and error rate for an example service with an alert window of 10 minutes and a 99.9% SLO.
+
+
+
+Figure 5-1. Detection time for an example service with an alert window of 10 minutes and a 99.9% SLO
+
+
+
+Table 5-1 shows the benefits and disadvantages of alerting when the immediate error rate is too high.
+
+
+
+ Table 5-1. Pros and cons of alerting when the immediate error rate is too high
+ 
+ 
+ Pros
+ Cons
+ 
+
+ 
+ 
+ 
+ 
+ Detection time is good: 0.6 seconds for a total outage.
+
+
+ This alert fires on any event that threatens the SLO, exhibiting good recall.
+
+ 
+ 
+ Precision is low: The alert fires on many events that do not threaten the SLO. A 0.1% error rate for 10 minutes would alert, while consuming only 0.02% of the monthly error budget.
+
+
+ Taking this example to an extreme, you could receive up to 144 alerts per day every day, not act upon any alerts, and still meet the SLO.
+
+ 
+ 
+
+ 
+
+
+
+
+
+2: Increased Alert Window
+
+
+We can build upon the preceding example by changing the size of the alert window to improve precision. By increasing the window size, you spend a higher budget amount before triggering an alert.
+
+
+To keep the rate of alerts manageable, you decide to be notified only if an event consumes 5% of the 30-day error budget—a 36-hour window:
+
+
+
+- alert: HighErrorRate
+ expr: job:slo_errors_per_request:ratio_rate36h{job="myjob"} > 0.001
+
+
+Now, the detection time is:
+
+
+ 1−SLO error ratio × alerting window size 
+
+
+Table 5-2 shows the benefits and disadvantages of alerting when the error rate is too high over a larger window of ti

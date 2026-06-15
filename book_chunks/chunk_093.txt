@@ -1,0 +1,173 @@
+=== The Site Reliability Workbook ===
+=== Chunk 93/100 ===
+
+rtem example, Clarityblamelessness of, Blamelessness
+concrete action items, Concrete action items
+
+monitoring tool for, Postmortem follow-up
+rewarding closeout of, Reward action item closeout
+
+active development phase (service lifecycle), SRE engagement in, Phase 2: Active Development
+ADKAR, The Prosci ADKAR Model, Background(see also Prosci ADKAR model)
+
+AdMob and AdSense systems, What we decided to do
+AdWords NALSD example, AdWords Example-Evaluationdesign process, Design Process
+distributed system, Distributed System-EvaluationLogJoiner, LogJoiner
+MapReduce, evaluating, MapReduce
+
+initial requirements, Initial Requirements
+running application on one machine, One Machine
+scaling resources for parsing logs, Calculations
+
+alertsalert suppression, Alerts
+alerting on SLOs, Alerting on SLOs-Conclusionburn rate for error budgets, 4: Alert on Burn Rate
+considerations in, Alerting Considerations
+increased alert window, 2: Increased Alert Window
+incrementing alert duration, 3: Incrementing Alert Duration
+low-traffic services and error budget alerting, Low-Traffic Services and Error Budget Alerting-Extreme Availability Goals
+making sure alerting is scalable, Alerting at Scale
+multiple burn rate alarms, 5: Multiple Burn Rate Alerts
+multiwindow, multi-burn-rate alerts, 6: Multiwindow, Multi-Burn-Rate Alerts
+services with extreme availability goals, Extreme Availability Goals
+target error rate ࣙ SLO threshold, 1: Target Error Rate ≥ SLO Threshold
+
+contributors to high pager load, Pager load inputs
+paging alerts, defining thresholds for, Alerting
+provided by monitoring system, Alertsin metrics-based and logs-based systems, Sources of Monitoring Data
+
+separating alerting in monitoring systems, Prefer Loose Coupling
+testing alerting logic in monitoring system, Testing Alerting Logic
+using good alerts and consoles to identify cause of pages, Identification delay
+
+analysis of postmortems, Postmortem analysis, Results of Postmortem Analysis
+animated (undesirable) language in postmortems, Animated language
+anycast, Google Cloud Load Balancingstabilized, implementation of, Stabilized anycast
+
+APIsavailability and latency for API calls, Home Depot case study, Availability and latency for API calls
+availability and latency SLIs, API and HTTP server availability and latency
+case study, end-to-end API simplicity, Background
+machine consumable, Everything Important Eventually Becomes a Platform
+proposed SLOs for the API, Using the SLIs to Calculate Starter SLOs
+
+application errors in data processing pipeline, Pipeline application or configuration
+Application Readiness Reviews (ARRs), Aligning Goals
+architecture and design phase (service lifecycle), SRE engagement in, Phase 1: Architecture and Design
+architecture and design, SRE team partnering on, Partnering on architecture
+architectures (opaque), troubleshooting for, Troubleshooting for Opaque Architectures
+artificial load generation, Artificial Load Generation
+aspirational SLOs, Improving the Quality of Your SLO
+authoring of postmortems, including all participants in, Include all incident participants in postmortem authoring
+autohealing, Handling Unhealthy Machines
+automated builds, Release Engineering Principles
+automated health checking, New bugs
+automationarchiving and migration, in filer-backed home directory decommissioning, Archiving and migration automation
+assessing risks of, Assess Risk Within Automation
+automating this year’s job away, Automate This Year’s Job Away
+automating toil response, Automate Toil Response
+increasing uniformity in production environment, Increase Uniformity
+measuring effectiveness of automated tasks, Use Feedback to Improve
+partial automation with human-backed interfaces, Start with Human-Backed Interfaces, Start with human-backed interfaces
+using to reduce toil in datacenter, case study, Case Study 1: Reducing Toil in the Datacenter with Automation-Think holistically
+
+autoscaling, Autoscaling-Avoiding Traffic Imbalanceavoiding overloading backends, Avoiding Overloading Backends
+avoiding traffic imbalance, Avoiding Traffic Imbalance
+configuring conservatively, Configuring Conservatively
+handling unhealthy machines, Handling Unhealthy Machines
+implementing for data processing pipelines, Implement Autoscaling and Resource Planning
+in Spotify case study, Capacity planning
+including kill switches and manual overrides, Including Kill Switches and Manual Overrides
+load-based, using with load balancing, Combining Strategies to Manage Load
+load-based, using with load shedding, Combining Strategies to Manage Load
+setting constraints on the autoscaler, Setting Constraints
+using with load balancing and load shedding, precautions with, Lessons learned
+working with stateful systems, Working with Stateful Systems
+
+availabilityalerting on services with extreme availability goals, Extreme Availability Goals
+during canary deployment, Minimizing Risk to SLOs and the Error Budget
+Evernote’s goal for, Introduction of SLOs: A Journey in Progress
+factoring dependencies into, Troubleshooting for Opaque Architectures
+for API calls, SLOs in Home Depot case study, Availability and latency for API calls
+grouping request types into buckets of similar availability requirements, Alerting at Scale
+high availability with GCLB, GCLB: High Availability
+
+availability SLI, A Worked ExampleAPI and HTTP server availability, API and HTTP server availability and latency
+measuring availability with health-checking handler, Improving the Quality of Your SLO
+
+B
+backend services, avoiding overloading in autoscaling, Avoiding Overloading Backends
+balance between on-call and project work for SREs, Recap of “Being On-Call” Chapter of First SRE Book
+baseline of a functional team, Reducing Overload and Restoring Team Health
+Beyond Corp network security protocol, Problem Statement
+BGP (Border Gateway Protocol), Anycast
+blameful language, mitigating damage of, Failing to reinforce the culture
+blameless language, Use blameless language
+blameless postmortems, Compare and Contrast, It’s Better to Fix It Yourself; Don’t Blame Someone Else, Postmortem Culture: Learning from Failure(see also postmortems)
+blamelessness in good postmortem example, Blamelessness
+modeling and enforcing blameless behavior, Model and Enforce Blameless Behavior
+responding to culture failures in, Respond to Postmortem Culture Failures
+
+blue/green deployment, Blue/Green Deployment
+boiling the frog, Vigilance
+Borg, Background
+breaks (long-term) in on-call scheduling, Plan for long-term breaks
+Bridges Transition Model, Emotion-Based Models, How These Theories Apply to SRE
+bucketing, using with SLIs, Grading Interaction Importance
+bugsbug tracking systems, Data quality
+new bugs in production environment, New bugs
+preexisting bugs in production environment, Preexisting bugs
+tracking new bugs in production, New bugs
+
+burn rate (error budgets)alerting on, 4: Alert on Burn Rate
+multiple alerts on, 5: Multiple Burn Rate Alerts
+multiwindow multi-burn-rate alerts, 6: Multiwindow, Multi-Burn-Rate Alerts
+
+business intelligence, Data Analytics
+business priorities, communicating between SRE and developer teams, Communicating Business and Production Priorities
+business processes producing toil, Business Processesquestioning, Challenge assumptions and retire expensive business processes
+
+C
+calculations support (monitoring systems), Calculations
+CALMS (Culture, Automation, Lean, Measurement, and Sharing), Background on DevOps
+canarying releases, Identification delay, Canarying Releases-Conclusionbalancing release velocity and reliability, Balancing Release Velocity and Reliability
+canary implementation, Canary Implementation-Choosing a Canary Population and Durationchoosing canary population and duration, Choosing a Canary Population and Duration
+minimizing risk to SLOs and error budget, Minimizing Risk to SLOs and the Error Budget
+
+canarying, defined, What Is Canarying?
+dependencies and isolation, Dependencies and Isolation
+for data processing pipeline, Canarying
+in noninteractive systems, Canarying in Noninteractive Systems
+related concepts, Related Conceptsartificial load generation, Artificial Load Generation
+blue/green deployment, Blue/Green Deployment
+traffic teeing, Traffic Teeing
+
+release engineering and canarying, Release Engineering and Canaryingexample setup, Our Example Setup
+requirements of canary process, Requirements of a Canary Process
+
+release engineering principles, Release Engineering Principles-Balancing Release Velocity and Reliability
+requirements on monitoring data, Requirements on Monitoring Data
+roll forward deployment vs. simple canary deployment, A Roll Forward Deployment Versus a Simple Canary Deployment-Canary Implementation
+selecting and evaluating metrics, Selecting and Evaluating Metrics-Use a Gradual Canary for Better Metric Selectionbefore/after evaluation, riskiness of, Before/After Evaluation Is Risky
+metrics indicating problems, Metrics Should Indicate Problems
+representative and attributable metrics, Metrics Should Be Representative and Attributable
+using gradual canary for better metric selection, Use a Gradual Canary for Better Metric Selection
+
+separating components that change at different rates, Balancing Release Velocity and Reliability
+with GCLB, GCLB: High Availability
+
+capacity planning, Cost Engineering and Capacity Planningfor data processing pipeline, Implement Autoscaling and Resource Planning
+in Spotify case study, Capacity planning
+setting traffic volume SLOs in Home Depot case study, Traffic volume
+
+CCN (cyclomatic complexity number), Measuring Complexity
+change control, Organizational Change Management in SRE
+change managementin DevOps and SRE, Compare and Contrast
+organizational change management in SRE, Organizational Change Management in SRE-Conclusioncase study, common tooling adoption in SRE, Background-Lessons Learned
+case study, scaling Waze, Background-Lessons Learned
+emotion-based models, Emotion-Based Models
+how change management theories apply to SRE, How These Theories Apply to SRE
+Kotter’s eight-step process, Kotter’s Eight-Step Process for Leading Change
+Lewin’s three-stage model, Lewin’s Three-Stage Model
+McKinsey’s 7-S model, McKinsey’s 7-S Model
+Prosci ADKAR model, The Prosci ADKAR Model
+SRE embracing change, SRE Embraces Change
+

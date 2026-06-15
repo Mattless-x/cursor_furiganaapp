@@ -1,0 +1,206 @@
+=== The Site Reliability Workbook ===
+=== Chunk 3/100 ===
+
+us work; our goal is to allow you to jump back and forth between principle and practice as you go. That way, you can use both volumes as ongoing references.
+
+Next, a word about ethos: We heard from some readers that while describing Google’s journey toward better operations we concentrated too much on just us. Some readers suggested that we were too removed from the practicalities of the world outside Google, and failed to address the interaction of our ideas with the principles of DevOps. That’s an entirely fair criticism that we’ve tried to take to heart in this volume.
+
+However, we do think that the highly opinionated nature of SRE contributes to its usefulness as a discipline. To us that’s a feature, not a bug. We do not advocate that SRE is the only way (or even universally the best way) to build and operate highly reliable systems. It’s just the way that has been most successful for us.
+
+We’ll also spend a few words talking about how SRE and DevOps relate to each other. The important point to keep in mind is that they are not in conflict.
+
+We’d like to acknowledge up front that this volume is necessarily incomplete. The SRE discipline is a broad field even inside the confines of Google, and it is evolving even faster now that it’s practiced widely outside of Google. Rather than go broad and superficial, we focused this volume to answer the most requested implementation details from the first volume.
+
+Finally, this volume and its predecessor are not intended to be gospel. Please don’t treat them that way. Even after all these years, we’re still finding conditions and cases that cause us to tweak (or in some cases, replace) previously firmly held beliefs. SRE is a journey as much as it is a discipline.
+
+We hope that you enjoy what you read in these pages and find the book useful. Assembling it has been a labor of love. We’re delighted that there’s a growing and skilled community of SRE professionals with whom we can learn and improve.
+
+As always, your direct feedback is much appreciated. It teaches us something valuable every time you contribute it.
+
+
+How to Read This Book
+
+This book is the companion volume to Google’s first book, Site Reliability Engineering. To get the most out of this volume, we recommend that you have read, or can refer to, the first SRE book (available to read online for free at google.com/sre). The two works complement each other in the following ways:
+
+
+The previous work was an introduction to principles and philosophy. This volume concentrates on how those principles are applied. (In a few areas—particularly configuration management and canarying—we also cover some new ground to provide background for the practical treatment of other subjects.)
+
+
+The earlier volume concentrated exclusively on how SRE is practiced at Google. This work includes perspectives from a number of other firms—from traditional enterprises (including The Home Depot and the New York Times) to digital natives (Evernote, Spotify, and others).
+
+
+The first book didn’t directly refer to the larger operations community—especially DevOps—whereas this book speaks directly to how SRE and DevOps relate to each other.
+
+
+
+This volume assumes that you will bounce between this volume and its predecessor. You might, for example, read Chapter 4, “Service Level Objectives” in the first book and then read its implementation complement (Chapter 2) in this volume.
+
+This book assumes that every chapter is just the starting point for a longer discussion and journey. Accordingly, this book is intended to be a conversation starter rather than the last word.
+
+—The Editors
+
+
+
+
+
+Conventions Used in This Book
+
+The following typographical conventions are used in this book:
+
+
+Italic
+
+Indicates new terms, URLs, email addresses, filenames, and file extensions.
+
+
+Constant width
+
+Used for program listings, as well as within paragraphs to refer to program elements such as variable or function names, databases, data types, environment variables, statements, and keywords.
+
+
+Constant width bold
+
+Shows commands or other text that should be typed literally by the user.
+
+
+Constant width italic
+
+Shows text that should be replaced with user-supplied values or by values determined by context.
+
+
+
+Tip
+This element signifies a tip or suggestion.
+
+
+
+Note
+This element signifies a general note.
+
+
+
+Warning
+This element indicates a warning or caution.
+
+
+
+
+
+
+Using Code Examples
+
+
+Supplemental material (code examples, exercises, etc.) is available for download at http://g.co/SiteReliabilityWorkbookMaterials.
+
+This book is here to help you get your job done. In general, if example code is offered with this book, you may use it in your programs and documentation. You do not need to contact us for permission unless you’re reproducing a significant portion of the code. For example, writing a program that uses several chunks of code from this book does not require permission. Selling or distributing a CD-ROM of examples from O’Reilly books does require permission. Answering a question by citing this book and quoting example code does not require permission. Incorporating a significant amount of example code from this book into your product’s documentation does require permission.
+
+We appreciate, but do not require, attribution. An attribution usually includes the title, author, publisher, and ISBN. For example: “The Site Reliability Workbook, edited by Betsy Beyer, Niall Richard Murphy, David K. Rensin, Kent Kawahara, and Stephen Thorne (O’Reilly). Copyright 2018 Google LLC, 978-1-492-02950-2.”
+
+If you feel your use of code examples falls outside fair use or the permission given above, feel free to contact us at permissions@oreilly.com.
+
+
+
+
+O’Reilly Safari
+
+Note
+Safari (formerly Safari Books Online) is a membership-based training and reference platform for enterprise, government, educators, and individuals.
+
+
+
+Members have access to thousands of books, training videos, Learning Paths, interactive tutorials, and curated playlists from over 250 publishers, including O’Reilly Media, Harvard Business Review, Prentice Hall Professional, Addison-Wesley Professional, Microsoft Press, Sams, Que, Peachpit Press, Adobe, Focal Press, Cisco Press, John Wiley & Sons, Syngress, Morgan Kaufmann, IBM Redbooks, Packt, Adobe Press, FT Press, Apress, Manning, New Riders, McGraw-Hill, Jones & Bartlett, and Course Technology, among others. 
+
+For more information, please visit http://oreilly.com/safari.
+
+
+
+
+How to Contact Us
+
+Please address comments and questions concerning this book to the publisher:
+
+
+ O’Reilly Media, Inc.
+
+ 1005 Gravenstein Highway North
+
+ Sebastopol, CA 95472
+
+ 800-998-9938 (in the United States or Canada)
+
+ 707-829-0515 (international or local)
+
+ 707-829-0104 (fax)
+
+
+We have a web page for this book, where we list errata, examples, and any additional information. You can access this page at http://bit.ly/siteReliabilityWkbk.
+
+
+To comment or ask technical questions about this book, send email to bookquestions@oreilly.com.
+
+For more information about our books, courses, conferences, and news, see our website at http://www.oreilly.com.
+
+Find us on Facebook: http://facebook.com/oreilly
+
+Follow us on Twitter: http://twitter.com/oreillymedia
+
+Watch us on YouTube: http://www.youtube.com/oreillymedia
+
+
+
+
+
+Acknowledgments
+
+This book is the product of the enthusiastic and generous contributions of more than 100 people, including authors, tech writers, and reviewers. Each chapter has a byline for the individual authors and tech writers. We’d also like to take a moment to thank everyone not listed there.
+
+We would like to thank the following reviewers for providing valuable (and sometimes pointed) feedback: Abe Hassan, Alex Perry, Cara Donnelly, Chris Jones, Cody Smith, Dermot Duffy, Jarrod Todd, Jay Judkowitz, John T. Reese, Liz Fong-Jones, Mike Danese, Murali Suriar, Narayan Desai, Niccolò Cascarano, Ralph Pearson, Salim Virji, Todd Underwood, Vivek Rau, and Zoltan Egyed.
+
+We would like to express our deepest appreciation to the following people for serving as our overall quality bar for this volume. They made substantial contributions throughout the entire volume: Alex Matey, Max Luebbe, Matt Brown, and JC van Winkel.
+
+As the leaders of Google SRE, Benjamin Treynor Sloss and Ben Lutch were this book’s primary executive sponsors within Google; their strong and unwavering belief in a follow-up project that was a worthy companion of the first SRE book was essential to making this book happen.
+
+While the authors and technical writers are specifically acknowledged in each chapter, we’d like to recognize those that contributed to each chapter by providing thoughtful input, discussion, and review. In chapter order, they are:
+
+
+Chapter 2: Javier Kohen, Patrick Eaton, Richard Bondi, Yaniv Aknin
+
+
+Chapter 4: Alex Matey, Clint Pauline, Cody Smith, JC van Winkel, Ola Kłapcińska, Štěpán Davidovič
+
+
+Chapter 5: Alex Matey, Clint Pauline, Cody Smith, Iain Cooke, JC van Winkel, Štěpán Davidovič
+
+
+Chapter 6: Dermot Duffy, James O’Keeffe, Stephen Thorne
+
+
+Chapter 7: Mark Brody
+
+
+Chapter 8: Alex Perry, Alex Hidalgo, David Huska, Sebastian Kirsch, Sabrina Farmer, Steven Carstensen, Liz Fong-Jones, Nandu Shah (Evernote), Robert Holley (Evernote)
+
+
+Chapter 9: Alex Hidalgo, Alex Matey, Alex Perry, Dave Rensin, Matt Brown, Tor Gunnar Houeland, Trevor Strohman
+
+
+Chapter 10: John T. Reese
+
+
+Chapter 11: Daniel E. Eisenbud, Dave Rensin, Dmitry Nefedkin, Dževad Trumić, Edward Wu (Niantic), JC van Winkel, Lucas Pereira, Luke Stone, Matt Brown, Natalia Sakowska, Niall Richard Murphy, Phil Keslin (Niantic), Rita Sodt, Scott Devoid, Simon Donovan, Tomasz Kulczyński
+
+
+Chapter 12: Ivo Krka, Matt Brown, Nicky Nicolosi, Tanya Reilly
+
+
+Chapter 13: Bartosz Janota (Spotify), Cara Donnelly, Chris Farrar, Johannes Rußek (Spotify), Max Charas, Max Luebbe, Michelle Duffy, Nelson Arapé (Spotify), Riccardo Petrocco (Spotify), Rickard Zwahlen (Spotify), Robert Stephenson (Spotify), Steven Thurgood
+
+
+Chapter 14: Charlene Perez, Dave Cunningham, Dave Rensin, JC van Winkel, John Reese, Stephen Thorne
+
+
+Chapter 15: Alex Matey, Bo Shi, Charlene Perez, Dave Rensin, Eric Johnson, Juliette Benton, Lars Wander, Mike Danese, Narayan Desai, Niall Richard Murphy, Štěpán Davidovič, Stephen Thorne
+
+
+Chapter 16: Alex Matey, Liz Fong-Jones, Max Luebbe
+

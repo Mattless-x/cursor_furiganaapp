@@ -1,0 +1,191 @@
+=== The Site Reliability Workbook ===
+=== Chunk 87/100 ===
+
+
+
+
+Travel
+
+
+In addition to the travel required to keep geographically split teams healthy (see the section “Finance: Travel budget”), consider funding for:
+
+
+
+ 
+ Building internal company communities of interest that include SREs from a number of offices. Such groups can largely collaborate via email and video conferencing, but meet face-to-face at least annually.
+
+ 
+
+ 
+ Attending and presenting at industry-wide SRE and SRE-related conferences to broaden knowledge, learn how other organizations tackle similar problems, and, hopefully, be inspired and energized.
+
+ 
+
+
+
+
+
+
+Launch Coordination Engineering Teams
+
+
+As described in Chapter 27 of our first book, a Launch Coordination Engineering (LCE) team can apply SRE principles to a broader set of product development teams—teams that build services that don’t require the level of attention that merits SRE engagement. Just like any other SRE team, an LCE team should be actively engaged in automating its daily operations. For example, developing standard tooling and frameworks enable product development teams to design, build, and launch their service in a production environment.
+
+
+
+
+
+Production Excellence
+
+
+As the number of SRE teams at your organization grows, a number of best practices will emerge. Every SRE team evolves differently, so evaluating them requires senior SREs with insight into multiple teams.
+
+
+At Google, we run a regular service review called Production Excellence. On a regular basis, senior SRE leaders review every SRE team, assessing them on a number of standard measures (e.g., pager load, error budget usage, project completion, bug closure rates). The review both applauds outstanding performance and provides suggestions for underperforming teams.
+
+
+Experienced SREs are equipped to evaluate nuanced scenarios. For example, it can be challenging to tease out a drop in project completion rate caused by a team merger or split versus genuine team performance issues. If a team is at risk of becoming overwhelmed, the reviewers can and should to use their organizational position to support the team’s leadership in rectifying the situation.
+
+
+
+
+
+SRE Funding and Hiring
+
+
+At Google, we use two practices to make sure that every SRE contributes significant value:
+
+
+
+ 
+ Much of SRE funding comes from the same source as product development team funding. Similar to testing or security, reliability is a core pillar of product development, and is funded as such.
+
+ 
+
+ 
+ In our experience, the supply of SREs is always smaller than the demand for them. This dynamic ensures that we regularly review and prioritize the services that receive SRE support.
+
+ 
+
+
+
+In short, you should have fewer SREs than the organization would like, and only enough SREs to accomplish their specialized work.
+
+
+At Google, the ratio of SREs to engineers on product development teams ranges from around 1:5 (e.g., low-level infrastructure services) to around 1:50 (e.g., consumer-facing applications with a large number of microservices built using standard frameworks). Many services fall in the middle of this range, at a ratio of around 1:10.
+
+
+
+
+
+
+
+Conclusion
+
+
+We believe an organization of any size can implement SRE practices by applying the following three principles:
+
+
+
+ 
+ SRE needs SLOs with consequences.
+
+ 
+
+ 
+ SREs must have time to make tomorrow better than today.
+
+ 
+
+ 
+ SRE teams have the ability to regulate their workload.
+
+ 
+
+
+
+Since Google started talking publicly about SRE, it has grown from Google-specific production practices into a profession practiced in many companies. These principles have often proven true—both over our years of direct experience at scale, and during our more recent experience of working with our customers to adopt SRE practices. Because we’ve seen these practices work both within and outside of Google, we feel these recommendations should prove useful across a range of organizations of different types and sizes.
+
+
+
+1 Bruce W. Tuckman, “Developmental Sequence in Small Groups,” Psychological Bulletin 63, no. 6 (1965): 384–99.
+2 Shylaja Nukala and Vivek Rau, “Why SRE Documents Matter,” ACM Queue (May–June 2018): forthcoming.
+
+Organizational Change Management in SRE
+
+Chapter 21. Organizational Change Management in SRE
+
+
+By Alex Bramley, Ben Lutch, Michelle Duffy, and Nir Tarcic
+
+with Betsy Beyer
+
+
+In the introduction to the first SRE Book, Ben Treynor Sloss describes SRE teams as “characterized by both rapid innovation and a large acceptance of change,” and specifies organizational change management as a core responsibility of an SRE team. This chapter examines how theory can apply in practice across SRE teams. After reviewing some key change management theories, we explore two case studies that demonstrate how different styles of change management have played out in concrete ways at Google.
+
+
+Note that the term change management has two interpretations: organizational change management and change control. This chapter examines change management as a collective term for all approaches to preparing and supporting individuals, teams, and business units in making organizational change. We do not discuss this term within a project management context, where it may be used to refer to change control processes, such as change review or versioning.
+
+
+
+SRE Embraces Change
+
+
+More than 2,000 years ago, the Greek philosopher Heraclitus claimed change is the only constant. This axiom still holds true today—especially in regards to technology, and particularly in rapidly evolving internet and cloud sectors.
+
+
+Product teams exist to build products, ship features, and delight customers. At Google, most change is fast-paced, following a “launch and iterate” approach. Executing on such change typically requires coordination across systems, products, and globally distributed teams. Site Reliability Engineers are frequently in the middle of this complicated and rapidly shifting landscape, responsible for balancing the risks inherent in change with product reliability and availability. Error budgets (see Chapter 2) are a primary mechanism for achieving this balance.
+
+
+
+
+
+Introduction to Change Management
+
+
+Change management as an area of study and practice has grown since foundational work in the field by Kurt Lewin in the 1940s. Theories primarily focus on developing frameworks for managing organizational change. In-depth analysis of particular theories is beyond the scope of this book, but to contextualize them within the realm of SRE, we briefly describe some common theories and how each might be applicable in an SRE-type organization. While the formal processes implicit in these theoretical frameworks have not been applied by SRE at Google, considering SRE activities through the lens of these frameworks has helped us refine our approach to managing change. Following this discussion, we will introduce some case studies that demonstrate how elements of some of these theories apply to change management activities led by Google SRE.
+
+
+
+Lewin’s Three-Stage Model
+
+
+Kurt Lewin’s “unfreeze–change–freeze” model for managing change is the oldest of the relevant theories in this field. This simple three-stage model is a tool for managing process review and the resulting changes in group dynamics. Stage 1 entails persuading a group that change is necessary. Once they are amenable to the idea of change, Stage 2 executes that change. Finally, when the change is broadly complete, Stage 3 institutionalizes the new patterns of behavior and thought. The model’s core principle posits the group as the primary dynamic instrument, arguing that individual and group interactions should be examined as a system when the group is planning, executing, and completing any period of change. Accordingly, Lewin’s work is most useful for planning organizational change at the macro level.
+
+
+
+
+
+McKinsey’s 7-S Model
+
+
+McKinsey’s seven S’s stand for structure, strategy, systems, skills, style, staff, and shared values. Similar to Lewin’s work, this framework is also a toolset for planned organizational change. While Lewin’s framework is generic, 7-S has an explicit goal of improving organizational effectiveness. Application of both theories begins with an analysis of current purpose and processes. However, 7-S also explicitly covers both business elements (structure, strategy, systems) and people-management elements (shared values, skills, style, staff). This model could be useful for a team considering change from a traditional systems administration focus to the more holistic Site Reliability Engineering approach.
+
+
+
+
+
+Kotter’s Eight-Step Process for Leading Change
+
+
+Time magazine named John P. Kotter’s 1996 book Leading Change (Harvard Business School Press) one of the Top 25 Most Influential Business Management Books of all time. Figure 21-1 depicts the eight steps in Kotter’s change management process.
+
+
+
+Figure 21-1. Kotter’s model of change management (source: https://www.kotterinc.com/8-steps-process-for-leading-change/)
+
+
+
+Kotter’s process is particularly relevant to SRE teams and organizations, with one small exception: in many cases (e.g., the upcoming Waze case study), there’s no need to create a sense of urgency. SRE teams supporting products and systems with accelerating growth are frequently faced with urgent scaling, reliability, and operational challenges. The component systems are often owned by multiple development teams, which may span several organizational units; scaling issues may also require coordination with teams ranging from physical infrastructure to product management. Because SRE is often on the front line when problems occur, it is uniquely motivated to lead the change needed to ensure products are available 24/7/365. Much of SRE work (implicitly) embraces Kotter’s process to ensure the continued availability of supported products.
+
+
+
+
+
+The Prosci ADKAR Model
+
+
+The Prosci ADKAR model focuses on balancing both the business and people aspects of change management. ADKAR is an acronym for the goals individuals must achieve for successful organizational change: awareness, desire, knowledge, ability, and reinforcement.
+
+
+In principle, ADKAR provides a useful, thoughtful, people-centric framework. However, its applicability to SRE is limited because operational responsibilities quite often impose considerable time constraints. Proceeding iteratively through ADKAR’s stages and providing the necessary

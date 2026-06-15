@@ -1,0 +1,200 @@
+=== The Site Reliability Workbook ===
+=== Chunk 66/100 ===
+
+
+
+
+Critical Properties and Pitfalls of Configuration Systems
+
+
+Chapter 14 outlined some critical properties of any configuration system. In addition to generic ideal requirements like lightweightness, ease of learning, simplicity, and expressive power, an efficient configuration system must:
+
+
+
+ 
+ Support configuration health, engineer confidence, and productivity via tooling for managing the config files (linters, debuggers, formatters, IDE integration, etc.).
+
+ 
+
+ 
+ Provide hermetic evaluation of configuration for rollbacks and general replayability.
+
+ 
+
+ 
+ Separate config and data to allow for easy analysis of the config and a range of configuration interfaces.
+
+ 
+
+
+
+It is not widely understood that these properties are critical, and arriving at our current understanding was indeed a journey. During this journey, Google invented several configuration systems that lacked these critical properties. We were not alone, either. Despite the great variety of popular configuration systems, it is difficult to find one that does not fall foul of at least one of the following pitfalls.
+
+
+
+Pitfall 1: Failing to Recognize Configuration as a Programming Language Problem
+
+
+If you’re not intentionally designing a language, then it’s highly unlikely the “language” you’ll end up with is a good one.
+
+
+While configuration languages describe data rather than behavior, they still have the other characteristics of programming languages. If our configuration strategy starts with the objective of using a data-only format, programming language features tend to creep through the back door. Rather than remaining a data-only language, the format becomes an esoteric and complex programming language.
+
+
+For example, some systems add a count attribute to the schema of a virtual machine (VM) being provisioned. This attribute is not a property of the VM itself, but instead indicates that you want more than one of them. While useful, this is a feature of a programming language, not a data format, because it requires an external evaluator or interpreter. A classical programming language approach would use logic outside the artifact, such as a for loop or list comprehension, to generate more VMs as required.
+
+
+Another example is a configuration language that accrues string interpolation rules instead of supporting general expressions. The strings appear to be “just data,” although they can actually contain complex code, including data structure operations, checksums, base64 encoding, and so on.
+
+
+The popular YAML + Jinja solution also has drawbacks. Simple pure-data formats such as XML, JSON, YAML, and text-formatted protocol buffers are excellent choices for pure-data use cases. Likewise, textual templating engines such as Jinja2 or Go templates are excellent for HTML templating. But when combined in a configuration language, they become difficult for both humans and tools to maintain and analyze. In all of these cases, this pitfall leaves us with a complex esoteric “language” that isn’t suited to tooling.
+
+
+
+
+
+Pitfall 2: Designing Accidental or Ad Hoc Language Features
+
+
+SREs typically feel configuration usability problems when operating systems at scale. A new language won’t have good tooling support (IDE support, good linters), and developing custom tooling is painful if the language has undocumented or esoteric semantics.
+
+
+Adding ad hoc programming language features to a simple config format over time might create a feature-complete solution, but ad hoc languages are more complex and usually have less expressive power than their formally designed equivalents. They also risk developing gotchas and idiosyncrasies because their authors couldn’t consider the interaction between features ahead of time.
+
+
+Instead of hoping your configuration system won’t grow complex enough to need simple programming constructs, it’s better to consider these requirements at the initial design phase.
+
+
+
+
+
+Pitfall 3: Building Too Much Domain-Specific Optimization
+
+
+The smaller the user base is for a new domain-specific solution, the longer you have to wait to accumulate enough users to justify building tooling. Engineers are unwilling to spend time understanding the language properly because it has little applicability outside this domain. Learning resources like Stack Overflow are less likely to be available.
+
+
+
+
+
+Pitfall 4: Interleaving “Configuration Evaluation” with “Side Effects”
+
+
+Side effects include either making changes to external systems, or consulting out-of-band data sources (DNS, VM IDs, latest build versions) during configuration runs.
+
+
+Systems that allow these side effects violate hermeticity, and also prevent the separation of config from data. In an extreme case, it is impossible to debug your config without spending money by reserving cloud resources. In order to allow separation of config and data, first evaluate the config, then make the resulting data available to the user to analyze, and only then allow for side effects.
+
+
+
+
+
+Pitfall 5: Using an Existing General-Purpose Scripting Language Like Python, Ruby, or Lua
+
+
+This seems like a trivial way to avoid the first four pitfalls, but implementations that use a general-purpose scripting language are heavyweight and/or need intrusive sandboxing to ensure hermeticity. Since general-purpose languages can access the local system, security considerations may also call for sandboxing.
+
+
+Additionally, we can’t assume that the people maintaining configuration will be familiar with all of these languages.
+
+
+The desire to avoid these pitfalls led to the development of reusable domain-specific languages (DSLs) for configuration, such as HOCON, Flabbergast, Dhall, and Jsonnet. We recommend using an existing DSL for configuration. Even if a DSL seems too powerful for your needs, you may need the additional functionality at some point, and you can always restrict the functionality of the language using an in-house style guide.
+
+
+
+A Very Quick Introduction to Jsonnet
+
+
+Jsonnet is a hermetic open source DSL that can be used as a library or command-line tool to provide configuration for any application. It is used widely both inside and outside Google.2
+
+
+The language is designed to be familiar to programmers: it uses Python-like syntax, object orientation, and functional constructs. It is an extension of JSON, meaning that a JSON file is simply a Jsonnet program that outputs itself. Jsonnet is more permissive with quotes and commas than JSON, and supports comments. More importantly, it adds computational constructs.
+
+
+While you don’t need to be particularly familiar with Jsonnet syntax to follow the rest of this chapter, spending just a few moments reading the online tutorial can help orient you.
+
+
+
+
+Note
+There is no dominant configuration language at Google or among our reader base, but we needed to choose some language that allows us to provide examples. This chapter uses Jsonnet to show practical examples of the recommendations we provide in Chapter 14.
+
+
+If you aren’t already committed to a particular configuration language and want to use Jsonnet, you can directly apply the examples in this chapter. In all cases, we’ve done our best to make it as easy as possible for you to abstract the underlying lesson from the code examples.
+
+
+Additionally, some of the examples explore concepts (like Turing completeness) that you might expect to find in a programming book. We have taken great care to dive only as deep as required to explain a subtlety that has actually bitten us in production. In most complex systems—and certainly with respect to configurations—the failures are at the edges.
+
+
+
+
+
+
+
+
+
+Integrating a Configuration Language
+
+
+This section uses Jsonnet to discuss how to integrate a configuration language with the application you need to configure, but the same techniques also transfer to other configuration languages.
+
+
+
+Generating Config in Specific Formats
+
+
+A configuration language might natively output in the correct format. For example, Jsonnet outputs JSON, which is compatible with many applications. JSON is also sufficient for consumers of languages that extend JSON, such as JavaScript, YAML, or HashiCorp’s Configuration Language. If this is your situation, you don’t need to perform any further integration work.
+
+
+For other configuration formats that are not natively supported:
+
+
+
+ 
+ You need to find a way to represent configuration data within the configuration language. Usually, this is not hard because configuration values like maps, lists, strings, and other primitive values are generic and available in all languages.
+
+ 
+
+ 
+ Once this data is represented in the config language, you can use the constructs of that language to reduce duplication (and thus, toil).
+
+ 
+
+ 
+ You need to write (or reuse) a serialization function for the necessary output format. For example, the Jsonnet standard library has functions for outputting INI and XML from its internal JSON-like representation. If configuration data resists representation within the configuration language (for example, a Bash script), you can use basic string templating techniques as a last resort. You can find practical examples at http://bit.ly/2La0zDe.
+
+ 
+
+
+
+
+
+
+Driving Multiple Applications
+
+
+Once you can drive arbitrary existing applications from the config language, you might be able to target several applications from the same config. If your applications use different config formats, you’ll need to perform some conversion work. Once you’re able to generate configuration in the necessary formats, you can easily unify, synchronize, and eliminate repetition across your entire config corpus. Given the prevalence of JSON and JSON-based formats, you may not even have to generate different formats—for example, this is true if you use a deployment architecture that uses GCP Deployment Manager, AWS Cloud Formation, or Terraform for base infrastructure, plus Kubernetes for containers.
+
+
+At this point, you can:
+
+
+
+ 
+ Output an Nginx web server configuration and a Terraform firewall configuration from a single Jsonnet evaluation that defines the port only once.
+
+ 
+
+ 
+ Configure your monitoring dashboards, retention policies, and alert notification pipelines from the same files.
+
+ 
+
+ 
+ Manage the performance tradeoff between VM startup scripts and disk image-building scripts by moving initialization commands from one list to another.
+
+ 
+
+
+
+After you

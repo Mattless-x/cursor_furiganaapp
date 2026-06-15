@@ -1,0 +1,324 @@
+=== The Site Reliability Workbook ===
+=== Chunk 86/100 ===
+
+
+
+
+Parity: Distributing Work Between Offices and Avoiding a “Night Shift”
+
+
+Often, one of two sister SRE teams is colocated (or at least in the same time zone) with the product development team (we’ll call this “Office 1”). If this is the case, be vigilant to ensure that the team that is not colocated (“Office 2”) doesn’t become a night shift that has little contact with the product development team, takes more than its fair share of toil, or is assigned only the less interesting or impactful projects.
+
+
+The workloads of the two offices will have some natural differences:
+
+
+
+ 
+ Your service likely has a daily peak, and one office will be on-call during that peak. As a result, the on-call experience of the two sites will differ.
+
+ 
+
+ 
+ Your development process will produce new releases with a particular cadence. One office will likely take more of the burden associated with rollouts and rollbacks.
+
+ 
+
+ 
+ Office 1 is more likely to be interrupted during their working day by questions from the product development team.
+
+ 
+
+ 
+ It’s easier for Office 1 to undertake project work associated with major releases. Conversely, it’s easier for Office 2 to undertake project work decoupled from immediate product goals.
+
+ 
+
+
+
+You can help maintain balance by using the following practices:
+
+
+
+ 
+ Balance the on-call load between offices. Designate a higher percentage of tickets to the office that fields the lower percentage of pages.
+
+ 
+
+ 
+ Associate development areas with SRE teams in a particular office. This could be short term (e.g., according to project) or longer term (e.g., according to service). Otherwise, the product development team will likely lean on Office 1, and not effectively engage with SREs in Office 2.
+
+ 
+
+ 
+ Assign a higher percentage of internal service improvement projects (that are likely to require less involvement with the product development team) to Office 2.
+
+ 
+
+ 
+ Spread the most interesting and impactful projects fairly between the two offices.
+
+ 
+
+ 
+ Maintain a similar team size and seniority mix between the two offices.
+
+ 
+
+ 
+ Split projects across the two sites to deliberately foster interoffice interactions between SREs. While running a major project from a single office might gain some efficiencies, splitting projects across the two sites both helps spread knowledge and builds trust between offices.
+
+ 
+
+ 
+ Allow engineers to travel to the other office regularly. This enables creating better rapport and, hence, willingness to do work for the other side.
+
+ 
+
+
+
+
+
+
+Placement: What about having three shifts?
+
+
+Our attempts at splitting SRE teams across three sites resulted in various issues:
+
+
+
+ 
+ It is impossible to have an interoffice production meeting that all SREs can attend (see Chapter 31 of our first book).
+
+ 
+
+ 
+ It is harder to ensure parity of knowledge, capability, and operational response across three offices.
+
+ 
+
+ 
+ If all on-call duties take place only during office hours, there’s less of an incentive to automate low-level toil and low-value pages. Being the hero that fixes easy problems is fun during office hours. But if it has some amount of personal cost, the motivation to make sure it never happens again is sharp and immediate.
+
+ 
+
+
+
+
+
+
+Timing: Should both halves of the team start at the same time?
+
+
+You might spin up sister teams using any of the following models:
+
+
+
+ 
+ Both halves start at the same time.
+
+ 
+
+ 
+ Set up the site that is colocated with the product development team first. This allows SREs to get involved earlier in the product lifecycle.
+
+ 
+
+ 
+ Set up the site that is not colocated with the product development team first or, if a service has been in production for some time, the SRE team and the product development team can share the pager.
+
+ 
+
+ 
+ Start making changes according to where the right people are at the right time.
+
+ 
+
+
+
+
+
+
+Finance: Travel budget
+
+
+It is very important to create opportunities for high-quality interactions between the two halves of the team. Despite the effectiveness of video conferencing for day-to-day meetings, we’ve found that regular face-to-face interactions go a long way toward facilitating healthy relationships and trust. We recommend that:
+
+
+
+ 
+ Every SRE, product development manager, and technical lead in Site 1 visit Site 2 annually (at a minimum), and vice versa.
+
+ 
+
+ 
+ Every SRE in a management or technical leadership role at Site 1 visit Site 2 at least twice a year, and vice versa.
+
+ 
+
+ 
+ All SREs convene at least once a year.
+
+ 
+
+
+
+
+
+
+Leadership: Joint ownership of a service
+
+
+If you have multiple SRE sites, you likely have decision makers in each office. These parties should meet regularly face-to-face and by video conference. Only by establishing a strong personal relationship can they:
+
+
+
+ 
+ Debate solutions to challenges that the team faces.
+
+ 
+
+ 
+ Resolve differences of opinion and agree on a joint path forward.
+
+ 
+
+ 
+ Advocate on behalf of each other’s team (to prevent an “us versus them” mentality).
+
+ 
+
+ 
+ Support the health of each other’s team.
+
+ 
+
+
+
+
+
+
+
+
+
+
+Suggested Practices for Running Many Teams
+
+
+New challenges arise as your organization accumulates more SREs and SRE teams. For example, you’ll have to:
+
+
+
+ 
+ Ensure you provide SREs with the career opportunities they need.
+
+ 
+
+ 
+ Encourage consistency of practices and tooling.
+
+ 
+
+ 
+ Deal with services that don’t justify a full SRE engagement.
+
+ 
+
+
+
+This section describes a number of the practices that we have adopted at Google to deal with these concerns. Depending on the specifics of your organization, some or many may work for you too.
+
+
+
+Mission Control
+
+
+Google’s Mission Control program gives engineers from product development teams the opportunity to spend six months embedded in an SRE team. We typically match these engineers to SRE teams working in a distinctly different area from their expertise. The software engineer is trained in production systems and practices and eventually goes on-call for that service. After six months, some engineers decide to stay in SRE; others return to their old teams with a much better appreciation for the production environment and SRE practices. SRE teams benefit from additional engineering resources and gain valuable insight into gaps and inaccuracies in training material and documentation.
+
+
+
+
+
+SRE Exchange
+
+
+Google’s SRE Exchange program lets an SRE spend a week working alongside a different SRE team. The visiting SRE observes how the host team works and shares practices from their home team that might be useful to the host team. At the end of the exchange, the visiting SRE writes a trip report describing their week, their observations, and their recommendations for both teams. This program is useful at Google because our SRE teams are highly specialized.
+
+
+
+
+
+Training
+
+
+Training is critical to SRE’s ability to operate systems. While most of this is delivered in-team (see “Training roadmap” in Chapter 8), consider establishing a standard training curriculum for all SREs. At Google, all new SREs attend SRE EDU, an immersive weeklong training that introduces key concepts, tooling, and platforms that almost all SREs work with. This provides a baseline level of knowledge across all new SREs, and simplifies team-specific and service-specific training objectives. The SRE EDU team also runs a second series of classes a few months later that covers the common tools and processes that we use for managing major incidents. Our performance management process specifically recognizes SREs who facilitate this training.
+
+
+
+
+
+Horizontal Projects
+
+
+Because SRE teams are tightly aligned with a set of services, there is a temptation for teams to build proprietary solutions to deal with the challenges they encounter—for example, monitoring, software rollout, and configuration tools. This can lead to significant duplication of efforts across teams. While there is value in allowing a number of solutions to compete for “market” adoption, at some point, it makes sense to converge upon a standard solution that:
+
+
+
+ 
+ Meets most teams’ requirements
+
+ 
+
+ 
+ Provides a stable and scalable platform upon which the next layer of innovation can be built
+
+ 
+
+
+
+Google approaches these efforts by using horizontal teams, which are often staffed by experienced SREs. These horizontal teams build and run a standard solution and partner with other SRE teams to ensure smooth adoption. (For more information on horizontal software development, see “Case Study 2: Common Tooling Adoption in SRE” in Chapter 21.)
+
+
+
+
+
+SRE Mobility
+
+
+Google does its best to ensure that engineers actively want to be part of their respective teams. To this end, we make sure that SREs are able to (and aware that they’re able to) transfer between teams. Assuming there are no performance issues, SREs are free to transfer to other SRE teams with open headcount. SREs who also passed our hiring bar for software engineer roles are free to transfer to product development teams (see http://bit.ly/2xyQ4aD).
+
+
+This level of mobility is very healthy for individuals and teams for a number of reasons:
+
+
+
+ 
+ Engineers are able to identify and occupy roles of interest.
+
+ 
+
+ 
+ If personal circumstances change and on-call responsibilities become impractical, SREs can explore opportunities on teams with less demanding on-call duties. They can obtain this information by talking to other teams and reviewing team on-call stats.
+
+ 
+
+ 
+ SREs who move between teams broaden the experience of the teams they join.
+
+ 
+
+ 
+ SREs who move between offices help build or maintain cultural consistency between different offices.
+
+ 
+
+ 
+ SREs are not compelled to work on services that are unhealthy, or for managers who aren’t supportive of their personal development.
+
+ 
+
+
+
+This policy also has the side effect of keeping your SRE managers focused on healthy and happy services and teams.
+
+

@@ -1,0 +1,178 @@
+=== The Site Reliability Workbook ===
+=== Chunk 16/100 ===
+
+
+
+
+Using VALET in Testing
+
+
+Since we were developing an SRE culture at the same time, we found that VALET supported our destructive testing (chaos engineering) automation in our staging environments. With the TPS Reports framework in place, we could automatically run destructive tests and record the impact (or hopefully lack of impact) to the service’s VALET data.
+
+
+
+
+
+Future Aspirations
+
+
+With 800 services (and growing) collecting VALET data, we have a lot of useful operational data at our disposal. We have several aspirations for the future.
+
+
+Now that we are effectively collecting SLOs, we want to use this data to take action. Our next step is an error budget culture similar to Google, whereby a team stops pushing new features (other than improvements to reliability) when a service is out of SLO. To protect the velocity demands of our business, we’ll have to strive to find a good balance between the SLO reporting time frame (weekly or monthly) and the frequency of SLOs being breached. Like many companies adopting error budgets, we’re weighing the pros and cons of rolling windows versus fixed windows.
+
+
+We want to further refine VALET to track detailed endpoints and the consumers of a service. Currently, even if a particular service has multiple endpoints, we track VALET only across the entire service. As a result, it’s difficult to distinguish between different operations (for example, a write to the catalog versus a read to the catalog; while we monitor and alert on these operations separately, we don’t track SLOs). Similarly, we’d also like to differentiate VALET results for different consumers of a service.
+
+
+Although we currently track latency SLOs at the web-serving layer, we’d also like to track a latency SLO for end users. This measurement would capture how factors like third-party tags, internet latency, and CDN caching affect how long it takes a page to start rendering and to complete rendering.
+
+
+We’d also like to extend VALET data to application deployments. Specifically, we’d like to use automation to verify that VALET is within tolerance before rolling out a change to the next server, zone, or region.
+
+
+We’ve started to collect information about service dependencies, and have prototyped a visual graph that shows where we’re not hitting VALET metrics along a call tree. This type of analysis will become even easier with emerging service mesh platforms.
+
+
+Finally, we strongly believe that the SLOs for a service should be set by the business owner of the service (often called a product manager) based on its criticality to the business. At the very least, we want the business owners to set the requirement for a service’s uptime and use that SLO as a shared objective between product management and development. Although technologists found VALET intuitive, the concept wasn’t so intuitive for product managers. We are striving to simplify the concepts of VALET using terminology relevant to them: we’ve both simplified the number of choices for uptime and provided example metrics. We also emphasize the significant investment required to move from one level to another. Here’s an example of simplified VALET metrics we might provide:
+
+
+
+ 
+ 99.5%: Applications that are not used by store associates or an MVP of a new service
+
+ 
+
+ 
+ 99.9%: Adequate for the majority of nonselling systems at THD
+
+ 
+
+ 
+ 99.95%: Selling systems (or services that support selling systems)
+
+ 
+
+ 
+ 99.99%: Shared infrastructure services
+
+ 
+
+
+
+Casting metrics in business terms and sharing a visible goal (an SLO!) between product and development will reduce a lot of misaligned expectations about reliability often seen in large companies.
+
+
+
+
+
+Summary
+
+
+Introducing a new process, let alone a new culture, to a large company takes a good strategy, executive buy-in, strong evangelism, easy adoption patterns, and—most of all—patience. It might take years for a significant change like SLOs to become firmly established at a company. We’d like to emphasize that The Home Depot is a traditional enterprise; if we can introduce such a large change successfully, you can too. You also don’t have to approach this task all at once. While we implemented SLOs piece by piece, developing a comprehensive evangelism strategy and clear incentive structure facilitated a quick transformation: we went from 0 to 800 SLO-supported services in less than a year.
+
+
+
+
+
+
+
+Conclusion
+
+
+SLOs and error budgets are powerful concepts that help address many different problem sets. These case studies from Evernote and The Home Depot present very real examples of how implementing an SLO culture can bring product development and operations closer together. Doing so can facilitate communication and better inform development decisions. It will ultimately result in better experiences for your customers—whether those customers are internal, external, humans, or other services.
+
+
+These two case studies highlight that SLO culture is an ongoing process and not a one-time fix or solution. While they share philosophical underpinnings, THD’s and Evernote’s measurement styles, SLIs, SLOs, and implementation details are markedly different. Both stories complement Google’s own take on SLOs by demonstrating that SLO implementation need not be Google-specific. Just as these companies tailored SLOs to their own unique environments, so can other companies and organizations.
+
+
+
+1 But that’s a story for another book—see more details at http://bit.ly/2spqgcl.
+2 Training options range from a one-hour primer to half-day workshops to intense four-week immersion with a mature SRE team, complete with a graduation ceremony and a FiRE badge.
+3 As made famous in the 1999 film Office Space.
+
+Monitoring
+
+Chapter 4. Monitoring
+
+
+By Jess Frame, Anthony Lenton, Steven Thurgood,
+
+Anton Tolchanov, and Nejc Trdin
+
+with Carmela Quinito
+
+
+Monitoring can include many types of data, including metrics, text logging, structured event logging, distributed tracing, and event introspection. While all of these approaches are useful in their own right, this chapter mostly addresses metrics and structured logging. In our experience, these two data sources are best suited to SRE’s fundamental monitoring needs.
+
+
+At the most basic level, monitoring allows you to gain visibility into a system, which is a core requirement for judging service health and diagnosing your service when things go wrong. Chapter 6 in the first SRE book provides some basic monitoring definitions and explains that SREs monitor their systems in order to:
+
+
+
+ 
+ Alert on conditions that require attention.
+
+ 
+
+ 
+ Investigate and diagnose those issues.
+
+ 
+
+ 
+ Display information about the system visually.
+
+ 
+
+ 
+ Gain insight into trends in resource usage or service health for long-term planning.
+
+ 
+
+ 
+ Compare the behavior of the system before and after a change, or between two groups in an experiment.
+
+ 
+
+
+
+The relative importance of these use cases might lead you to make tradeoffs when selecting or building a monitoring system.
+
+
+This chapter talks about how Google manages monitoring systems and provides some guidelines for questions that may arise when you’re choosing and running a monitoring system.
+
+
+
+Desirable Features of a Monitoring Strategy
+
+
+When choosing a monitoring system, it is important to understand and prioritize the features that matter to you. If you’re evaluating different monitoring systems, the attributes in this section can help guide your thinking about which solution(s) best suits your needs. If you already have a monitoring strategy, you might consider using some additional capabilities of your current solution. Depending on your needs, one monitoring system may address all of your use cases, or you may want to use a combination of systems.
+
+
+
+Speed
+
+
+Different organizations will have different needs when it comes to the freshness of data and the speed of data retrieval.
+
+
+Data should be available when you need it: freshness impacts how long it will take your monitoring system to page you when something goes wrong. Additionally, slow data might lead you to accidentally act on incorrect data. For example, during incident response, if the time between cause (taking an action) and effect (seeing that action reflected in your monitoring) is too long, you might assume a change had no effect or deduce a false correlation between cause and effect. Data more than four to five minutes stale might significantly impact how quickly you can respond to an incident.
+
+
+If you’re selecting a monitoring system based upon this criteria, you need to figure out your speed requirements ahead of time. Speed of data retrieval is mostly a problem when you’re querying vast amounts of data. It might take some time for a graph to load if it has to tally up a lot of data from many monitored systems. To speed up your slower graphs, it’s helpful if the monitoring system can create and store new time series based on incoming data; then it can precompute answers to common queries.
+
+
+
+
+
+Calculations
+
+
+Support for calculations can span a variety of use cases, across a range of complexities. At a minimum, you’ll probably want your system to retain data over a multimonth time frame. Without a long-term view of your data, you cannot analyze long-term trends like system growth. In terms of granularity, summary data (i.e., aggregated data that you can’t drill down into) is sufficient to facilitate growth planning. Retaining all detailed individual metrics may help with answering questions like, “Has this unusual behavior happened before?” However, the data might be expensive to store or impractical to retrieve.
+
+
+The metrics you retain about events or resource consumption should ideally be monotonically incrementing counters. Using counters, your monitoring system can calculate windowed functions over time—for example, to report the rate of requests per second from that counter. Computing these rates over a longer window (up to a month) allows you to implement the building blocks for SLO burn-based alerting (see Chapter 5).
+
+
+Finally, support for a more complete range of statistical functions can be useful because trivial operations may mask bad behavior. A monitoring system that supports computing percentiles (i.e., 50th, 95th, 99th percentiles) when recording latency will let you see if 50%, 5%, or 1% of your requests are too slow, whereas the arithmetic mean can only tell you—without speci

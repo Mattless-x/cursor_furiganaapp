@@ -1,0 +1,174 @@
+=== The Site Reliability Workbook ===
+=== Chunk 97/100 ===
+
+Lewin’s three-stage model for managing change, Lewin’s Three-Stage Model
+limited audience in bad postmortem example, Limited audience
+limited availability phase (service lifecycle), SRE engagement in, Phase 3: Limited Availability
+line-card repairdesign first effort, Saturn line-card repair, Design First Effort: Saturn Line-Card Repair
+Saturn automated line-card repair workflow, Implementation
+Saturn vs. Jupiter line-card repair, Implementation
+workflow before automation, Background
+
+linters, Configuration syntax
+live version, Our Example Setup
+loadartificial generation of, Artificial Load Generation
+bugs manifesting only at specific levels of load, New bugs
+load-based autoscaling, Combining Strategies to Manage Load
+testing, Preexisting bugs
+
+load balancer monitoring, API and HTTP server availability and latency
+load balancingcombining strategies to manage load, Combining Strategies to Manage Load-Case Study 2: When Load Shedding Attacksprecautions with, Lessons learned
+
+for priority items in data processing pipelines, Data isolation/load balancing
+Google Cloud, Google Cloud Load Balancing-Future-proofingcase study, Pokémon GO on GCLB, Case Study 1: Pokémon GO on GCLB-Future-proofing
+GCLB, high availability with, GCLB: High Availability
+GCLB, low latency with, GCLB: Low Latency
+Global Software Load Balancer (GSLB), Global Software Load Balancer
+Google Front End, Google Front End
+Maglev load balancer, Maglev
+using anycast, Anycast
+
+task-level, using with autoscaling on stateful systems, Working with Stateful Systems
+using with autoscaling, Handling Unhealthy Machines
+
+load shedding, New bugs, Combining Strategies to Manage Loadcase study, when load shedding attacks, Case Study 2: When Load Shedding Attacks-Conclusionprecautions with load shedding, Lessons learned
+
+LogJoiner (AdWords example), LogJoinerscaling, calculations, Calculations
+sharded, Sharded LogJoiner
+
+logs, Sources of Monitoring Datachoosing between log-based and metrics-based monitoring systems, Problem
+logging change information, Identification delay
+logs-based monitoring systems, Sources of Monitoring Data
+
+long term goals (SRE team), Setting Ground Rules
+LOW (availability) requests, Alerting at Scale
+low-traffic services, error budget alerting on, Low-Traffic Services and Error Budget Alerting-Extreme Availability Goalscombining services, Combining Services
+generating artificial traffic, Generating Artificial Traffic
+lowering the SLO or increasing the window, Lowering the SLO or Increasing the Window
+making service and infrastructure changes, Making Service and Infrastructure Changes
+
+M
+machine learning, Machine Learningexample machine learning data processing pipeline, Machine Learning
+
+Maglev, Anycastimplementing stabilized anycast with, Stabilized anycast
+packet delivery using consistent hashing and connection tracking, Maglev
+
+major incident response at PagerDuty, Major incident response at PagerDuty
+manual overrides and kill switches in autoscaling, Including Kill Switches and Manual Overrides
+MapReduce, evaluating for use in AdWords distributed system, MapReduce
+maturity matrix for data processing pipeline, Pipeline maturity matrix-Pipeline Failures: Prevention and Response
+McKinsey’s 7-S change management model, McKinsey’s 7-S Model
+mean time to repair (MTTR), Move Fast by Reducing the Cost of Failure
+measurementsdecision on what/how to measure for SLOs at Evernote, Introduction of SLOs: A Journey in Progress
+effectiveness of automated tasks, Use Feedback to Improve
+end-to-end measurement for data processing pipeline SLOs, End-to-end measurement
+importance in DevOps, Measurement Is Crucial
+in DevOps and SRE, Compare and Contrast
+in SRE with customers, Step 3: Measure and Renegotiate
+measurability in action items in postmortems, Concrete action items
+measuring the SLIs, Measuring the SLIs-Using the SLIs to Calculate Starter SLOs
+measuring toil, Measuring Toil-Measuring Toil, Identify and Measure Toil
+metrics for Home Depot services, The SLO Culture Project
+sources of, for API and HTTP sever availability and latency SLI, API and HTTP server availability and latency
+with service level indicators (SLIs), What to Measure: Using SLIs
+
+meeting in person to resolve issues, Meet in person (or as close to it as possible) to resolve issues
+metrics, Sources of Monitoring Data(see also measurements)
+choosing between metrics-based and logs-based monitoring systems, Problem
+collecting in canary deployments, time limits on, Requirements on Monitoring Data
+establishing to evaluate team workload, Protect yourself in the future
+indicating work overload, Recognizing the Symptoms of Overload
+metric-based monitoring system, Sources of Monitoring Data
+quantifiable, in good postmortem example, Clarity
+restructuring at Evernote for cloud datacenters, Restructuring our monitoring and metrics
+selecting and evaluating for canary deployments, Selecting and Evaluating Metrics-Use a Gradual Canary for Better Metric Selection
+selection for canarying in noninteractive systems, Canarying in Noninteractive Systems
+visible and useful, from monitoring system, Metrics with Purpose-Implementing Purposeful Metricsdependencies, Dependencies
+implementing purposeful metrics, Implementing Purposeful Metrics
+intended changes to your service, Intended Changes
+on resource usage saturation, Saturation
+status of served traffic, Status of Served Traffic
+
+microservicescombining for low-traffic services and error budget alerting, Combining Services
+limiting how much an SRE team can accomplish, SRE Engagement Model
+running hundreds on a shared platform, case study, Background
+using microservice approach to creating data processing pipelines, Using the microservice approach to creating pipelines
+
+migrations, Migrationsautomation in filer-backed home directory decommissioning, Archiving and migration automation
+
+Mission Control program (SRE teams), Mission Control
+mistakes, handling appropriately, Handling Mistakes Appropriately
+mitigation delays, reducing, Mitigation delay
+mitigation in incident response, What could have been handled better?prioritizing mitigation above all else, What could have been handled better?
+
+mobility for SREs, SRE Mobility
+Moira portal, Moira Portal
+monitoring, Monitoring-Conclusionauditing and building shared dashboards in SRE with customers, Step 2: Audit the Monitoring and Build Shared Dashboards
+calculating SLOs from data, Introduction of SLOs: A Journey in Progress
+choosing between monitoring systems, examples, Examples
+covering in interviews with SREs, Finding Your First SRE
+data collection for causes of on-call paging, Data quality
+decisions on reliability and, Your Users, Not Your Monitoring, Decide Your Reliability
+desirable features of monitoring strategy, Desirable Features of a Monitoring Strategy-Alertsalerts, Alerts
+calculations support, Calculations
+interfaces for data display, Interfaces
+speed of data retrieval, Speed
+
+for data processing pipeline, Pipeline maturity matrix
+implementation in common tooling adoption in SRE case study, Implementation: Monitoring
+managing monitoring systems, Managing Your Monitoring System-Prefer Loose Couplingencouraging consistency, Encourage Consistency
+loose coupling of components, Prefer Loose Coupling
+treating configuration as code, Treat Your Configuration as Code
+
+of release pipeline, Release Engineering Principles
+or prevention fixes for pager alerts, Rigor of follow-up
+providing visible and useful metrics, Metrics with Purpose-Implementing Purposeful Metricsimplementing purposeful metrics, Implementing Purposeful Metrics
+on dependencies, Dependencies
+on resource usage saturation, Saturation
+status of served traffic, Status of Served Traffic
+
+requirements in canary evaluation, Requirements on Monitoring Data
+restructuring at Evernote for cloud datacenters, Restructuring our monitoring and metrics
+sources of data, Sources of Monitoring Data
+system monitoring in Spotify case study, System monitoring
+testing alerting logic, Testing Alerting Logic
+
+Moonwalk, Moonwalk
+multidatacenter design (AdWords example), Multidatacenterevaluating dataflow, Evaluation
+scaling, calculations for, Calculations
+
+Murphy-Beyer effect, Automate This Year’s Job Away
+mutations, idempotent and two-phase, Idempotent and Two-Phase Mutations
+
+N
+NALSD (see non-abstract large system design)
+negative acknowledgments (NACKs), Google Front End
+NFS/CIFS protocols, Background
+non-abstract large system design (NALSD), Introducing Non-Abstract Large System Design-Conclusionabout, What Is NALSD?
+AdWords example, AdWords Example-Evaluationdesign process, Design Process
+distributed system, designing, Distributed System-Evaluation
+initial requirements, Initial Requirements
+running application on one machine, One Machine
+
+key questions in design iterations, Conclusion
+why non-abstract, Why “Non-Abstract”?
+
+noninteractive systems, canarying in, Canarying in Noninteractive Systems
+norming (SRE teams), Norming
+NO_SLO requests, Alerting at Scale
+
+O
+Omega, Background
+on-call, On-Call-Conclusionactions in incident response, Incident Response Training
+balancing between geographically split SRE teams, Parity: Distributing Work Between Offices and Avoiding a “Night Shift”
+example setup within Google, Example On-Call Setups Within Google and Outside Google-Afterword
+example setups, Evernote case study, Moving our on-prem infrastructure to the cloud-Practical Implementation Details
+flexibility in, On-Call Flexibility-Plan for part-time work schedulesscenario, a change in personal circumstances, Scenario: A change in personal circumstances-Plan for part-time work schedules
+
+pager load, Anatomy of Pager Load-Vigilanceappropriate response times for pages, Anatomy of Pager Load
+contributors to high pager load, Pager load inputs
+scenario, a team in overload, Scenario: A team in overload
+
+recap from first SRE book, Recap of “Being On-Call” Chapter of First SRE Book
+team dynamics, On-Call Team Dynamics-Proposal two: Improve team relationsscenario, a survive the week culture, Scenario: A culture of “survive the week”-Proposal two: Improve team relations
+

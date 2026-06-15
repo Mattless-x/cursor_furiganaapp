@@ -1,0 +1,201 @@
+=== The Site Reliability Workbook ===
+=== Chunk 40/100 ===
+
+ng checked the day’s release against the timing of the alerts, and determined that the day’s release did not cause the incident. He then started a working document1 to collect notes. He suggested that Zara escalate the incident to the infrastructure, cloud networking, and compute engine teams to possibly eliminate those areas as root causes. As a result of Zara’s escalation, additional people joined the incident response:
+
+
+
+ 
+ The developer lead for GKE nodes
+
+ 
+
+ 
+ Cloud Networking on-call
+
+ 
+
+ 
+ Compute Engine on-call
+
+ 
+
+ 
+ Herais, another Seattle SRE
+
+ 
+
+
+
+At 9:10 a.m., the incident channel had a dozen participants. The incident was 2.5 hours old, with no root cause and no mitigation. Communication was becoming a challenge. Normally, on-call handover from London to Seattle occurred at 10 a.m., but Zara decided to hand over incident command to Il-Seong before 10 a.m., since he had more experience with IMAG.
+
+
+As Incident Commander, Il-Seong set up a formal structure to address the incident. He then designated Zara as Ops Lead and Herais as Communications (Comms) Lead. Rohit remained the External Communications Lead. Herais immediately sent an “all hands on deck” email to several GKE lists, including all developer leads, and asked experts to join the incident response.
+
+
+So far, the incident responders knew the following:
+
+
+
+ 
+ Cluster creation failed where nodes attempted to register with the master.
+
+ 
+
+ 
+ The error message indicated the certificate signing module as the culprit.
+
+ 
+
+ 
+ All cluster creation in Europe was failing; all other continents were fine.
+
+ 
+
+ 
+ No other GCP services in Europe were seeing network or quota problems.
+
+ 
+
+
+
+Thanks to the call for all hands on deck, Puanani, a GKE Security team member, joined the effort. She noticed the certificate signer was not starting. The certificate signer was trying to pull an image from DockerHub, and the image appeared to be corrupted. Victoria (the on-call GKE developer) ran Docker’s pull command for the image in two geographic locations. It failed when it ran on a cluster in Europe and succeeded on a cluster in the US. This indicated that the European cluster was the problem. At 9:56 a.m., the team had identified a plausible root cause.
+
+
+Because DockerHub was an external dependency, mitigation and root causing would be especially challenging. The first option for mitigation was for someone at Docker to quickly fix the image. The second option was to reconfigure the clusters to fetch the image from a different location, such as Google Container Registry (GCR), Google’s secure image hosting system. All the other dependencies, including other references to the image, were located in GCR.
+
+
+Il-Seong assigned owners to pursue both options. He then delegated a team to investigate fixing the broken cluster. Discussion became too dense for IRC, so detailed debugging moved to the shared document, and IRC became the hub for decision making.
+
+
+For the second option, pushing a new configuration meant rebuilding binaries, which took about an hour. At 10:59 a.m., when the team was 90% done rebuilding, they discovered another location that was using the bad image fetch path. In response, they had to restart the build.
+
+
+While the engineers on IRC worked on the two mitigation options, Tugay, an SRE, had an idea. Instead of rebuilding the configuration and pushing it out (a cumbersome and risky process), what if they intercepted Docker’s pull requests and substituted the response from Docker with an internal cached image? GCR had a mirror for doing precisely this. Tugay reached out to contacts on GCR’s SRE team, and they confirmed that the team could set --registry-mirror=https://mirror.gcr.io on the Docker configuration. Tugay started setting up this functionality and discovered that the mirror was already in place!
+
+
+At 11:29 a.m., Tugay reported to IRC that these images were being pulled from the GCR mirror, not DockerHub. At 11:37 a.m., the Incident Commander paged GCR on-call. At 11:59 a.m., GCR on-call purged the corrupt image from their European storage layer. By 12:11 p.m., all European zones had fallen to 0% error.
+
+
+The outage was over. All that remained was cleanup, and writing a truly epic postmortem.
+
+
+CreateCluster had failed in Europe for 6 hours and 40 minutes before it was fixed. In IRC, 41 unique users appeared throughout the incident, and IRC logs stretched to 26,000 words. The effort spun up seven IMAG task forces at various times, and as many as four worked simultaneously at any given time. On-calls were summoned from six teams, not including those from the “all hands on deck” call. The postmortem contained 28 action items.
+
+
+
+
+
+Review
+
+
+The GKE CreateCluster outage was a large incident by anyone’s standards. Let’s explore what went well, and what could have been handled better.
+
+
+
+What went well?
+
+
+The team had several documented escalation paths and was familiar with incident response tactics. Zara, the GKE on-call, quickly verified that the impact was affecting actual customers. She then used an incident management system prepared beforehand to bring in Rohit, who communicated the outage to customers.
+
+
+
+
+
+What could have been handled better?
+
+
+The service itself had some areas of concern. Complexity and dependence on specialists were problematic. Logging was insufficient for diagnosis, and the team was distracted by the corruption on DockerHub, which was not the real issue.
+
+
+At the beginning of the incident, the Incident Commander didn’t put a formal incident response structure in place. While Zara assumed this role and moved the conversation to IRC, she could have been much more proactive in coordinating information and making decisions. As a result, a handful of first responders pursued their own investigations without coordination. Il-Seong put a formal incident response structure in place two hours after the first page.
+
+
+Finally, the incident revealed a gap in GKE’s disaster readiness: the service didn’t have any early generic mitigations that would reduce user pain. Generic mitigations are actions that first responders take to alleviate pain, even before the root cause is fully understood. For example, responders could roll back a recent release when an outage is correlated with the release cycle, or reconfigure load balancers to avoid a region when errors are localized. It’s important to note that generic mitigations are blunt instruments and may cause other disruptions to the service. However, while they may have broader impact than a precise solution, they can be put in place quickly to stop the bleeding while the team discovers and addresses the root cause.
+
+
+Let’s look at the timeline of this incident again to see where a generic mitigation might have been effective:
+
+
+
+ 
+ 7 a.m. (Assessed impact). Zara confirmed that users were affected by the outage.
+
+ 
+
+ 
+ 9:56 a.m. (Found possible cause). Puanani and Victoria identified a rogue image.
+
+ 
+
+ 
+ 10:59 a.m. (Bespoke mitigation). Several team members worked on rebuilding binaries to push a new configuration that would fetch images from a different location.
+
+ 
+
+ 
+ 11:59 a.m. (Found root cause and fixed the issue). Tugay and GCR on-call disabled GCR caching and purged a corrupt image from their European storage layer.
+
+ 
+
+
+
+A generic mitigation after step 2 (found possible cause) would have been very useful here. If the responders had rolled back all images to a known good state once they discovered the issue’s general location, the incident would have been mitigated by 10 a.m. To mitigate an incident, you don’t have to fully understand the details—you only need to know the location of the root cause. Having the ability to mitigate an outage before its cause is fully understood is crucial for running robust services with high availability.
+
+
+In this case, the responders would have benefited from some sort of tool that facilitated rollbacks. Mitigation tools do take engineering time to develop. The right time to create general-purpose mitigation tools is before an incident occurs, not when you are responding to an emergency. Browsing postmortems is a great way to discover mitigations and/or tools that would have been useful in retrospect, and build them into services so that you can better manage incidents in the future.
+
+
+It’s important to remember that first responders must prioritize mitigation above all else, or time to resolution suffers. Having a generic mitigation in place, such as rollback and drain, speeds recovery and leads to happier customers. Ultimately, customers do not care whether or not you fully understand what caused an outage. What they want is to stop receiving errors.
+
+
+With mitigation as top priority, an active incident should be addressed as follows:
+
+
+
+ 
+ Assess the impact of the incident.
+
+ 
+
+ 
+ Mitigate the impact.
+
+ 
+
+ 
+ Perform a root-cause analysis of the incident.
+
+ 
+
+ 
+ After the incident is over, fix what caused the incident and write a postmortem.
+
+ 
+
+
+
+Afterward, you can run incident response drills to exercise the vulnerabilities in the system, and engineers can work on projects to address these vulnerabilities.
+
+
+
+
+
+
+
+
+
+Case Study 3: Power Outage—Lightning Never Strikes Twice…Until It Does
+
+
+The previous examples showed what can go wrong when you don’t have good incident response strategies in place. The next example illustrates an incident that was successfully managed. When you follow a well-defined and clear response protocol, you can handle even rare or unusual incidents with ease.
+
+
+
+Context
+
+
+Power grid events, such as lightning strikes, cause the power coming into a datacenter facility to vary wildly. Lightning strikes affecting the power grid are rare, but not unexpected. Google protects against sudden, unexpected power outages with backup generators and batteries, which are well tested and known to work in these scenarios.
+
+
+Many of Google’s servers have a large number of disks attached to them, with the disks located on a separate tray above or below the server. These trays have their own uninterruptible power supply (UPS) battery. When a power outage occurs, the backup generators activate but take a few minutes to start. During this period, the backup batteries attached to the servers and disk trays provide power until the backup generators are fully running, thereby preventing power grid events from impacting datacenter operatio

@@ -1,0 +1,242 @@
+=== The Site Reliability Workbook ===
+=== Chunk 79/100 ===
+
+
+
+
+Performing Regular Service Reviews
+
+
+As the decision makers for the service’s future, the SRE and developer team leads responsible for the service should meet face-to-face at least once a year. Meeting more frequently than this can be challenging—for example, because it may involve intercontinental travel. During this meeting, we typically share our roadmaps for the next 12–18 months and discuss new projects and launches.
+
+
+SRE teams sometimes facilitate a retrospective exercise, where the leads discuss what the teams want to stop doing, keep doing, and start doing. Items can appear in more than one area, and all opinions are valid. These sessions need active facilitation because the best results come from full-team participation. This is often rated the most useful session in the service meeting because it yields details that can drive significant service changes.
+
+
+
+
+
+Reassessing When Ground Rules Start to Slip
+
+
+If cooperation in any of the agreed-upon areas (see “Setting Ground Rules”) begins to regress, both developers and SRE need to change priorities to get the service back in shape. We have found that, depending on the urgency, this can mean any of the following:
+
+
+
+ 
+ The teams identify specific engineers who must drop their lower-priority tasks to focus on the regression.
+
+ 
+
+ 
+ Both teams call a “reliability hackathon,” but usual team priorities continue outside of the hackathon days.
+
+ 
+
+ 
+ A feature freeze is declared and the majority of both teams focus on resolving the regression.
+
+ 
+
+ 
+ Technical leadership determines that the reliability of the product is at acute risk, and the teams call an “all hands on deck” response.
+
+ 
+
+
+
+
+
+
+Adjusting Priorities According to Your SLOs and Error Budget
+
+
+The subtle art of crafting a well-defined SLO helps a team prioritize appropriately.  If a service is in danger of missing the SLO or has exhausted the error budget, both teams can work with high priority to get the service back into safety. They can address the situation through both tactical measures (for example, overprovisioning to address traffic-related performance regressions) and more strategic software fixes (such as optimizations, caching, and graceful degradation).
+
+
+If a service is well within SLO and has ample error budget left, we recommend using the spare error budget to increase feature velocity rather than spending overproportional efforts on service improvements.
+
+
+
+
+
+Handling Mistakes Appropriately
+
+
+Humans inevitably make mistakes. Consistent with our postmortem culture, we don’t blame people, and instead focus on system behavior. Your mileage may vary, but we have had success with the following tactics.
+
+
+
+Sleep on it
+
+
+If possible, don’t conduct follow-up conversations when you’re tired or emotions are high. During high-stress situations, people can easily misinterpret tone in written communication like emails. Readers will remember how the words made them feel, not necessarily what was written. When you’re communicating across locations, it’s often worth the time to set up a video chat so that you can see facial expressions and hear the tone of voice that helps disambiguate words.
+
+
+
+
+
+Meet in person (or as close to it as possible) to resolve issues
+
+
+Interactions conducted solely via code reviews or documentation can quickly become drawn out and frustrating. When a behavior or decision from another team is at odds with our expectations, we talk with them about our assumptions and ask about missing context.
+
+
+
+
+
+Be positive
+
+
+Thank people for their positive behaviors. Doing so can be simple—for example, during code reviews, design reviews, and failure scenario training, we ask engineers to call out what was good and explain why. You might also recognize good code comments or thank people for their time when they invest in a rigorous design review.
+
+
+
+
+
+Understand differences in communication
+
+
+Different teams have different internal expectations for how information is disseminated. Understanding these differences can help strengthen relationships.
+
+
+
+
+
+
+
+
+
+Scaling SRE to Larger Environments
+
+
+The scenarios we’ve discussed so far involve a single SRE team, a single developer team, and one service. Larger companies, or even small companies that use a microservices model, may need to scale some or all of these numbers.
+
+
+
+Supporting Multiple Services with a Single SRE Team
+
+
+Because SREs have specialized skills and are a scarce resource, Google generally maintains an SRE-to-developer ratio of < 10%. Therefore, one SRE team commonly works with multiple developer teams in their product area (PA).
+
+
+If SREs are scarce relative to the number of services that merit SRE support, an SRE team can focus their efforts on one service, or on a few services from a small number of developer teams.
+
+
+In our experience, you can scale limited SRE resources to many services if those services have the following characteristics:
+
+
+
+ 
+ Services are part of a single product. This provides end-to-end ownership of the user experience and alignment with the user.
+
+ 
+
+ 
+ Services are built on similar tech stacks. This minimizes cognitive load and enables effective reuse of technical skills.
+
+ 
+
+ 
+ Services are built by the same developer team or a small number of related developer teams. This minimizes the number of relationships and makes it easier to align priorities.
+
+ 
+
+
+
+
+
+
+Structuring a Multiple SRE Team Environment
+
+
+If your company is big enough to have multiple SRE teams, and perhaps multiple products, you need to choose a structure for how SRE and the product groups relate.
+
+
+Within Google, we support a complex developer organization. As shown in Figure 18-2, each PA consists of multiple product groups that each contain multiple products. The SRE organization shadows the developer organization hierarchically, with shared priorities and best practices at each level. This model works when all teams in a group, or all groups in a PA, share the same or similar specific business goals, and when every product group has both a product leader and an SRE lead.
+
+
+
+Figure 18-2. Large-scale developer-to-SRE team relationships (per product area)
+
+
+
+If your organization has multiple SRE teams, you’ll need to group them in some way. The two main approaches we’ve seen work well are:
+
+
+
+ 
+ Group the teams within a product, so they don’t have to coordinate with too many different developer teams.
+
+ 
+
+ 
+ Group the teams within a technology stack (e.g., “storage” or “networking”).
+
+ 
+
+
+
+To prevent churn in SRE teams during developer reorgs, we recommend organizing SRE teams according to technology rather than developer PA reporting structure. For example, many teams that support storage systems are structured and operate in the same way. Grouping storage systems in technology-focused product groups may make more sense even if they come from different parts of the developer organization.
+
+
+
+
+
+Adapting SRE Team Structures to Changing Circumstances
+
+
+If you need to modify the structure of your SRE teams to reflect changing PA needs, we recommend creating, splitting (sharding), merging, and dissolving SRE teams based on service needs and engineering and operational load. Each SRE team should have a clear charter that reflects their services, technology, and operations. When a single SRE team has too many services, rather than building new teams from scratch, we prefer to shard the existing team into multiple teams to transfer culture and grow existing leadership. Changes like this are inevitably disruptive to existing teams, so we’d recommend that you restructure teams only when necessary.
+
+
+
+
+
+Running Cohesive Distributed SRE Teams
+
+
+If you need to ensure 24/7 coverage and business continuity, and you have a global presence, it’s worth trying to distribute your SRE teams around the globe to provide even coverage. If you have a number of globally distributed teams, we recommend colocating teams based upon adjacency and upon similarity of services and shared technology. We’ve found that singleton teams are generally less effective and more vulnerable to the effects of reorgs outside the team—we create such teams only if clearly defined business needs call for them and we’ve considered all other options.
+
+
+Many companies don’t have the resources for full global coverage, but even if you’re split only across buildings (never mind continents), it’s important to create and maintain a two-location arrangement.
+
+
+It’s also important to create and maintain organizational standards that drive planning and execution and foster and maintain a shared team culture. To this end, we find it useful to gather the entire team in one physical location periodically—for example, at an org-wide summit every 12–18 months.
+
+
+Sometimes it doesn’t make sense for everyone on the team to own certain responsibilities—for example, conducting regular test restores from backups or implementing cross-company technical mandates. When balancing these responsibilities between a team’s distributed sites, keep the following strategies in mind:
+
+
+
+ 
+ Assign individual responsibilities to single locations, but rotate them regularly (e.g., yearly).
+
+ 
+
+ 
+ Share every responsibility between locations, making an active effort to balance the involvement and workload.
+
+ 
+
+ 
+ Don’t lock a responsibility to a single location for multiple years. We’ve found that the costs of this configuration ultimately outweigh the benefits. Although that location will tend to become really good at executing those responsibilities, this fosters an “us versus them” mentality, hinders distribution of knowledge, and presents a risk for business continuity.
+
+ 
+
+
+
+All of these strategies require locations to maintain tactical and strategic communication.
+
+
+
+
+
+
+
+Ending the Relationship
+
+
+SRE engagements aren’t necessarily indefinite. SREs provide value by doing impactful engineering work. If the work is no longer impactful (i.e., the value proposition of an SRE engagement goes away), or if the majority of the work is no longer on the engineering (versus operations) side, you may need to revisit the ongoing SRE engagement. In general, individual SREs will move away from toil-heavy teams to teams with more interesting engineering work.
+
+
+On a team level, you might hand back a service if SRE no longer provides sufficient business value to merit the costs. For examp

@@ -1,0 +1,171 @@
+=== The Site Reliability Workbook ===
+=== Chunk 7/100 ===
+
+
+
+ 
+ The Practice of Cloud System Administration: DevOps and SRE Practices for Web Services, Volume 2
+
+ 
+
+ 
+ Accelerate: The Science of Lean Software and DevOps
+
+ 
+
+
+
+
+1 Note that as this discussion appears in a book about SRE, some of this discussion is specific to software service operations, as opposed to IT operations.
+2 Mary Poppendieck has an excellent article on this called “The Cost Center Trap.” Another way in which this approach fails is when a very large and improbable disaster completely wipes out the cost savings you made by moving to a low-grade operations model (c.f. the British Airways outage in May 2017).
+3 Of course, there are a number of other potential reactions. For example, ITIL® is another approach to IT management that advocates for better standardization.
+4 Note also that because this is a complicated world, there are also positive effects to partitioning, silos, and the like, but the downsides seem to be particularly pernicious in the domain of operations.
+5 See https://en.wikipedia.org/wiki/Normal_Accidents.
+6 Higher-risk changes, or those unvalidatable by automatic means, should obviously still be vetted by humans, if not enacted by them.
+7 The history of SRE at Google is that it sprang from a precursor team, which was more operationally focused, and Ben provided the impetus for treating the problem from an engineering standpoint.
+8 This is a misnomer in a large number of ways, perhaps the most fundamental being that you can’t just hire some people, call them “DevOps engineers,” and expect benefits immediately. You have to buy into the whole philosophy of changing how you work in order to benefit. As Andrew Clay Shafer says, “People sell DevOps, but you can’t buy it.” And, as Seth Vargo points out in “The 10 Myths of DevOps”, you can’t “hire a DevOp to fix your organization.”
+9 A service level objective is a target for performance of a particular metric (e.g., available 99.9% of the time).
+10 Of course, not every team does everything, but those are the most common headings under which SRE works.
+11 Perform a layering violation, if you think of this as layered stacks.
+12 In fact, there’s a Production Readiness Review for onboarding anything; SRE won’t just onboard services from a standing start.
+13 A service is loosely defined as software running to perform some business need, generally with availability constraints.
+14 Within Google, that question is largely settled, and services change state, configuration, ownership, direction, and so on, all the time. To a certain extent, SRE at Google is the beneficiary of the “change is necessary” argument having been fought and won a number of times in the past. But not completely evenly distributed, as William Gibson might say.
+15 See relevant research at https://devops-research.com/research.html.
+16 See http://en.wikipedia.org/wiki/Goodhart%27s_law and https://skybrary.aero/bookshelf/books/2336.pdf.
+17 See, for example, https://codeascraft.com/2012/05/22/blameless-postmortems/.
+18 In orgs that have well-developed cultures of either. Early-stage companies likely do not have established ways to reward these job roles.
+19 Indeed, arguably, that’s your only choice unless you outsource operations.
+20 For a discussion of how to apply SRE principles in different contexts, see Chapter 20.
+21 In other words, simply retitling a group DevOps or SRE with no other change in their organizational positioning, resulting in inevitable shaming of the team when promised improvement is not forthcoming.
+
+Foundations
+
+Part I. Foundations
+
+
+Every implementation guide needs to start with a common base from which to build. In this case, the basic foundations of SRE include SLOs, monitoring, alerting, toil reduction, and simplicity. Getting these basics right will set you up well to succeed on your SRE journey.
+
+The following chapters explore techniques for turning these core principles into concrete practices for your organization.
+
+Implementing SLOs
+
+Chapter 2. Implementing SLOs
+
+
+By Steven Thurgood and David Ferguson
+
+with Alex Hidalgo and Betsy Beyer
+
+
+Service level objectives (SLOs) specify a target level for the reliability of your service. Because SLOs are key to making data-driven decisions about reliability, they’re at the core of SRE practices. In many ways, this is the most important chapter in this book.
+
+
+Once you’re equipped with a few guidelines, setting up initial SLOs and a process for refining them can be straightforward. Chapter 4 in our first book introduced the topic of SLOs and SLIs (service level indicators), and gave some advice on how to use them.
+
+
+After discussing the motivation behind SLOs and error budgets, this chapter provides a step-by-step recipe to get you started thinking about SLOs, and also some advice about how to iterate from there. We’ll then cover how to use SLOs to make effective business decisions, and explore some advanced topics. Finally, we’ll give you some examples of SLOs for different types of services and some pointers on how to create more sophisticated SLOs in specific situations.1
+
+
+
+Why SREs Need SLOs
+
+
+Engineers are a scarce resource at even the largest organizations.  Engineering time should be invested in the most important characteristics of the most important services.  Striking the right balance between investing in functionality that will win new customers or retain current ones, versus investing in the reliability and scalability that will keep those customers happy, is difficult. At Google, we’ve learned that a well-thought-out and adopted SLO is key to making data-informed decisions about the opportunity cost of reliability work, and to determining how to appropriately prioritize that work.
+
+
+SREs’ core responsibilities aren’t merely to automate “all the things” and hold the pager. Their day-to-day tasks and projects are driven by SLOs: ensuring that SLOs are defended in the short term and that they can be maintained in the medium to long term. One could even claim that without SLOs, there is no need for SREs.
+
+
+SLOs are a tool to help determine what engineering work to prioritize. For example, consider the engineering tradeoffs for two reliability projects: automating rollbacks and moving to a replicated data store. By calculating the estimated impact on our error budget, we can determine which project is most beneficial to our users. See the section “Decision Making Using SLOs and Error Budgets” for more detail on this, and “Managing Risk” in Site Reliability Engineering.
+
+
+
+
+
+Getting Started
+
+
+As a starting point  for establishing a basic set of SLOs, let’s assume that your service is some form of code that has been compiled and released and is running on networked infrastructure that users access via the web.  Your system’s maturity level might be one of the following:
+
+
+
+ 
+ A greenfield development, with nothing currently deployed
+
+ 
+
+ 
+ A system in production with some monitoring to notify you when things go awry, but no formal objectives, no concept of an error budget, and an unspoken goal of 100% uptime
+
+ 
+
+ 
+ A running deployment with an SLO below 100%, but without a common understanding about its importance or how to leverage it to make continuous improvement choices—in other words, an SLO without teeth
+
+ 
+
+
+
+In order to adopt an error budget-based approach to Site Reliability Engineering, you need to reach a state where the following hold true:
+
+
+
+ 
+ There are SLOs that all stakeholders in the organization have approved as being fit for the product.
+
+ 
+
+ 
+ The people responsible for ensuring that the service meets its SLO have agreed that it is possible to meet this SLO under normal circumstances.
+
+ 
+
+ 
+ The organization has committed to using the error budget for decision making and prioritizing. This commitment is formalized in an error budget policy.
+
+ 
+
+ 
+ There is a process in place for refining the SLO.
+
+ 
+
+
+
+Otherwise, you won’t be able to adopt an error budget–based approach to reliability. SLO compliance will simply be another KPI (key performance indicator) or reporting metric, rather than a decision-making tool.
+
+
+
+Reliability Targets and Error Budgets
+
+
+The first step in formulating appropriate SLOs is to talk about what an SLO should be, and what it should cover.
+
+
+An SLO sets a target level of reliability for the service’s customers. Above this threshold, almost all users should be happy with your service (assuming they are otherwise happy with the utility of the service).2 Below this threshold, users are likely to start complaining or to stop using the service. Ultimately, user happiness is what matters—happy users use the service, generate revenue for your organization, place low demands on your customer support teams, and recommend the service to their friends. We keep our services reliable to keep our customers happy.
+
+
+Customer happiness is a rather fuzzy concept; we can’t measure it precisely. Often we have very little visibility into it at all, so how do we begin? What do we use for our first SLO?
+
+
+Our experience has shown that 100% reliability is the wrong target:
+
+
+
+ 
+ If your SLO is aligned with customer satisfaction, 100% is not a reasonable goal. Even with redundant components, automated health checking, and fast failover, there is a nonzero probability that one or more components will fail simultaneously, resulting in less than 100% availability.
+
+ 
+
+ 
+ Even if you could achieve 100% reliability within your system, your customers would not experience 100% reliability. The chain of systems between you and your customers is often long and complex, and any of these components can fail.3 This also means that as you go from 99% to 99.9% to 99.99% reliability, each extra nine comes at an increased cost, but the marginal utility to your customers steadily approaches zero.
+
+ 
+
+ 
+ If you do manage to create an experience that is 100% reliable for your customers, and want to maintain that level of reliability, you can never update or improve your service. The number one source of outages is change: pushing new features, applying security patches, deploying new hardware, and scaling up to meet customer demand will impact that 100% target. Sooner or later, your service will stagnate and your customers will go elsewhere, which is not great for anyone’s bottom line.
+
+ 
+
+ 
+ An SLO of 100% means you only have time to be reactive. You literally cannot do anything other than react to < 100% availability, which is guara

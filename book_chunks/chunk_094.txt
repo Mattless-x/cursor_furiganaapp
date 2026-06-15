@@ -1,0 +1,166 @@
+=== The Site Reliability Workbook ===
+=== Chunk 94/100 ===
+
+changesavoiding changes that can’t be rolled back, Mitigation delay
+change tracking for configurations, Ownership and Change Tracking
+gradual change in DevOps, Change Should Be Gradual
+monitoring intended changes in services, Intended Changes
+safe configuration change application, Safe Configuration Change Application
+
+checklist for new SRE team training, Training roadmap
+checklist for postmortems, Postmortem checklist
+checkpointing in data processing pipelines, Checkpointing
+clarity in good postmortem example, Clarity
+click-through rate (CTR), AdWords Examplecalculating, Initial Requirements
+
+ClickMap (AdWords example), LogJoinerin multidatacenter design, Multidatacenter
+scaling, calculations for, Calculationsin multidatacenter design, Calculations
+
+client behavior changes, resulting in bugs, New bugs
+Clos network topology, Background
+cloud environmentbreaking down SLO wall between GCP and Evernote, Breaking Down the SLO Wall Between Customer and Cloud Provider
+Evernote, on-call setup for cloud datacenters, Moving our on-prem infrastructure to the cloud-Practical Implementation Details
+Google Cloud Platform (GCP), SLO Engineering Case Studies
+
+codecode patterns for data processing pipelines, Code Patterns
+configuration as code or data, Separate Configuration and Resulting Data
+cyclomatic code complexity, Measuring Complexity
+
+codelabs, Training roadmap
+collaboration in DevOps and SRE, Compare and Contrast
+colocation facilities (colos), racks of proxy/cache machines in, Case Study
+communicationbetween teams, understanding differences in, Understand differences in communication
+in incident response, Incident Command Systemdeciding on communication channel, Decide on a communication channel
+failure in Google Home incident, Review
+keeping your audience informed, Keep your audience informed
+
+maintaining open line between SRE and other teams, Maintaining an Open Line of Communication
+
+Communications Lead (CL), Incident
+completeness SLO (Spotify case study), Completeness
+complexitycase study, project lifecycle complexity, Case Study 2: Project Lifecycle Complexity
+measuring, Measuring Complexity-Measuring Complexity
+
+complexity toil, Configuration-Induced Toil
+componentsseparating components that change at different rates, Balancing Release Velocity and Reliability
+types of, Types of componentsSLIs for different types, A Worked Example
+
+Compute Engine, Breaking Down the SLO Wall Between Customer and Cloud Provider
+conciseness in postmortems, Conciseness
+configuration, Configuration Design and Best Practices-Conclusionabout, What Is Configuration?
+and reliability, Configuration and Reliability
+configuration-induced toil, Configuration-Induced Toilreducing, Reducing Configuration-Induced Toil
+
+critical properties and pitfalls of configuration systems, Critical Properties and Pitfalls of Configuration Systems-Pitfall 5: Using an Existing General-Purpose Scripting Language Like Python, Ruby, or Luabuilding too much domain-specific optimization, Pitfall 3: Building Too Much Domain-Specific Optimization
+designing accidental or ad hoc language features, Pitfall 2: Designing Accidental or Ad Hoc Language Features
+failing to recognize configuration as programming language problem, Pitfall 1: Failing to Recognize Configuration as a Programming Language Problem
+interleaving configuration evaluation with side effects, Pitfall 4: Interleaving “Configuration Evaluation” with “Side Effects”
+using general-purpose scripting languages, Pitfall 5: Using an Existing General-Purpose Scripting Language Like Python, Ruby, or Lua
+
+data processing pipeline, causing failures, Pipeline application or configuration
+effectively operating a configuration system, Effectively Operating a Configuration System-Testingtesting, Testing
+using source control, Source Control
+versioning, Versioning
+
+guarding against abusive configuration, Guarding Against Abusive Configuration
+integrating a configuration language, Integrating a Configuration Languagedriving multiple applications, Driving Multiple Applications
+generating config in specific formats, Generating Config in Specific Formats
+
+integrating custom applications, Integrating Custom Applications (In-House Software)-Integrating Custom Applications (In-House Software)
+integrating existing application, Kubernetes, Integrating an Existing Application: Kubernetes-Integrating the Configuration Languageexample Kubernetes config, Example Kubernetes Config
+integrating the configuration language, Integrating the Configuration Language
+
+mechanics of, Mechanics of Configuration-Conclusionimportance of tooling, Importance of Tooling
+ownership and change tracking, Ownership and Change Tracking
+safe configuration change application, Safe Configuration Change Application
+separating configuration and resulting data, Separate Configuration and Resulting Data
+
+monitoring system, treating as code, Treat Your Configuration as Code
+philosophy of, Configuration Philosophy-Escaping Simplicityconfiguration asks users questions, Configuration Asks Users Questions
+escaping simplicity, Escaping Simplicity
+mandatory and optional questions, Mandatory and Optional Questions
+questions should be close to user goals, Questions Should Be Close to User Goals
+
+separating philosophy and mechanics, Separating Philosophy and Mechanics
+when to evaluate, When to Evaluate Configuration-Consearly evaluation, checking in the JSON, Very Early: Checking in the JSON
+late evaluation at runtime, Late: Evaluate at Runtime
+middle of the road, evaluation at build time, Middle of the Road: Evaluate at Build Time
+
+configuration syntax, tooling for, Configuration syntax
+connection tracking, Maglev
+consensus algorithms, Multidatacenter
+consistent hashing, Maglevusing with stateful systems, Working with Stateful Systems
+
+contacts, preparing for an incident, Prepare a list of contacts
+context, missing, in bad postmortem, Missing context
+continuous integration and continuous delivery (CI/CD), Change Should Be Gradual, Canarying Releasescoupled with release automation, virtuous cycle of, Release Engineering Principles
+
+coordination of incident response effort, Incident Command System
+correctness SLI, A Worked Example
+correctness SLOs, Data correctness
+corrupt data (in data processing pipeline), Corrupt data
+cost engineering, Cost Engineering and Capacity Planning
+coverage SLI, A Worked Exampleimplementation for pipeline coverage, Pipeline freshness, coverage, and correctness, Pipeline freshness, coverage, and correctness
+
+coverage, SLO lacking, Improving the Quality of Your SLO
+CRE (see Google’s Customer Reliability Engineering (CRE) team)
+CRITICAL requests, Alerting at Scale
+cross-team reviews of postmortems, Conduct cross-team reviews
+CRUD-style APIs, monitoring system configuration, Treat Your Configuration as Code
+Cs of incident management (coordinate, communicate, control), Incident Command System
+CTR (see click-through rate)
+cultureand tooling in DevOps, Tooling and Culture Are Interrelated
+learning from failure in postmortems (see postmortems)
+responding to postmortem culture failures, Respond to Postmortem Culture Failures
+SLO culture project at Home Depot, The SLO Culture Project
+
+customershaving a hard time, When Your Customers Have a Hard Time, You Have to Slow Down
+practicing SRE with, You Will Need to Practice SRE with Your Customers
+SRE with, how to, How to: SRE with Your Customers-Step 5: Practice, Practice, Practice
+
+cyclomatic code complexity, Measuring Complexity
+
+D
+dashboardsbuilding shared SLO dashboards with customers, Step 2: Audit the Monitoring and Build Shared Dashboards
+for data processing pipeline, Pipeline maturity matrix
+providing for SLOs, Dashboards and Reports
+separate dashboarding system in monitoring, Prefer Loose Coupling
+showing SLI trends, Dashboards and Reports
+VALET dashboard, Home Depot case study, VALET Dashboard
+
+data analysis pipeline, case study, Case Study 2: Data Analysis Pipeline-Decommission
+data analytics, Data Analytics
+data collection to monitor causes in on-call load, Data quality
+data correctness, Data correctness
+data formats for configuration information, Separate Configuration and Resulting Data
+data freshness, Data freshness
+data isolation, Data isolation/load balancingcanarying releases and, Dependencies and Isolation
+in noninteractive systems, Canarying in Noninteractive Systems
+
+data processing pipelines, Data Processing Pipelines-Conclusionbest practices, Pipeline Best Practices-Plan Escalation Pathsadhering to access control and security policies, Adhere to Access Control and Security Policies
+creating and maintaining pipeline documentation, Create and Maintain Pipeline Documentation
+defining and measuring service level objectives, Define and Measure Service Level Objectives-End-to-end measurement
+implementing autoscaling and resource planning, Implement Autoscaling and Resource Planning
+mapping your development lifecycle, Map Your Development Lifecycle-Deploying to production
+planning escalation paths, Plan Escalation Paths
+planning for dependency failure, Plan for Dependency Failure
+reducing hotspotting and workload patterns, Reduce Hotspotting and Workload Patterns
+
+case study, Spotify, Case Study: Spotify-Summarycustomer integration and support, Customer Integration and Support-Incident handling
+event delivery, Event Delivery
+event delivery system design and architecture, Event Delivery System Design and Architecture
+event delivery system operation, Event Delivery System Operation-Completeness
+
+failures, prevention and response, Pipeline Failures: Prevention and Response-Region-level outagepotential causes, Pipeline dependencies
+potential failure modes, Delayed data
+
+pipeline applications, Pipeline Applications-Machine Learningdata analytics, Data Analytics
+event processing and data transformation, Event Processing/Data Transformation to Order or Structure Data
+machine learning, Machine Learning
+
+requirements and design, Pipeline Requirements and Design-Using the microservice approach to creating pipelinescheckpointing, Checkpointing
+code patterns, Code Patterns
+features, What Features Do You Need?
+idempotent and two-phase mutations, Idempotent and Two-Phase Mutations
+pipeline production readiness, Pipeline Production Readiness-Pipeline Failures: Prevention and Response
+

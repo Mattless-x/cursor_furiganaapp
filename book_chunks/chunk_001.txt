@@ -1,0 +1,229 @@
+=== The Site Reliability Workbook ===
+=== Chunk 1/100 ===
+
+Cover
+
+Praise for The Site Reliability Workbook
+
+Praise for The Site Reliability Workbook
+
+
+
+This new workbook will help people to take the sometimes theoretical and abstract concepts covered in Site Reliability Engineering out of the special context of the Googleplex and see how the same concepts work in other organizations. I’m especially excited to see more detail in the analysis of toil, how to apply SRE principles to data pipelines, and the case study reports discussing practical service level management.
+
+
+Kurt Andersen, Site Reliability Engineer, LinkedIn
+
+
+
+
+This practical hands-on guide to implementing SRE is valuable for engineers at companies of all sizes. It’s excellent to see this workbook being shared so that we can all move forward and build more reliable systems together. I was impressed with the level of detail shared; you can pick this book up and get started implementing SRE practices today.
+
+
+Tammy Bütow, Principal SRE, Gremlin
+
+
+
+
+A timely reminder, from the team that made SRE a required practice for everyone operating at scale, that reliability is created by people. This book is full of practical examples of how to optimize for reliability by focusing on the interactions between users and engineers and between technology and tools, without losing sight of feature velocity. The result is a compelling, interesting, and thought-provoking companion to Site Reliability Engineering.
+
+
+Casey Rosenthal, CTO, Backplane.io
+
+
+
+
+Google’s first book explained the what and why of SRE. This book shows you how to implement SRE at any company, startup or giant. Great work by the editorial team.
+
+
+Jonah Horowitz, SRE at Stripe
+
+
+
+
+In 2016, Google dropped Site Reliability Engineering on the operations world, and the operations world was never the same. For the first time people had access to over 500 pages of distilled information on what Google does to run its planet-wide infrastructure. Most people liked the book, a handful didn’t, but nobody ignored it. It became a seminal work and an important touchstone for how people thought about SRE (especially the Google implementation of it) from that point on. But it was missing something….
+
+
+Now in 2018, Google returns to fill in a crucial piece of the puzzle: in their first volume they described what they do, but that didn’t help those who couldn’t see themselves in Google’s story. This book aims to demonstrate how Google does SRE—and how you can do it, too.
+
+
+David N. Blank-Edelman, editor of Seeking SRE: Conversations about Running Production Systems at Scale 
+and cofounder of the global set of SREcon conferences
+
+The Site Reliability Workbook
+
+The Site Reliability Workbook
+
+
+Practical Ways to Implement SRE
+
+Edited by Betsy Beyer, Niall Richard Murphy,
+ David K. Rensin, Kent Kawahara,
+ and Stephen Thorne
+
+The Site Reliability Workbook
+
+ The Site Reliability Workbook
+
+ 
+ edited by Betsy Beyer, Niall Richard Murphy, David K. Rensin, Kent Kawahara, and Stephen Thorne
+ 
+
+ Copyright © 2018 Google LLC. All rights reserved.
+
+ Printed in the United States of America.
+
+ 
+ Published by 
+ O’Reilly Media, Inc., 1005 Gravenstein Highway North, Sebastopol, CA 95472.
+ 
+
+ 
+ O’Reilly books may be purchased for educational, business, or sales
+ promotional use. Online editions are also available for most titles (http://oreilly.com/safari). For more information, contact our corporate/institutional sales
+ department: 800-998-9938 or 
+ corporate@oreilly.com.
+ 
+
+ 
+ 
+ 
+ 
+ Acquisitions Editor: Nikki McDonald
+
+ Indexer: Ellen Troutman-Zaig
+
+ 
+
+ 
+ Developmental Editor: Virginia Wilson
+
+ Interior Designer: David Futato
+
+ 
+
+ 
+ Production Editor: Kristen Brown
+
+ Cover Designer: Karen Montgomery
+
+ 
+
+ 
+ Copyeditor: Rachel Monaghan
+
+ Illustrator: Rebecca Demarest
+
+ 
+
+ 
+ Proofreader: Kim Cofer
+
+  
+
+ 
+
+ 
+
+ 
+ 
+ 
+ 
+ August 2018:
+ First Edition
+ 
+
+ 
+ 
+ 
+ Revision History for the First Edition
+
+ 
+ 
+ 2018-06-08:
+ First Release
+ 
+
+ 
+ 2018-06-22:
+ Second Release
+ 
+
+ 
+ 
+
+ 
+ See 
+ http://oreilly.com/catalog/errata.csp?isbn=9781492029502
+ for release details.
+ 
+
+ 
+ This work is part of a collaboration between O’Reilly and Google. See our statement of editorial independence.
+
+ 
+ The O’Reilly logo is a registered trademark of O’Reilly Media, Inc.
+ The Site Reliability Workbook, the cover image, and related trade dress
+ are trademarks of O’Reilly Media, Inc.
+ 
+
+ 
+ The views expressed in this work are those of the authors, and do not
+ represent the publisher’s views. While the publisher and the
+ authors have used good faith efforts to ensure that the information and
+ instructions contained in this work are accurate, the publisher and the
+ authors disclaim all responsibility for errors or omissions, including
+ without limitation responsibility for damages resulting from the use of or
+ reliance on this work. Use of the information and instructions contained
+ in this work is at your own risk. If any code samples or other technology
+ this work contains or describes is subject to open source licenses or the
+ intellectual property rights of others, it is your responsibility to
+ ensure that your use thereof complies with such licenses and/or rights.
+ 
+ 
+ 
+
+ 
+
+ 
+ 978-1-492-02950-2
+
+ [LSCH]
+
+Foreword I
+
+Foreword I
+
+
+Mark Burgess
+
+
+Having introduced the first SRE book for O’Reilly, I am honored to be invited back for the sequel. In this book, the writing team is leaving the history of the first book to speak for itself and reaching out to a broader audience, offering direct experiences, case studies, and informal guidance. The broad themes will be familiar to anyone in IT, perhaps relabeled and reprioritized, and with a modern sense of business awareness. In place of technical descriptions, here we have user-facing services and their promises or objectives. We see human-computer systems originate from within the evolving business, intrinsic to its purpose, rather than as foreign meteorites impacting an unsuspecting and pristine infrastructure. Cooperation of all human-computer parts is the focus. Indeed, the book might be summarized as follows:
+
+
+
+ Commit to clear promises that set service objectives, expectations, and levels.
+
+ Assess those promises continuously, with metrics and budgetary limits.
+
+ React quickly to keep and repair promises, be on-call, and guard autonomy to avoid new gatekeepers.
+
+
+
+Keeping promises reliably (to all stakeholders) depends on the stability of all their dependencies, of intent, and of the lives of the people involved (e.g., see Thinking in Promises). Remarkably, the human aspects of human-computer systems only grow alongside the perceived menace of scale: it turns out that automation doesn’t eliminate humans, after all; rather, it challenges us to reassert human needs across all scales, from the genesis of an individual idea to the massive deployments on behalf of a global user base.
+
+
+Teaching these lessons is a service challenge in its own right—and, like any service, hard-won knowledge is an iterative process. We make these lessons our own by questioning, trying, failing, rehearsing, and perfecting them. There’s a wealth of material to ponder and adapt in the book, so let’s go.
+
+Foreword II
+
+Foreword II
+
+
+Andrew Clay Shafer
+
+When I found out people were working on a second SRE book, I reached out and asked if I could write a few words. The principles from the first SRE book align so well with what I always imagined DevOps to be, and the practices are insightful, even when they aren’t 100% applicable outside of Google. After reading the principles from the first SRE book for the first time—embracing risk (Chapter 3), service level objectives (Chapter 4), and eliminating toil (Chapter 5)—I wanted to shout that message from the rooftops. “Embracing risk” resonated so much because I had used similar language many times to help traditional organizations motivate change. Chapter 6 was always an implicit DevOps goal, both to allow humans more time for creative higher-order work and to allow them to be more human. But I really fell in love with “service level objectives.” I love that the language and the process create a dispassionate contract between operational considerations and delivering new functionality. The SRE, SWE (software engineer), and business all agree that the service has to be up to be valuable, and the SRE solution quantifies objectives to drive actions and priorities. The solution—make the service level a target, and when you are below the target prioritize reliability over features—eliminates a classic conflict between operations and developers. This is a simple and elegant reframing that solves problems by not having them. I give these three chapters as a homework assignment to almost everyone I’ve met since. They are that good. Everyone should know. Tell all your friends. I’ve told all mine.
+
+The last decade of my career has been focused on helping people deliver software with better tools and process. Sometimes people say I contributed to inventing DevOps, but I was just in the position to borrow and steal successful patterns from across many different organizations and projects. I get embarrassed when people say “DevOps” was invented by anyone, but especially by me. I don’t consider myself an expert in anything but being inquisitive. My idealized DevOps always patterned off whatever information I could extract or infer from my friends, and my friends happened to be building the internet. I had the privilege of behind-the-scenes access to people deploying and operating a representative sample of the world’s most incredible infrastructures and applications. DevOps symbolizes aspects of the emergent and existential optimizations required to rapidly deliver highly available software over the internet. The shift from software delivered on physical media to software delivered as a service forced an evolution of tools and processes. This evolution elevated operations’ contribution to the value chain. If the systems are down, the software has no value. The good news is, you don’t have to wait for shipping the next shrink-wrapped box to change the software. For some, this is also the bad news. I simply had the opportunity and perspective to articulate the most successful patterns of the new way to a receptive audience.
+
+In 2008, before we used the word DevOps like we do now, I’d been through the dot-com collapse, grad school, and a couple of venture-

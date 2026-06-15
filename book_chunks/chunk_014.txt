@@ -1,0 +1,158 @@
+=== The Site Reliability Workbook ===
+=== Chunk 14/100 ===
+
+ a small percentage of the global GCP number, outages isolated to our region (or isolated for other reasons) may be “lost” in the overall rollup to a global level.
+
+
+To correct for scenarios like this, we share our SLO and real-time performance against SLO with Google. As a result, both the Google CRE team and Evernote work with same performance dashboards. This may seem like a very simple point, but has proven a rather powerful way to drive truly customer-focused behavior. As a result, rather than receiving generic “Service X is running slow”–type notifications, Google provides us with notifications that are more specific to our environment. For example, in addition to a generic “GCP load balancing environment is running slow today,” we’ll also be informed that this issue is causing a 5% impact to Evernote’s SLO. This relationship also helps teams within Google, who can see how their actions and decisions impact customers.
+
+
+This two-way relationship has also given us a very effective framework to support major incidents. Most of the time, the usual model of P1–P5 tickets and regular support channels works well and allows us to maintain good service and a good relationship with Google. But we all know there are times when a P1 ticket (“major impact to our business”) is not enough—the times when your whole service is on the line and you face extended business impact.
+
+
+At times like these, our shared SLOs and relationship with the CRE team come to fruition. We have a common understanding that if the SLO impact is high enough, both parties will treat the issue as a P1 ticket with special handling. Quite often, this means that Evernote and Google’s CRE Team rapidly mobilize on a shared conference bridge. The Google CRE team monitors the SLO we jointly defined and agreed upon, allowing us to remain in sync in terms of prioritization and appropriate responses.
+
+
+
+
+
+Current State
+
+
+After actively using SLOs for about nine months, Evernote is already on version 3 of its SLO practice. The next version of SLOs will progress from our simple uptime SLO. We plan to start probing individual API calls and accounting for the in-client view of metrics/performance so we can represent user QoS even better.
+
+
+By providing a standard and defined way of measuring QoS, SLOs have allowed Evernote to better focus on how our service is running. We can now have data-driven conversations—both internally, and with Google—about the impact of outages, which enables us to drive service improvements, ultimately making for more effective support teams and happier customers.
+
+
+
+
+
+
+
+The Home Depot’s SLO Story
+
+
+by William Bonnell, The Home Depot
+
+
+The Home Depot (THD) is the world’s largest home improvement retailer: we have more than 2,200 stores across North America, each filled with more than 35,000 unique products (and supplemented with over 1.5 million products online). Our infrastructure hosts a variety of software applications that support nearly 400,000 associates and process more than 1.5 billion customer transactions per year. The stores are deeply integrated with a global supply chain and an ecommerce website that receives more than 2 billion visits per year.
+
+
+In a recent refresh to our operations approach aimed at increasing the velocity and quality of our software development, THD both pivoted to Agile software development and changed how we design and manage our software. We moved from centralized support teams that supported large, monolithic software packages to a microservices architecture led by small, independently operated software development teams. As a result, our system now had smaller chunks of constantly changing software, which also needed to be integrated across the stack.
+
+
+Our move to microservices was complemented by a move to a new “freedom and responsibility culture” of full-stack ownership. This approach gives developers freedom to push code when they want, but also makes them jointly responsible for the operations of their service. For this model of joint ownership to work, operations and development teams need to speak a common language that promotes accountability and cuts across complexity: service level objectives. Services that depend upon each other need to know information like:
+
+
+
+ 
+ How reliable is your service? Is it built for three 9s, three and a half 9s, or four 9s (or better)? Is there planned downtime?
+
+ 
+
+ 
+ What kind of latency can I expect at the upper bounds?
+
+ 
+
+ 
+ Can you handle the volume of requests I am going to send? How do you handle overload? Has your service achieved its SLOs over time?
+
+ 
+
+
+
+If every service could provide transparent and consistent answers to these questions, teams would have a clear view into their dependencies, which allows for better communication and increased trust and accountability between teams.
+
+
+
+The SLO Culture Project
+
+
+Before we began this shift in our service model, The Home Depot didn’t have a culture of SLOs. Monitoring tools and dashboards were plentiful, but were scattered everywhere and didn’t track data over time. We weren’t always able to pinpoint the service at the root of a given outage. Often, we began troubleshooting at the user-facing service and worked backward until we found the problem, wasting countless hours. If a service required planned downtime, its dependent services were surprised. If a team needed to build a three and a half 9s service, they wouldn’t know if the service they had a hard dependency on could support them with even better uptime (four 9s). These disconnects caused confusion and disappointment between our software development and operations teams.
+
+
+We needed to address these disconnects by building a common culture of SLOs. Doing so required an overarching strategy to influence people, process, and technology. Our efforts spanned four general areas:
+
+
+
+ Common vernacular
+ Define SLOs in the context of THD. Define how to measure them in a consistent way.
+
+ Evangelism
+ 
+ Spread the word across the company.
+
+
+ 
+ 
+ Create training material to sell why SLOs matter, road shows across the company, internal blogs, and promotional materials like t-shirts and stickers.
+
+ 
+
+ 
+ Enlist a few early adopters to implement SLOs and demonstrate the value to others.
+
+ 
+
+ 
+ Establish a catchy acronym (VALET; as discussed later) to help the idea spread.
+
+ 
+
+ 
+ Create a training program (FiRE Academy: Fundamentals in Reliability Engineering) to train developers on SLOs and other reliability concepts.2
+
+ 
+
+ 
+ 
+ Automation
+ To reduce the friction of adoption, implement a metric collection platform to automatically collect service level indicators for any service deployed to production. These SLIs can later be more easily turned into SLOs.
+
+ Incentive
+ Establish annual goals for all development managers to set and measure SLOs for their services.
+
+
+
+Establishing a common vernacular was critical to getting everybody on the same page. We also wanted to keep this framework as simple as possible to help the idea spread faster. To get started, we took a critical look at the metrics we monitored across our various services and discovered some patterns. Every service monitored some form of its traffic volume, latency, errors, and utilization—metrics that map closely to Google SRE’s Four Golden Signals. In addition, many services monitored uptime or availability distinctly from errors.  Unfortunately, across the board, all categories of metrics were inconsistently monitored, were named differently, or had insufficient data.
+
+
+None of our services had SLOs. The closest metric our production systems had to a customer-facing SLO was support tickets. The primary (and often only) way we measured the reliability of the applications deployed to our stores was by tracking the number of support calls our internal support desk receives.
+
+
+
+
+
+Our First Set of SLOs
+
+
+We couldn’t create SLOs for every aspect of our systems that could be measured, so we had to decide which metrics or SLIs should also have SLOs.
+
+
+
+Availability and latency for API calls
+
+
+We decided that each microservice had to have availability and latency SLOs for its API calls that were called by other microservices. For example, the Cart microservice called the Inventory microservice. For those API calls, the Inventory microservice published SLOs that the Cart microservice (and other microservices that needed Inventory) could consult to determine if the Inventory microservice could meet its reliability requirements
+
+
+
+
+
+Infrastructure utilization
+
+
+Teams at THD measure infrastructure utilization in different ways, but the most typical measurement is real-time infrastructure utilization at one minute granularity. We decided against setting utilization SLOs for a few reasons. To begin with, microservices aren’t overly concerned with this metric—your users don’t really care about utilization as long as you can handle the traffic volume, your microservice is up, it’s responding quickly, it’s not throwing errors, and you’re not in danger of running out of capacity. Additionally, our impending move to the cloud meant that utilization would be less of a concern, so cost planning would overshadow capacity planning. (We’d still need to monitor utilization and perform capacity planning, but we didn’t need to include it in our SLO framework.)
+
+
+
+
+
+Traffic volume
+
+
+Because THD didn’t already have a culture of capacity planning, we needed a mechanism for software and operations teams to communicate how much volume their service could handle. Traffic was easy to define as requests to a service, but we needed to decide if we should track average requests per second, peak requests per second, or the volume of requests over the reporting time period. We decided to track all three and let each service select the most appropriate metric. We debated whether or not to set an SLO for traffic volume because this metric is determined by user behavior, rather than internal factors that we can control. Ultimately, we decided that as a retailer we needed to size our service for peaks like Black Friday, so we set an SLO according to expected peak capacity.
+
+

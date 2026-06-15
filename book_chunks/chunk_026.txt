@@ -1,0 +1,257 @@
+=== The Site Reliability Workbook ===
+=== Chunk 26/100 ===
+
+hnician to claim.
+
+ 
+
+ 
+ The technician claims the case, sees a red “stop” in the UI (indicating that the switch needs to be drained before repairs are started), and executes the repair in three steps:
+
+
+ 
+ 
+ Initiates the chassis drain via a “Prep component” button in the technician UI.
+
+ 
+
+ 
+ Waits for the red “stop” to clear, indicating that the drain is complete and the case is actionable.
+
+ 
+
+ 
+ Replaces the card and closes the case.
+
+ 
+
+ 
+ 
+
+ 
+ The automated repair system brings the line card up again. After a pause to give the card time to initialize, the workflow manager triggers an operation to restore traffic to the switch and close the repair case.
+
+ 
+
+
+
+
+Figure 6-4. Saturn line-card repair workflow with automation: manual work required only to push a button and replace the line card
+
+
+
+The new system freed the engineering team from a large volume of toilsome work, giving them more time to pursue productive projects elsewhere: working on Jupiter, the next-generation Clos topology.
+
+
+
+
+
+Design Second Effort: Saturn Line-Card Repair Versus Jupiter Line-Card Repair
+
+
+Capacity requirements in the datacenter continued to double almost every 12 months. As a result, our next-generation datacenter fabric, Jupiter, was more than six times larger than any previous Google fabric. The volume of problems was also six times larger. Jupiter presented scaling challenges for repair automation because thousands of fiber links and hundreds of line cards could fail in each layer. Fortunately, the increase in potential failure points was accompanied by far greater redundancy, which meant we could implement more ambitious automation. As shown in Figure 6-5, we preserved some of the general workflow from Saturn and added a few important modifications:
+
+
+
+ 
+ After an automated drain/reboot cycle determined that we wanted to replace hardware, we sent the hardware to a technician. However, instead of requiring a technician to initiate the drain with the “Push prep button to drain switch,” we automatically drained the entire switch when it failed.
+
+ 
+
+ 
+ We added automation for installing and pushing the configuration that engages after component replacement.
+
+ 
+
+ 
+ We enabled automation for verifying that the repair was successful before undraining the switch.
+
+ 
+
+ 
+ We focused attention on recovering the switch without involving a technician unless absolutely necessary.
+
+ 
+
+
+
+
+Figure 6-5. Saturn line-card down automation (left) versus Jupiter automation (right)
+
+
+
+
+
+
+Implementation
+
+
+We adopted a simple and uniform workflow for every line-card problem on Jupiter switches: declare the switch down, drain it, and begin a repair.
+
+
+The automation carried out the following:
+
+
+
+ 
+ The problem switch-down is detected and a symptom is added to the database.
+
+ 
+
+ 
+ The repair service picks up the problem and enables repairs on the switch: drain the entire switch, and add a drain reason.
+
+
+ 
+ 
+ If this is the second failure within six months, proceed to step 4.
+
+ 
+
+ 
+ Otherwise, proceed to step 3.
+
+ 
+
+ 
+ 
+
+ 
+ Attempt (via two distinct methods) to power-cycle the switch.
+
+
+ 
+ 
+ If the power-cycle is successful, run automated verification, then install and configure the switch. Remove the repair reason, clear the problem from the database, and undrain the switch.
+
+ 
+
+ 
+ If preceding sanity-checking operations fail, send the case to a technician with an instruction message.
+
+ 
+
+ 
+ 
+
+ 
+ If this was the second failure, send the case directly to the technician, requesting new hardware. After the hardware change occurs, run automated verification and then install and configure the switch. Remove the repair reason, clear the problem from the database, and undrain the switch.
+
+ 
+
+
+
+This new workflow management was a complete rewrite of the previous repair system. Again, we leveraged existing tools when possible:
+
+
+
+ 
+ The operations for configuring new switches (install and verify) were the same operations we needed to verify that a switch that had been replaced.
+
+ 
+
+ 
+ Deploying new fabrics quickly required the ability to BERT7 and cable-audit8 programmatically. Before restoring traffic, we reused that capability to automatically run test patterns on links that had fallen into repairs. These tests further improved performance by identifying faulty links.
+
+ 
+
+
+
+The next logical improvement was to automate mitigation and repair of memory errors on Jupiter switch line cards. As shown in Figure 6-6, prior to automation, this workflow depended heavily on an engineer to determine if the failure was hardware- or software-related, and then to drain and reboot the switch or arrange a repair if appropriate.
+
+
+
+Figure 6-6. Jupiter memory error repair workflow before automation
+
+
+
+Our automation simplified the repair workflow by no longer attempting to troubleshoot memory errors (see “Sometimes imperfect automation is good enough” for why this made sense). Instead, we treated memory errors the same way we handled failed line cards. To extend automation to memory errors, we simply had to add another symptom to a config file to make it act on the new problem type. Figure 6-7 depicts the automated workflow for memory errors.
+
+
+
+Figure 6-7. Jupiter memory error repair workflow with automation
+
+
+
+
+
+
+Lessons Learned
+
+
+During the several years we worked to automate network repair, we learned a lot of general lessons about how to effectively reduce toil.
+
+
+
+UIs should not introduce overhead or complexity
+
+
+For Saturn-based line cards, replacing a line card required draining the entire switch. Draining the entire switch early in the repair process meant losing the working capacity of all line cards on the switch while waiting for replacement parts and a technician. We introduced a button in the UI called “Prep component” that allowed a technician to drain traffic from the entire switch right before they were ready to replace the card, thereby eliminating unnecessary downtime for the rest of the switch (see “Push prep button to drain switch” in Figure 6-5).
+
+
+This aspect of the UI and repair workflow introduced a number of unexpected problems:
+
+
+
+ 
+ After pressing the button, the technician did not get feedback on drain progress but instead simply had to wait for permission to proceed.
+
+ 
+
+ 
+ The button didn’t reliably sync with the actual state of the switch. As a result, sometimes a drained switch did not get repaired, or a technician interrupted traffic by acting upon an undrained switch.
+
+ 
+
+ 
+ Components that did not have automation enabled returned a generic “contact engineering” message when a problem arose. Newer technicians did not know the best way to reach someone who could help. Engineers who were contacted were not always immediately available.
+
+ 
+
+
+
+In response to user reports and problems with regressions caused by the complexity of the feature, we designed future workflows to ensure the switch was safe and ready for repair before the technician arrived at the switch.
+
+
+
+
+
+Don’t rely on human expertise
+
+
+We leaned too heavily on experienced datacenter technicians to identify errors in our system (for example, when the software indicated it was safe to proceed with repairs, but the switch was actually undrained). These technicians also had to perform several tasks manually, without being prompted by automation.
+
+
+Experience is difficult to replicate. In one particularly high-impact episode, a technician decided to expedite the “press button and wait for results” experience by initiating concurrent drains on every line card waiting for repairs at the datacenter, resulting in network congestion and user-visible packet loss. Our software didn’t anticipate and prevent this action because we didn’t test the automation with new technicians.
+
+
+
+
+
+Design reusable components
+
+
+Where possible, avoid monolithic designs. Build complex automation workflows from separable components, each of which handles a distinct and well-defined task. We could easily reuse or adapt key components of our early Jupiter automation for each successive generation of fabric, and it was easier to add new features when we could build on automation that already existed. Successive variations on Jupiter-type fabrics could leverage work done in earlier iterations.
+
+
+
+
+
+Don’t overthink the problem
+
+
+We overanalyzed the memory error problem for Jupiter line cards. In our attempts at precise diagnosis, we sought to distinguish software errors (fixable by reboots) from hardware errors (which required card replacement), and also to identify errors that impacted traffic versus errors that did not. We spent nearly three years (2012–2015) collecting data on over 650 discrete memory error problems before realizing this exercise was probably overkill, or at least shouldn’t block our repair automation project.
+
+
+Once we decided to act upon any error we detected, it was straightforward to use our existing repair automation to implement a simple policy of draining, rebooting, and reinstalling switches in response to memory errors. If the problem recurred, we concluded that the failure was likely hardware-based and requested component replacement. We gathered data over the course of a quarter and discovered that most of the errors were transient—most switches recovered after being rebooted and reinstalled. We didn’t need additional data to perform the repair, so the three-year delay in implementing the automation was unnecessary.
+
+
+
+
+
+Sometimes imperfect automation is good enough
+
+
+While the ability to verify links with BERT before undraining them was handy, BERT tooling didn’t support network management links. We added these links into the existing link repair automation with a check that allowed them to skip verification. We were comfortable bypassing verification because the links didn’t carry customer traffic, and we could add this functionality later if verification turned out to be important.
+
+

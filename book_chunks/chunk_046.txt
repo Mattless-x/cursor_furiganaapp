@@ -1,0 +1,344 @@
+=== The Site Reliability Workbook ===
+=== Chunk 46/100 ===
+
+elided.]
+
+ IRC logs
+ [The IRC logs have been elided.]
+
+
+
+Graphs
+
+
+
+ Faster latency statistics—what have satellites ever done for us?
+ 
+ Empirically from this outage, satellites shave [value redacted] ms latency off many locations near core clusters, and up to [value redacted] ms off locations further from our backbone:
+
+
+ [The explanation of the graphs has been elided.]
+
+ 
+ Core vs. Edge serving load
+ A nice illustration of the reconstruction effort. Being able to once again serve 50% of traffic from the edge took about 36 hours, and returning to the normal traffic balance took an additional 12 hours (see Figure 10-1 and Figure 10-2).
+
+
+
+
+ Peering strain from traffic shifts
+ 
+ [Graph elided.]
+
+
+ The graph shows packet loss aggregated by network region. There were a few short spikes during the event itself, but the majority of the loss occurred as various regions entered peak with little/no satellite coverage.
+
+ 
+ Person vs. Machine, the GFE edition
+ [Graph explanation of human vs. automated machine setup rates elided.]
+
+
+
+
+Figure 10-1. Core vs. Edge QPS breakdown
+
+
+
+
+Figure 10-2. Core vs. Edge QPS breakdown (alternate representation)
+
+
+
+
+
+
+Why Is This Postmortem Better?
+
+
+This postmortem exemplifies several good writing practices.
+
+
+
+Clarity
+
+
+The postmortem is well organized and explains key terms in sufficient detail. For example:
+
+
+
+ Glossary
+ 
+ A well-written glossary makes the postmortem accessible and comprehensible to a broad audience.
+
+ 
+ Action items
+ 
+ This was a large incident with many action items. Grouping action items by theme makes it easier to assign owners and priorities.
+
+ 
+ Quantifiable metrics
+ 
+ The postmortem presents useful data on the incident, such as cache hit ratios, traffic levels, and duration of the impact. Relevant sections of the data are presented with links back to the original sources. This data transparency removes ambiguity and provides context for the reader.
+
+ 
+
+
+
+
+
+Concrete action items
+
+
+A postmortem with no action items is ineffective. These action items have a few notable characteristics:
+
+
+
+ Ownership
+ 
+ All action items have both an owner and a tracking number.
+
+ 
+ Prioritization
+ 
+ All action items are assigned a priority level.
+
+ 
+ Measurability
+ 
+ The action items have a verifiable end state (e.g., “Add an alert when more than X% of our machines have been taken away from us”).
+
+ 
+ Preventative action
+ 
+ Each action item “theme” has Prevent/Mitigate action items that help avoid outage recurrence (for example, “Disallow any single operation from affecting servers spanning namespace/class boundaries”).
+
+ 
+
+
+
+
+
+Blamelessness
+
+
+The authors focused on the gaps in system design that permitted undesirable failure modes. For example:
+
+
+
+ Things that went poorly
+ 
+ No individual or team is blamed for the incident.
+
+ 
+ Root cause and trigger
+ 
+ Focuses on “what” went wrong, not “who” caused the incident.
+
+ 
+ Action items
+ 
+ Are aimed at improving the system instead of improving people.
+
+ 
+
+
+
+
+
+Depth
+
+
+Rather than only investigating the proximate area of the system failure, the postmortem explores the impact and system flaws across multiple teams. Specifically:
+
+
+
+ Impact
+ 
+ This section contains lots of details from various perspectives, making it balanced and objective.
+
+ 
+ Root cause and trigger
+ 
+ This section performs a deep dive on the incident and arrives at a root cause and trigger.
+
+ 
+ Data-driven conclusions
+ 
+ All of the conclusions presented are based on facts and data. Any data used to arrive at a conclusion is linked from the document.
+
+ 
+ Additional resources
+ 
+ These present further useful information in the form of graphs. Graphs are explained to give context to readers who aren’t familiar with the system.
+
+ 
+
+
+
+
+
+Promptness
+
+
+The postmortem was written and circulated less than a week after the incident was closed. A prompt postmortem tends to be more accurate because information is fresh in the contributors’ minds. The people who were affected by the outage are waiting for an explanation and some demonstration that you have things under control. The longer you wait, the more they will fill the gap with the products of their imagination. That seldom works in your favor!
+
+
+
+
+
+Conciseness
+
+
+The incident was a global one, impacting multiple systems. As a result, the postmortem recorded and subsequently parsed a lot of data. Lengthy data sources, such as chat transcripts and system logs, were abstracted, with the unedited versions linked from the main document. Overall, the postmortem strikes a balance between verbosity and readability.
+
+
+
+
+
+
+
+
+
+Organizational Incentives
+
+
+Ideally, senior leadership should support and encourage effective postmortems. This section describes how an organization can incentivize a healthy postmortem culture. We highlight warning signs that the culture is failing and offer some solutions. We also provide tools and templates to streamline and automate the postmortem process.
+
+
+
+Model and Enforce Blameless Behavior
+
+
+To properly support postmortem culture, engineering leaders should consistently exemplify blameless behavior and encourage blamelessness in every aspect of postmortem discussion. You can use a few concrete strategies to enforce blameless behavior in an organization.
+
+
+
+Use blameless language
+
+
+Blameful language stifles collaboration between teams. Consider the following scenario:
+
+
+
+Sandy missed a service Foo training and wasn’t sure how to run a particular update command. The delay ultimately prolonged an outage.
+
+
+SRE Jesse [to Sandy’s manager]: “You’re the manager; why aren’t you making sure that everyone finishes the training?”
+
+
+
+The exchange includes a leading question that will instantly put the recipient on the defensive. A more balanced response would be:
+
+
+
+SRE Jesse [to Sandy’s manager]: “Reading the postmortem, I see that the on-caller missed an important training that would have allowed them to resolve the outage more quickly. Maybe team members should be required to complete this training before joining the on-call rotation? Or we could remind them that if they get stuck to please quickly escalate. After all, escalation is not a sin—especially if it helps lower customer pain! Long term, we shouldn’t really rely so much on training, as it’s easy to forget in the heat of the moment.”
+
+
+
+
+
+
+Include all incident participants in postmortem authoring
+
+
+It can be easy to overlook key contributing factors to an outage when the postmortem is written in isolation or by a single team.
+
+
+
+
+
+Gather feedback
+
+
+A clear review process and communication plan for postmortems can help prevent blameful language and perspectives from propagating within an organization. For a suggested structured review process, see the section “Postmortem checklist”.
+
+
+
+
+
+
+
+Reward Postmortem Outcomes
+
+
+When well written, acted upon, and widely shared, postmortems are an effective vehicle for driving positive organizational change and preventing repeat outages. Consider the following strategies to incentivize postmortem culture.
+
+
+
+Reward action item closeout
+
+
+If you reward engineers for writing postmortems, but not for closing the associated action items, you risk an unvirtuous cycle of unclosed postmortems. Ensure that incentives are balanced between writing the postmortem and successfully implementing its action plan.
+
+
+
+
+
+Reward positive organizational change
+
+
+You can incentivize widespread implementation of postmortem lessons by presenting postmortems as an opportunity to expand impact across an organization. Reward this level of impact with peer bonuses, positive performance reviews, promotion, and the like.
+
+
+
+
+
+Highlight improved reliability
+
+
+Over time, an effective postmortem culture leads to fewer outages and more reliable systems. As a result, teams can focus on feature velocity instead of infrastructure patching. It’s intrinsically motivating to highlight these improvements in reports, presentations, and performance reviews.
+
+
+
+
+
+Hold up postmortem owners as leaders
+
+
+Celebrating postmortems through emails or meetings, or by giving the authors an opportunity to present lessons learned to an audience, can appeal to individuals that appreciate public accolades. Setting up the owner as an “expert” on a type of failure and its avoidance can be rewarding for many engineers who seek peer acknowledgment. For example, you might hear someone say, “Talk to Sara, she’s an expert now. She just coauthored a postmortem where she figured out how to fix that gap!”
+
+
+
+
+
+Gamification
+
+
+Some individuals are incentivized by a sense of accomplishment and progress toward a larger goal, such as fixing system weaknesses and increasing reliability. For these individuals, a scoreboard or burndown of postmortem action items can be an incentive. At Google, we hold “FixIt” weeks twice a year. SREs who close the most postmortem action items receive small tokens of appreciation and (of course) bragging rights. Figure 10-3 shows an example of a postmortem leaderboard.
+
+
+
+Figure 10-3. Postmortem leaderboard
+
+
+
+
+
+
+
+
+Share Postmortems Openly
+
+
+In order to maintain a healthy postmortem culture within an organization, it’s important to share postmortems as widely as possible. Implementing even one of the following tactics can help.
+
+
+
+Share announcements across the organization
+
+
+Announce the availability of the postmortem draft on your internal communication channels, email, Slack, and the like. If you have a regular company all-hands, make it a practice to share a recent postmortem of interest.
+
+
+
+
+
+Conduct cross-team reviews
+
+
+Conduct cross-team reviews of postmortems. In these reviews, a team walks though their incident while other teams ask questions and learn vicariously. At Google, several offices have informal Postmortem Reading Clubs that are open to all employees.
+
+
+In addition, a cross-functional group of developers, SREs, and organizational leaders reviews the overall postmortem process. These folks meet monthly to review the effectiveness of the postmortem process and template.
+
+

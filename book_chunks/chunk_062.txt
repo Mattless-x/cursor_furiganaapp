@@ -1,0 +1,142 @@
+=== The Site Reliability Workbook ===
+=== Chunk 62/100 ===
+
+vices, like Cloud Pub/Sub and Helios, to speed up development of our system and to reduce our operational load. In the event of an incident caused by an external service, we have a dedicated on-call team8 who provides support. One drawback of using external services is that we can’t do much to mitigate the problem ourselves. Furthemore, communicating the issue to a third party takes valuable time during an incident. Nevertheless, we believe that the ability to delegate responsibility is worth the occasional feeling of powerlessness.
+
+
+Unexpected system behavior under heavy load is another common source of operational failure. Testing services under exact production conditions is impossible, so it’s hard to predict all of the edge cases that can happen. It can also be difficult to emulate the load our components face in production. Heavy load in combination with unforeseen edge cases can lead to interesting failure scenarios, such as the Autoscaler example described earlier in “Capacity planning”.
+
+
+Operational system failures can cause our SLOs to break. If our data freshness SLO is broken, no customer action is expected; customers must simply wait for their data to arrive. However, if our skewness or completeness SLOs are breached, we might need to involve customers, as data quality is compromised. When we detect either completeness or skewness issues, the impacted events require reprocessing to be delivered correctly:
+
+
+
+ 
+ To deal with incompleteness, events need to be redelivered from the last checkpoint known to be good.
+
+ 
+
+ 
+ To deal with excessive skewness, already delivered events are reshuffled and assigned to their correct hourly buckets.
+
+ 
+
+
+
+Both redelivery and reshuffling of events are done manually. After the delivered events are modified, we strongly advise our customers to reprocess them to produce data of sufficient quality. 
+
+
+
+
+
+
+
+Summary
+
+
+Spotify’s event delivery system has evolved over the years. Because previous iterations were far less reliable, our engineers were paged every few nights. We spent the majority of our development sprints on incident remediations and postmortems. When designing the current incarnation, we focused on building a modularized system that does one core thing well: deliver events. Additionally, we wanted to provide event delivery as a product to the rest of Spotify. To achieve this, we needed to define and meet SLOs so that we could set clear expectations for our customers.
+
+
+We employ a range of strategies to keep the service up and running—from well-documented on-call procedures to using well-proven external services (such as Google Cloud Pub/Sub). Furthermore, a single team is responsible for the development and operation of the system throughout its entire lifecycle. This development structure allows us to use the team experience we gain from maintaining the system to continually improve it.
+
+
+As a result of these efforts, we now have a reliable system that allows us to focus our time on meeting more ambitious completeness, skewness, and timeliness SLOs. This results in better usability and a better overall customer experience.
+
+
+
+
+
+
+
+Conclusion
+
+
+Applying SRE best practices to pipelines can help you make smart design choices and develop automation tools so that pipelines are easy to operate, scale more effectively, and are more reliable. Spotify’s event delivery system is an example of a pipeline built and operated with core SRE principles in mind, using a variety of technologies—from in-house, Google Cloud, and third parties—chosen to meet the customer’s need for timely data processing. Without proper care for operational best practices, pipelines may be more prone to failure and require a lot of manual work, especially during periods of growth, migrations, feature launches, or cleanup after outages. As with any complex system design, it is important to know your requirements and the SLOs you have chosen to keep, assess the available technology, and document the design and how to perform common tasks.
+
+
+
+1 See Umeshwar Dayal et al., “Data Integration Flows for Business Intelligence,” in Proceedings of the 12th International Conference on Extending Database Technology: Advances in Database Technology (New York: ACM, 2000), 1–11.
+2 For more details about factoring dependencies into your service’s reliability, see Ben Treynor et al., “The Calculus of Service Availability,” ACM Queue 15, no. 2 (2017), https://queue.acm.org/detail.cfm?id=3096459.
+3 Cloud Dataproc is a fully managed cloud service for running Apache Spark and Apache Hadoop clusters.
+4 Cloud Dataflow is a fully managed cloud service for transforming data in stream and batch modes, with equal reliability and expressiveness.
+5 Regional endpoints control workers, and store and handle metadata for a Cloud Dataflow job.
+6 Delivered events are events that have been delivered to persistent storage and are exposed in such a way that they can be consumed by customers of the event delivery system (e.g., data jobs).
+7 Produced events are both the events that have been delivered and the events that are currently flowing through the event delivery system.
+8 The external service provider guarantees SLAs and has its own on-call team to ensure the product is meeting these SLAs.
+
+Configuration Design and Best Practices
+
+Chapter 14. Configuration Design and Best Practices
+
+
+By Štěpán Davidovič
+
+with Niall Richard Murphy, Christophe Kalt, and Betsy Beyer
+
+
+Configuring systems is a common SRE task everywhere. It can be a tiring and frustratingly detailed activity, particularly if the engineer isn’t deeply familiar with the system they’re configuring or the configuration hasn’t been designed with clarity and usability in mind. Most commonly, you perform configuration in one of two scenarios: during initial setup when you have plenty of time, or during an emergency reconfiguration when you need to handle an incident.
+
+
+This chapter examines configuration from the perspective of someone who designs and maintains an infrastructure system. It describes our experiences and strategies for designing configuration in a safe and sustainable way.
+
+
+
+What Is Configuration?
+
+
+When we deploy software systems, we do not think of them as fixed and never-changing. Ever-evolving business needs, infrastructure requirements, and other factors mean that systems are constantly in flux. When we need to change system behavior quickly, and the change process requires an expensive, lengthy rebuild and redeployment process, a code change won’t suffice. Instead, configuration—which we can loosely define as a human-computer interface for modifying system behavior—provides a low-overhead way to change system functionality. SREs take advantage of this on a regular basis, when deploying systems and tuning their performance, as well as during incident response.
+
+
+We can reason about systems as having three key components:
+
+
+
+ 
+ The software
+
+ 
+
+ 
+ The data set that the system works with
+
+ 
+
+ 
+ The system configuration
+
+ 
+
+
+
+While we can intuitively identify each of these components, they are often far from clearly separated. For example, many systems use programming languages for configuration, or at least have the capability to reference programming languages. Examples include Apache and modules, such as mod_lua and its request hooks, or the window manager XMonad and its Haskell-based configuration. Similarly, data sets might contain code, such as stored SQL procedures, which can amount to complex applications.
+
+
+A good configuration interface allows quick, confident, and testable configuration changes. When users don’t have a straightforward way to update configuration, mistakes are more likely. Users experience increased cognitive load and a significant learning curve.
+
+
+
+Configuration and Reliability
+
+
+Because our systems are ultimately managed by humans, humans are responsible for configuration. The quality of the human-computer interface of a system’s configuration impacts an organization’s ability to run that system reliably. The impact of a well-crafted (or poorly crafted) configuration interface is similar to the impact of code quality on system maintainability over time.
+
+
+However, configuration tends to differ meaningfully from code in several aspects. Changing a system’s capabilities via code is typically a lengthy and involved process, involving small incremental changes, code reviews, and testing. In contrast, changing a single configuration option can have dramatic changes on functionality—for example, one bad firewall configuration rule may lock you out of your own system. Unlike code, configuration often lives in an untested (or even untestable) environment.
+
+
+System configuration changes may need to be made under significant pressure. During an incident, a configuration system that can be simply and safely adjusted is essential. Consider the interface design of early airplanes: confusing controls and indicators led to accidents. Research at the time showed that operator failures were frequent, regardless of pilot skill or experience.1 The link between usability and reliability translates to computing systems. Consider what happens if we swap a control stick and dial indicators for .conf files and monitoring graphs.
+
+
+
+
+
+Separating Philosophy and Mechanics
+
+
+We usually discuss configuration when designing new software or assembling a new system out of existing software components. How will we configure it? How will the configuration load? We’ll separate the overarching topic of configuration into two parts: configuration philosophy and configuration mechanics.
+
+
+Configuration philosophy pertains to aspects of configuration that are completely independent of the chosen language and other mechanics. Our discussion of philosophy encompasses how to structure the configuration, how to achieve the correct level of abstraction, and how to support diverging use cases seamlessly.
+
+
+Our discussion of mechanics covers topics like language design, deployment strategies, and interactions with other systems. This chapter focuses less on mechanics, partly because topics like language choice are already being discussed across the industry. Additionally, because a given organization may already have strong outside requirements like preexisting configuration infrastructure, configuration mechanics aren’t easily generalizable. The following chapter on Jsonnet gives a practical example of confi

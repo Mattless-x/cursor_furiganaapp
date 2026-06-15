@@ -1,0 +1,230 @@
+=== The Site Reliability Workbook ===
+=== Chunk 41/100 ===
+
+n.
+
+
+
+
+
+Incident
+
+
+In mid-2015, lightning struck the power grid near a Google datacenter in Belgium four times within two minutes. The datacenter’s backup generators activated to supply power to all the machines. While the backup generators were starting up, most of the servers ran on backup batteries for a few minutes.
+
+
+The UPS batteries in the disk trays did not swap power usage to the backup batteries on the third and fourth lightning strikes because the strikes were too closely spaced. As a result, the disk trays lost power until the backup generators kicked in. The servers did not lose power, but were unable to access the disks that had power cycled.
+
+
+Losing a large number of disk trays on persistent disk storage resulted in read and write errors for many virtual machine (VM) instances running on Google Compute Engine (GCE). The Persistent Disk SRE on-call was immediately notified of these errors. Once the Persistent Disk SRE team established the impact, a major incident was declared and announced to all affected parties. The Persistent Disk SRE on-call assumed the role of Incident Commander.
+
+
+After an initial investigation and communication between stakeholders, we established that:
+
+
+
+ 
+ Each machine that lost a disk tray because of the temporary power outage needed to be rebooted.
+
+ 
+
+ 
+ While waiting for the reboot, some customer VMs had trouble reading and writing to their disks.
+
+ 
+
+ 
+ Any host that had both a disk tray and customer VMs could not simply be “rebooted” without losing the customer VMs that hadn’t been affected. Persistent Disk SRE asked GCE SRE to migrate unaffected VMs to other hosts.
+
+ 
+
+
+
+The Persistent Disk SRE’s primary on-call retained the IC role, since that team had the best visibility into customer impact.
+
+
+Operations team members were tasked with the following objectives:
+
+
+
+ 
+ Safely restore power to use grid power instead of backup generators.
+
+ 
+
+ 
+ Restart all machines that were not hosting VMs.
+
+ 
+
+ 
+ Coordinate between Persistent Disk SRE and GCE SRE to safely move VMs away from the affected machines before restarting them.
+
+ 
+
+
+
+The first two objectives were clearly defined, well understood, and documented. The datacenter ops on-call immediately started working to safely restore power, providing regular status reports to the IC. Persistent Disk SRE had defined procedures for restarting all machines not hosting virtual machines. A team member began restarting those machines.
+
+
+The third objective was more vague and wasn’t covered by any existing procedures. The Incident Commander assigned a dedicated operations team member to coordinate with GCE SRE and Persistent Disk SRE. These teams collaborated to safely move VMs away from the affected machines so the affected machines could be rebooted. The IC closely monitored their progress and realized that this work called for new tools to be written quickly. The IC organized more engineers to report to the operations team so they could create the necessary tools.
+
+
+The Communications Lead observed and asked questions about all incident-related activities, and was responsible for reporting accurate information to multiple audiences:
+
+
+
+ 
+ Company leaders needed information about the extent of the problem, and assurance that the problem was being addressed.
+
+ 
+
+ 
+ Teams with storage concerns needed to know when their storage would be fully available again.
+
+ 
+
+ 
+ External customers needed to be proactively informed about the problem with their disks in this cloud region.
+
+ 
+
+ 
+ Specific customers who had filed support tickets needed more information about the problems they were seeing, and advice on workarounds and timelines.
+
+ 
+
+
+
+After we mitigated the initial customer impact, we needed to do some follow-up, such as:
+
+
+
+ 
+ Diagnosing why the UPS used by the disk trays failed, and making sure that it doesn’t happen again.
+
+ 
+
+ 
+ Replacing the batteries in the datacenter that failed.
+
+ 
+
+ 
+ Manually clearing “stuck” operations caused by losing so many storage systems simultaneously.
+
+ 
+
+
+
+Post-incident analysis revealed that only a small number of writes—the writes pending on the machines that lost power during the incident—weren’t ever written to disk. Since Persistent Disk snapshots and all Cloud Storage data are stored in multiple datacenters for redundancy, only 0.000001% of data from running GCE machines was lost, and only data from running instances was at risk.
+
+
+
+
+
+Review
+
+
+By declaring the incident early and organizing a response with clear leadership, a carefully managed group of people handled this complex incident effectively.
+
+
+The Incident Commander delegated the normal problems of restoring power and rebooting servers to the appropriate Operations Lead. Engineers worked on fixing the issue and reported their progress back to the Operations Lead.
+
+
+The more complex problem of meeting the needs of both GCE and Persistent Disk required coordinated decision making and interaction among multiple teams. The Incident Commander made sure to assign appropriate operations team members from both teams to the incident, and worked directly with them to drive toward a solution. The Incident Commander wisely focused on the most important aspect of the incident: addressing the needs of the impacted customers as quickly as possible.
+
+
+
+
+
+
+
+Case Study 4: Incident Response at PagerDuty
+
+
+by Arup Chakrabarti of PagerDuty
+
+
+PagerDuty has developed and refined our internal incident response practices over the course of several years. Initially, we staffed a permanent, company-wide Incident Commander and dedicated specific engineers per service to take part in incident response. As PagerDuty grew to over 400 employees and dozens of engineering teams, our Incident Response processes also changed. Every few months, we take a hard look at our processes, and update them to reflect business needs. Nearly everything we have learned is documented at https://response.pagerduty.com. Our Incident Response processes are purposefully not static; they change and evolve just as our business does.
+
+
+
+Major incident response at PagerDuty
+
+
+Typically, small incidents require only a single on-call engineer to respond. When it comes to larger incidents, we place heavy emphasis on teamwork. An engineer shouldn’t feel alone in high-stress and high-impact scenarios. We use the following techniques to help promote teamwork:
+
+
+
+ Participating in simulation exercises
+ 
+ One way we teach teamwork is by participating in Failure Friday. PagerDuty drew inspiration from Netflix’s Simian Army to create this program. Originally, Failure Friday was a manual failure injection exercise aimed at learning more about the ways our systems could break. Today, we also use this weekly exercise to recreate common problems in production and incident response scenarios.
+
+
+ Before Failure Friday starts, we nominate an Incident Commander (typically, a person training to become an IC). They are expected to behave and act like a real IC while conducting failure injection exercises. Throughout the drill, subject-matter experts use the same processes and vernacular they would use during an actual incident. This practice both familiarizes new on-call engineers with incident response language and processes and provides more seasoned on-call engineers with a refresher.
+
+ 
+ Playing time-bound simulation games
+ 
+ While Failure Friday exercises go a long way toward training engineers on different roles and processes, they can’t fully replicate the urgency of actual major incidents. We use simulation games with a time-bound urgency to capture that aspect of incident response.
+
+
+ “Keep Talking and Nobody Explodes” is one game we’ve leveraged heavily. It requires players to work together to defuse bombs within time limits. The stressful and communication-intensive nature of the game forces players to cooperate and work together effectively.
+
+ 
+ Learning from previous incidents
+ 
+ Learning from previous incidents helps us respond better to major incidents in the future. To this end, we conduct and regularly review postmortems.
+
+
+ PagerDuty’s postmortem process involves open meetings and thorough documentation. By making this information easily accessible and discoverable, we aim to reduce the resolution time of future incidents, or prevent a future incident from happening altogether.
+
+
+ We also record all of the phone calls involved in a major incident so we can learn from the real-time communication feed.
+
+ 
+
+
+Let’s look at a recent incident in which PagerDuty had to leverage our incident response process. The incident occurred on October 6, 2017, and lasted more than 10 hours, but had very minimal customer impact.
+
+
+
+ 
+ 7:53 p.m. A member of the PagerDuty SRE team was alerted that PagerDuty internal NTP servers were exhibiting clock drift. The on-call SRE validated that all automated recovery actions had been executed, and completed the mitigation steps in relevant runbooks. This work was documented in the SRE team’s dedicated Slack channel.
+
+ 
+
+ 
+ 8:20 p.m. A member of PagerDuty Software Team A received an automated alert about clock drift errors in their services. Software Team A and the SRE team worked toward resolving the problem.
+
+ 
+
+ 
+ 9:17 p.m. A member of PagerDuty Software Team B received an automated alert about clock drift errors on their services. The engineer from Team B joined the Slack channel where the issue was already being triaged and debugged.
+
+ 
+
+ 
+ 9:49 p.m. The SRE on-call declared a major incident and alerted the Incident Commander on-call.
+
+ 
+
+ 
+ 9:55 p.m. The IC assembled the response team, which included every on-call engineer that had a service dependent on NTP, and PagerDuty’s customer support on-call. The IC had the response team join the dedicated conference call and Slack channel.
+
+
+ For the next eight hours, the response team worked on addressing and mitigating the issue. When the procedures in our runbooks didn’t resolve the issue, the response team started trying new recovery options in a methodical manner.
+
+
+ During this time, we rotated on-call engineers and the IC every four hours. Doing so encouraged engineers to get rest and brought new ideas into the response team.
+
+ 
+
+ 
+ 5:33 a.m. The on-call SRE made a configuration change to the NTP servers.
+
+ 
+
+ 
+ 6:13 a.m. The IC validated that all services had recovered with their respectiv

@@ -1,0 +1,324 @@
+=== The Site Reliability Workbook ===
+=== Chunk 100/100 ===
+
+managing by, in SRE, Manage by Service Level Objectives (SLOs)
+minimizing risk to by canarying releases, Minimizing Risk to SLOs and the Error Budget
+refiningexperimenting with relaxing SLOs, Experimenting with Relaxing Your SLOs
+grading interaction importance, Grading Interaction Importance
+modeling dependencies, Modeling Dependencies
+modeling user journeys, Modeling User Journeys
+
+tracking performance over time at Evernote, Tracking our performance over time
+using for SRE practices without SREs, SRE Practices Without SREs
+using to reduce toil, Use SLOs to Reduce Toil
+why SREs need them, Why SREs Need SLOs
+
+service lifecycle, SRE engagement during, The Service Lifecycle-Phase 7: Unsupportedabandoned phase, Phase 6: Abandoned
+active development phase, Phase 2: Active Development
+architecture and design phase, Phase 1: Architecture and Design
+deprecation phase, Phase 5: Deprecation
+general availability phase, Phase 4: General Availability
+limited availability phase, Phase 3: Limited Availability
+unsupported phase, Phase 7: Unsupported
+
+service reviews (regular), performing, Performing Regular Service Reviews
+servicesmultiple, supporting with single SRE team, Supporting Multiple Services with a Single SRE Team
+SRE rollout for, SRE Rollout
+
+sharded LogJoiner (AdWords example), Calculations
+sharing postmortems openly, Share Postmortems Openly
+shift length for on-call SREs, On-Call Flexibility
+short term goals (SRE team), Setting Ground Rules
+side effects, interleaving with configuration evaluation, Pitfall 4: Interleaving “Configuration Evaluation” with “Side Effects”
+silos, elimination of, No More Silos
+simplicity, Simplicity Is End-to-End, and SREs Are Good for That-Conclusioncase study, end-to-end API simplicity, Background
+case study, project lifecycle complexity, Case Study 2: Project Lifecycle Complexity
+escaping in configuration, Escaping Simplicity, Integrating the Configuration Language
+regainingcase study, eliminating pDNS dependency on itself, Background
+case study, running hundreds of microservices on shared platform, Background
+case study, simplifying Display Ads Spiderweb, Background
+
+site reliability engineering (see SRE)
+site reliability engineers (see SREs)
+skewness SLO (Spotify case study), Skewness
+SLAs (see service level agreements)
+SLIs (see service level indicators)
+SLOs (see service level objectives)
+software engineering, Finding Your First SRE
+software-defined networking (SDN), Background
+source control, using with configurations, Source Control
+speed of data retrieval (monitoring system), Speed
+Spotify case study, Case Study: Spotify-Summarycustomer integration and support, Customer Integration and Support-Incident handlingcapacity planning, Capacity planning
+development process, Development process
+documentation, Documentation
+incident handling, Incident handling
+system monitoring, System monitoring
+
+event delivery, Event Delivery
+event delivery system design and architecture, Event Delivery System Design and Architecturedata collection, Data collection
+data delivery, Data delivery
+extract, transform, load process, Extract Transform Load
+
+event delivery system operation, Event Delivery System Operation-Completeness
+
+SRE (site reliability engineering)about, Background on SRE
+comparing and contrasting with DevOps, Compare and Contrast
+development by Google and others, SLO Engineering Case Studies
+organizational context and fostering successful adoption, Organizational Context and Fostering Successful Adoption-Strive for Parity of Esteem: Career and Financial
+practices without SREs, SRE Practices Without SREs
+principles, Background on SRE-Use the Same Tooling, Regardless of Function or Job Titlemanaging by SLOs, Manage by Service Level Objectives (SLOs)
+moving fast by reducing cost of failure, Move Fast by Reducing the Cost of Failure
+sharing ownership with developers, Share Ownership with Developers
+using same tooling regardless of job title, Use the Same Tooling, Regardless of Function or Job Title
+working to minimize toil, Work to Minimize Toil
+
+reaching beyond your walls, SRE: Reaching Beyond Your Walls-Conclusion
+reasons for adoption by Evernote, Why Did Evernote Adopt the SRE Model?
+rollout for services, SRE Rollout
+
+SRE engagement model, SRE Engagement Model-Conclusionending the relationship, Ending the Relationship-Decommission
+scaling SRE to larger environments, Scaling SRE to Larger Environments-Running Cohesive Distributed SRE Teams
+service lifecycle, The Service Lifecycle-Phase 7: Unsupported
+setting up relationship with development team, Setting Up the Relationship-Planning and Executing
+sustaining an effective ongoing relationship, Sustaining an Effective Ongoing Relationship-Understand differences in communication
+
+SRE teamsadjusting structures to changing circumstances, Adapting SRE Team Structures to Changing Circumstances
+cohesive distributed SRE teams, running, Running Cohesive Distributed SRE Teams
+forming new team at Google, Initial scenario-Afterwordafterword, Afterword
+initial scenario, Initial scenario
+maintaining playbooks, Training roadmap
+training, Training roadmap
+
+lifecycles, SRE Team Lifecycles-Conclusionmaking more SRE teams, Making More SRE Teams-Leadership: Joint ownership of a service
+starting an SRE role, Finding Your First SRE-Distributed SREs
+suggested practices for running many teams, Suggested Practices for Running Many Teams-SRE Funding and Hiring
+your first SRE team, Your First SRE Team-Self-regulating workload
+
+on-call engineers in survive the week culture, Scenario: A culture of “survive the week”-Proposal two: Improve team relations
+single team supporting multiple services, Supporting Multiple Services with a Single SRE Team
+structuring multiple SRE team environment, Structuring a Multiple SRE Team Environment
+work overload when half a team leaves, case study, Background-Lessons Learned
+
+SREs (site reliability engineers)being on-call (see on-call)
+exchange program at Google, SRE Exchange
+funding and hiring, SRE Funding and Hiring
+mobility for, SRE Mobility
+starting an SRE role, Finding Your First SRE-Distributed SREsbootstrapping your first SRE, Bootstrapping Your First SRE
+distributed SREs, Distributed SREs
+finding your first SRE, Finding Your First SRE
+placing your first SRE, Placing Your First SRE
+
+training for, Training
+why they need SLOs, Why SREs Need SLOs
+work overload (see overload, identifying and recovering from)
+
+staging, New bugs
+stakeholders, getting agreement from on SLOs, Getting Stakeholder Agreement
+stateful systemstraffic teeing in, Traffic Teeing
+using autoscaling with, Working with Stateful Systems
+
+statsd metric aggregation daemon, Prefer Loose Coupling
+storage systems, Types of componentsalternatives to filer-based home directories, What We Decided to Do
+
+storming (first SRE team), Storming
+stressors (psychological), identifying and alleviating, Identify and alleviate psychosocial stressors
+string interpolation, Pitfall 1: Failing to Recognize Configuration as a Programming Language Problem
+sunk cost fallacy, Problem Statement
+superfluous (undesirable) language in postmortems, Animated language
+support for services, deciding on, When Can Substitute for Whether
+survive the week culture, Scenario: A culture of “survive the week”-Proposal two: Improve team relationsempowering ops engineers in SRE, Proposal one: Empower your ops engineers
+improving team relations, Proposal two: Improve team relations
+
+swaps (short-term) in on-call scheduling, Plan for short-term swaps
+symptoms of overload, Recognizing the Symptoms of Overload
+system architecture, covering in interviews with SREs, Finding Your First SRE
+system diagrams for data processing pipeline, System diagrams
+systemic fixes for pager alerts, Rigor of follow-up
+systemscomplexity of, measures for, Measuring Complexity
+keeping architectural drawings of, Simplicity Is End-to-End, and SREs Are Good for That
+maturity levels, Getting Started
+
+T
+TCP, Anycast
+team, existing, converting to SRE team, Converting a team in place, Normingrisks and mitigations for, A team converted in place
+
+templatesfor postmortems, Postmortem Templates
+templating engines, using for configuration, Pitfall 1: Failing to Recognize Configuration as a Programming Language Problem
+testing templates in a configuration system, Testing
+using for configurations, Integrating the Configuration Language
+
+testingalerting logic in monitoring system, Testing Alerting Logic
+automated tests, Release Engineering Principles
+for configuration systems, Testing
+for preexisting bugs in production environment, Preexisting bugs
+quick fixes for bugs, Mitigation delay
+software testing to reduce bugs reaching production, New bugs
+testing pyramid philosophy in Spotify development process, Development process
+unit and integration testing, data processing pipeline, Pipeline maturity matrix
+
+The Home Depot (THD) (see Home Depot, SLO case study)
+three Cs of incident management, Incident Command System
+ticketsnew ticket SLO in perceived overload case study, Background
+P1-P5 tickets in Evernote/Google relationship, Breaking Down the SLO Wall Between Customer and Cloud Provider
+SLOs in Home Depot case study, Tickets
+support tickets for Home Depot services, The SLO Culture Project
+ticket toil, Business Processes
+
+tiered SRE engagement, Outcomes
+time for postmortems, lacking, Lacking time to write postmortems
+time windows for SLOs, Choosing an Appropriate Time Windowat Evernote, Introduction of SLOs: A Journey in Progress
+
+timeliness SLO (Spotify case study), Timeliness
+toilconfiguration-induced, Configuration-Induced Toilreducing, Reducing Configuration-Induced Toil
+
+getting ahead of by helping customers, When Your Customers Have a Hard Time, You Have to Slow Down
+metrics in work overload, Recognizing the Symptoms of Overload
+working to minimize in SRE, Work to Minimize Toil
+
+toil, eliminating, Eliminating Toil-Conclusioncase study, decommissioning filer-backed home directories, Case Study 2: Decommissioning Filer-Backed Home Directories-Employ organizational nudgesbackground, Background
+decision on the solution, What We Decided to Do
+design and implementation, Design and Implementation
+key components of the solution, Moonwalk-Archiving and migration automation
+lessons learned, Lessons Learned-Employ organizational nudges
+problem statement, Problem Statement
+
+case study, reducing toil in datacenter with automation, Case Study 1: Reducing Toil in the Datacenter with Automation-Think holisticallybackground, Background-Problem Statement
+decision on the solution, What We Decided to Do
+design first effort, Saturn line-card repair, Design First Effort: Saturn Line-Card Repair
+design second effort, Saturn vs. Jupiter line-card repair, Implementation
+implementation, Jupiter line-card repair, Implementation
+implementation, Saturn line-card repair with automation, Implementation
+lessons learned, Lessons Learned-Think holistically
+problem statement, Problem Statement
+
+characteristics and examples of toil, What Is Toil?-What Is Toil?
+measuring toil, Measuring Toil-Measuring Toil
+taxonomy of toil, Toil Taxonomy-Troubleshooting for Opaque Architecturesbusiness processes, Business Processes
+cost engineering and capacity planning, Cost Engineering and Capacity Planning
+migrations, Migrations
+production interrupts, Production Interrupts
+release shepherding, Release Shepherding
+troubleshooting for opaque architectures, Troubleshooting for Opaque Architectures
+
+toil management strategies, Toil Management Strategies-Use Feedback to Improveassessing risks in automation, Assess Risk Within Automation
+automating toil response, Automate Toil Response
+engineering toil out of the system, Engineer Toil Out of the System
+getting support from management and colleagues, Get Support from Management and Colleagues
+identifying and measuring toil, Identify and Measure Toil
+increasing uniformity, Increase Uniformity
+legacy systems, Use Feedback to Improve
+promoting toil reduction as a feature, Promote Toil Reduction as a Feature
+providing self-service methods, Provide Self-Service Methods
+rejecting toil, Reject the Toil
+starting small, then improving, Start Small and Then Improve
+starting with human-backed interfaces, Start with Human-Backed Interfaces
+using feedback to improve, Use Feedback to Improve
+using open source and third-party tools, Use Open Source and Third-Party Tools
+using SLOs to reduce toil, Use SLOs to Reduce Toil
+
+toolingin DevOps and SRE, Compare and Contrast
+relationship with culture in DevOps, Tooling and Culture Are Interrelated
+using same tooling regardless of job title, Use the Same Tooling, Regardless of Function or Job Title
+
+toolscommon tooling adoption in SRE, case study, Background-Lessons Learned
+for configuration systems, Tooling
+for incident response, Tools used for incident response
+for postmortems, Postmortem Tooling
+in configuration system, Importance of Tooling
+increasing uniformity in, Increase Uniformity
+using open source and third-party tools, Use Open Source and Third-Party Tools
+
+traffic teeing, Traffic Teeing
+traffic volume metrics, The SLO Culture ProjectSLOs in Home Depot case study, Traffic volume
+
+trainingfor incident response, Incident Response Training
+for SREs, Training
+new SRE team at Google, Training roadmap
+teaching customers, You Will Need to Practice SRE with Your Customers
+to reduce perceived work overload, Mid-term actions
+using postmortems to train new engineers, Hold training exercises
+
+travel for SRE teams, Travel
+triaging interrupts, Lessons Learned
+troubleshooting for opaque architectures, Troubleshooting for Opaque Architectures
+truncated exponential backoff, Future-proofing
+two-phase mutations, Idempotent and Two-Phase Mutations
+
+U
+ulimit utility, Guarding Against Abusive Configuration
+unhealthy instances, handling, Handling Unhealthy Machines
+uniformity, increasing, Increase Uniformity, Melt snowflakes
+unsupported phase, service lifecycle, Phase 7: Unsupported
+user behaviors causing bugs to manifest, New bugs
+user journeys, modeling, Modeling User Journeys
+user-centric view (configuration), Configuration Asks Users Questionsmandatory and optional configuration questions, Mandatory and Optional Questions
+questions asked should be close to user goals, Questions Should Be Close to User Goals
+
+usersdeciding reliability, Your Users, Not Your Monitoring, Decide Your Reliability
+helping past difficulties, When Your Customers Have a Hard Time, You Have to Slow Down
+
+utilizationinfrastructure utilization in Home Depot case study, Infrastructure utilization
+measurement in Home Depot case study, The SLO Culture Project
+monitoring system metrics on saturation, Saturation
+
+V
+VALET (SLOs at Home Depot), VALET
+versioning, using with configurations, Ownership and Change Tracking, Versioning
+virtual machines run by cloud provider, availability of, Breaking Down the SLO Wall Between Customer and Cloud Provider
+visualizations, Dashboards and Reports(see also dashboards)
+for data processing pipeline, Pipeline maturity matrix
+
+volume (traffic), The SLO Culture Project(see also traffic volume metrics)
+in Home Depot VALET SLOs, VALET
+
+W
+Waze, scaling, change management case study, Background-Lessons Learned
+wisdom of production, Work to Minimize Toil
+work overload, Identifying and Recovering from Overload(see also overload, identifying and recovering from)
+
+workloadsdistributing between geographically split SRE teams, Parity: Distributing Work Between Offices and Avoiding a “Night Shift”
+SRE teams having complete self-determination of, Performing
+SRE teams regulating, Your First SRE Team
+workload coverage, Be Thoughtful and Disciplined
+
+X
+x20 filesystem, What We Decided to Do
+
+Y
+YAML, Generating Config in Specific Formatsconfigs written in, JSON and, Integrating the Configuration Language
+JSON object encoded as YAML streams in Kubernetes, What Kubernetes Provides
+
+About the Editors
+
+ About the Editors
+
+
+Betsy Beyer is a Technical Writer for Google Site Reliability Engineering in NYC. She has previously written documentation for Google Datacenters and Hardware Operations teams. Before moving to New York, Betsy was a lecturer on technical writing at Stanford University. En route to her current career, Betsy studied International Relations and English Literature, and holds degrees from Stanford and Tulane.
+
+
+Niall Richard Murphy has been working in internet infrastructure for 20 years. He is a company founder, a published author, a photographer, and holds degrees in Computer Science & Mathematics and Poetry Studies.
+
+
+Dave Rensin is a Google SRE Director, previous O’Reilly author, and serial entrepreneur. He holds a degree in Statistics.
+
+
+Kent Kawahara is a Program Manager for Google’s Site Reliability Engineering team focused on Google Cloud Platform customers and is based in Sunnyvale, CA. In previous Google roles, he managed technical and design teams to develop advertising support tools and worked with large advertisers and agencies on strategic advertising initiatives. Prior to Google, he worked in Product Management, Software QA, and Professional Services at two successful telecommunications startups. He holds a BS in Electrical Engineering and Computer Science from the University of California at Berkeley.
+
+
+Stephen Thorne is a Senior Site Reliability Engineer at Google. He currently works in Customer Reliability Engineering, helping to integrate Google’s Cloud customers’ operations with Google SRE. Stephen learned how to be an SRE on the team that runs Google’s advertiser and publisher user interfaces, and later worked on App Engine. Before his time at Google, he fought against spam and viruses in his home country of Australia, where he also earned his BSc in Computer Science.
+
+Colophon
+
+Colophon
+
+
+The animal on the cover of The Site Reliability Workbook is a green thornytail iguana (Uracentron azureum), an arboreal lizard that lives in the Amazon and other South American rainforests.
+
+
+The skin of this lizard is a very vivid green, interspersed with black stripes. As its name suggests, it also has rows of spikes on its tail, but the purpose of these is unclear. The green thornytail lizard is rather small, at about 3.5 inches long, and is difficult to spot in the wild because it tends to live high in the forest canopy (where it can more easily bask in sunlight). Ants make up the bulk of the lizard’s diet, which it catches by using a “sit and wait” method until insects wander by its location on a tree.
+
+
+Many of the animals on O’Reilly covers are endangered; all of them are important to the world. To learn more about how you can help, go to animals.oreilly.com.
+
+
+The cover image is from a loose plate, source unknown. The cover fonts are URW Typewriter and Guardian Sans. The text font is Adobe Minion Pro; the heading font is Adobe Myriad Condensed; and the code font is Dalton Maag’s Ubuntu Mono.

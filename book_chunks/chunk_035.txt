@@ -1,0 +1,162 @@
+=== The Site Reliability Workbook ===
+=== Chunk 35/100 ===
+
+
+
+When a production system is plagued by several concurrent bugs, it’s much more difficult to identify if a given page is for an existing or new bug. Minimizing the number of bugs in production not only reduces pager load, it also makes identifying and classifying new bugs easier. Therefore, it is critical to remove production bugs from your systems as quickly as possible. Prioritize fixing existing bugs above delivering new features; if this requires cross-team collaboration, see Chapter 18.
+
+
+Architectural or procedural problems, such as automated health checking, self-healing, and load shedding, may need significant engineering work to resolve. Remember, for simplicity’s sake we’ll consider these problems “bugs,” even if their size, their complexity, or the effort required to resolve them is significant.
+
+
+Chapter 3 of Site Reliability Engineering describes how error budgets are a useful way to manage the rate at which new bugs are released to production. For example, when a service’s SLO violations exceed a certain fraction of its total quarterly error budget—typically agreed in advance between the developer and SRE teams—new feature development and feature-related rollouts can be halted temporarily to focus on stabilizing the system and reducing the frequency of pages.
+
+
+The Connection team from our example adopted a strict policy requiring every outage to have a tracking bug. This enabled the team’s technical program manager to examine the root cause of their new bugs in aggregate. This data revealed that human error was the second most common cause of new bugs in production.
+
+
+Because humans are error-prone, it’s better if all changes made to production systems are made by automation informed by (human-developed) intent configuration. Before you make a change to production, automation can perform additional testing that humans cannot. The Connection team was making complex changes to production semimanually. Not surprisingly, the team’s manual changes went wrong sometimes; the team introduced new bugs, which caused pages. Automated systems making the same changes would have determined that the changes were not safe before they entered production and became paging events. The technical program manager took this data to the team and convinced them to prioritize automation projects.
+
+
+
+
+
+Identification delay
+
+
+It’s important to promptly identify the cause(s) of alerts because the longer it takes to identify the root cause of a page, the more opportunity it has to recur and page again. For example, given a page that manifests only under high load, say at daily peak, if the problematic code or configuration is not identified before the next daily peak, it is likely that the problem will happen again. There are several techniques you might use to reduce identification delays:
+
+
+
+ Use good alerts and consoles
+ Ensure pages link to relevant monitoring consoles, and that consoles highlight where the system is operating out of specification. In the console, correlate black-box and white-box paging alerts together, and do the same with their associated graphs. Make sure playbooks are up to date with advice on responding to each type of alert. On-call engineers should update the playbook with fresh information when the corresponding page fires.
+
+ Practice emergency response
+ Run “Wheel of Misfortune” exercises (described in Site Reliability Engineering) to share general and service-specific debugging techniques with your colleagues.
+
+ Perform small releases
+ If you perform frequent, smaller releases instead of infrequent monolithic changes, correlating bugs with the corresponding change that introduced them is easier. Canarying releases, described in Chapter 16 gives a strong signal about whether a new bug is due to a new release.
+
+ Log changes
+ Aggregating change information into a searchable timeline makes it simpler (and hopefully quicker) to correlate new bugs with the corresponding change that introduced them. Tools like the Slack plug-in for Jenkins can be helpful.
+
+ Ask for help
+ In Site Reliability Engineering, “Managing Incidents”, we talked about working together to manage large outages. The on-call engineer is never alone; encourage your team to feel safe when asking for help.
+
+
+
+
+
+
+Mitigation delay
+
+
+The longer it takes to mitigate a bug once it’s identified, the more opportunity it has to recur and page again. Consider these techniques for reducing mitigation delays:
+
+
+
+ Roll back changes
+ 
+ 
+ 
+ If the bug was introduced in a recent code or configuration rollout, promptly remove the bug from production with a rollback, if safe and appropriate (a rollback alone may be necessary but is not sufficient if the bug caused data corruption, for example). Remember that even a “quick fix” needs time to be tested, built, and rolled out. Testing is vital to making sure the quick fix actually fixes the bug, and that it doesn’t introduce additional bugs or other unintended consequences. Generally, it is better to “roll back, fix, and roll forward” rather than “roll forward, fix, and roll forward again.”
+
+ 
+
+ 
+ If you aim for 99.99% availability, you have approximately 15 minutes of error budget per quarter. The build step of rolling forward may take much longer than 15 minutes, so rolling back impacts your users much less.
+
+
+ (99.999% availability affords an error budget of 80 seconds per quarter. At this point, systems may need self-healing properties, which is out of scope for this chapter.)
+
+ 
+
+ 
+ If at all possible, avoid changes that can’t be rolled back, such as API-incompatible changes and lockstep releases.
+
+ 
+
+ 
+ 
+ Use feature isolation
+ 
+ 
+ 
+ Design your system so that if feature X goes wrong, you can disable it via, for example, a feature flag without affecting feature Y. This strategy also improves release velocity, and makes disabling feature X a much simpler decision—you don’t need to check that your product managers are comfortable with also disabling feature Y.
+
+ 
+
+ 
+ 
+ Drain requests away
+ 
+ 
+ 
+ Drain requests (i.e., redirect customer requests) away from the elements of your system that exhibit the bug. For example, if the bug is the result of a code or config rollout, and you roll out to production gradually, you may have the opportunity to drain the elements of your infrastructure that have received the update. This allows you to mitigate the customer impact in seconds, rather than rolling back, which may take minutes or longer.
+
+ 
+
+ 
+ 
+
+
+
+
+
+Alerting
+
+
+Google SRE’s maximum of two distinct incidents per 12-hour shift encourages us to be thoughtful and cautious about how we configure paging alerts and how we introduce new ones. Site Reliability Engineering, “Monitoring Distributed Systems”, describes Google’s approach to defining the thresholds for paging alerts. Strictly observing these guidelines is critical to maintaining a healthy on-call rotation.
+
+
+It is worth highlighting some key elements discussed in that chapter:
+
+
+
+ 
+ All alerts should be immediately actionable. There should be an action we expect a human to take immediately after they receive the page that the system is unable to take itself. The signal-to-noise ratio should be high to ensure few false positives; a low signal-to-noise ratio raises the risk for on-call engineers to develop alert fatigue. 
+
+ 
+
+ 
+ If a team fully subscribes to SLO-based alerting, or paging only when error budget is burned (see the section “Black-Box Versus White-Box” in Site Reliability Engineering), it is critical that all teams involved in developing and maintaining the service agree about the importance of meeting the SLO and prioritize their work accordingly.
+
+ 
+
+ 
+ If a team fully subscribes to SLO-based and symptom-based alerting, relaxing alert thresholds is rarely an appropriate response to being paged.
+
+ 
+
+ 
+ Just like new code, new alerts should be thoroughly and thoughtfully reviewed. Each alert should have a corresponding playbook entry.
+
+ 
+
+
+
+Receiving a page creates a negative psychological impact. To minimize that impact, only introduce new paging alerts when you really need them. Anyone on the team can write a new alert, but the whole team reviews proposed alert additions and can suggest alternatives. Thoroughly test new alerts in production to vet false positives before they are upgraded to paging alerts. For example, you might email the alert’s author when the alert fires, rather than paging the on-call engineer.
+
+
+New alerts may find problems in production that you weren’t aware of. After you address these production bugs, alerting will only page on new bugs, effectively functioning like regression tests.
+
+
+Be sure to run the new alerts in test mode long enough to experience typical periodic production conditions, such as regular software rollouts, maintenance events by your Cloud provider, weekly load peaks, and so on. A week of testing is probably about right. However, this appropriate window depends on the alert and the system.
+
+
+Finally, use the alert’s trigger rate during the testing period to predict the expected consumption of your pager budget as a result of the new alert. Explicitly approve or disallow the new alert as a team. If introducing a new paging alert causes your service to exceed its paging budget, the stability of the system needs additional attention.
+
+
+
+
+
+Rigor of follow-up
+
+
+Aim to identify the root cause of every page. “Root causes” extend out of the machine and into the team’s processes. Was an outage caused by a bug that would have been caught by a unit test? The root cause might not be a bug in the code, but rather a bug in the team’s processes around code review.
+
+
+If you know the root cause, you can fix and prevent it from ever bothering you or your colleagues again. If your team cannot figure out the root cause, add monitoring and/or logging that will help you find the root cause of the page the next time it occurs. If you don’t have enough information to identify the bug, you can always do something to help debug the page further next time. You should rarely conclude that a page is triggered by “cause unknown.” Remember that as an on-call engineer, you are never alone, so ask a colleague to review your findings and see if there’s anything you missed. Typically, it’s easiest to find the root cause of an alert soon after the alert has triggered and fresh evidence is available.
+
+
+Explaining away a page as “transient,” or taking no 

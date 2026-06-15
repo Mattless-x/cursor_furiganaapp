@@ -1,0 +1,388 @@
+=== The Site Reliability Workbook ===
+=== Chunk 83/100 ===
+
+
+
+
+Placing Your First SRE
+
+
+Once you’ve hired your first SRE, you now need to decide where to embed them in your organization. You have three main choices:
+
+
+
+ 
+ In a product development team
+
+ 
+
+ 
+ In an operations team
+
+ 
+
+ 
+ In a horizontal role, consulting across a number of teams
+
+ 
+
+
+
+We recommend that you evaluate the pros and cons of each of these three options after reading this chapter, taking into account:
+
+
+
+ Your own role and sphere of influence.
+ 
+ If you’re able to effectively influence product development team(s), then embedding an SRE in operations or horizontal work can help iron out gnarly production issues early.
+
+ 
+ The immediate challenges that you face.
+ 
+ If the challenges require hands-on work to mitigate a technical problem or business risk, then embedding an SRE in an operations or product team can be advantageous. Doing so removes organizational silos and facilitates easy communication between team members.
+
+ 
+ The challenges you expect to face in the next 12 months.
+ 
+ For example, if you’re focusing on launches, embedding the SRE within a product development team might make sense. If you’re focusing on infrastructure changes, embedding the SRE with an operations team might make more sense.
+
+ 
+ Your plan for how you want to change your organization.
+ 
+ If you plan to move toward a centralized SRE organization, you might not want to embed SREs in product development teams initially—it might be hard to remove them from these teams later.
+
+ 
+ The person you have identified as your first SRE.
+ 
+ Decide where this first SRE would be most productive based upon their background and skills.
+
+ 
+
+
+It might make sense to experiment with different models as you figure out which approach works best for you. However, we strongly recommend sticking with one stable and coherent model in the long term; otherwise, the instability will undermine the effectiveness of SRE.
+
+
+
+
+
+Bootstrapping Your First SRE
+
+
+Your first SRE’s initial mission is to get up to speed on the service. In order to have a positive impact, an SRE needs to understand the service’s current problems, its required toil (see Chapter 6) and the engineering required to keep the system within SLOs. If your organization doesn’t already have SLOs and error budgets as per Principle #1, your first SRE needs to perform the engineering required to design and implement these tools. At this point, our second SRE principle comes into play:
+
+
+
+ Principle #2
+
+ 
+ SREs must have time to make tomorrow better than today.
+
+ 
+
+
+
+Without this principle, toil will only increase as service usage increases and the system becomes correspondingly larger and more complex. A healthy balance between operational responsibilities and project work is essential—if toil becomes too burdensome, talented engineers will flee the team. For more guidance on how an SRE team might obtain that balance, see Chapter 17.
+
+
+Initial project work might focus on one of the following:
+
+
+
+ 
+ Improving monitoring so you can better understand the system when things go wrong.
+
+ 
+
+ 
+ Addressing any high-priority actions identified in recent postmortems (see Chapter 10).
+
+ 
+
+ 
+ Implementing automation to reduce a specific element of toil required to run the service.
+
+ 
+
+
+
+It is vital that the SRE has a distinctive role and that their projects benefit the whole team. Look out for signs that the SRE work is not going well:
+
+
+
+ 
+ Their mix of work is indistinguishable from other engineering work.
+
+ 
+
+ 
+ If your first SRE is on a product development team, they are doing more than their fair share of operational work, or they are the only person working on service configuration changes.
+
+ 
+
+ 
+ The SLOs are not being taken seriously, and the SRE isn’t making progress in measuring and defending the customer experience.
+
+ 
+
+
+
+
+
+
+Distributed SREs
+
+
+If your organization doesn’t have (or doesn’t plan to have) a discrete SRE team (or teams), it’s important to construct a community for distributed SREs. This community should advocate the SRE’s distinctive role and drive consistent changes in reliability-focused technology or practices across teams. Without a social grouping, individual SREs may feel very isolated.
+
+
+
+
+
+
+
+Your First SRE Team
+
+
+You might start an SRE team in a number of ways. Approaches we’ve used at Google, from least to most complex, include:
+
+
+
+ 
+ Creating a new team as part of a major project
+
+ 
+
+ 
+ Establishing a horizontal SRE team
+
+ 
+
+ 
+ Converting an existing team (for example, an operations team)
+
+ 
+
+
+
+The approach that’s best for your organization is highly situational. A team needs enough SREs to handle the operational tasks required to run the service. Addressing that workload brings us to our third principle:
+
+
+
+ Principle #3
+
+ 
+ SRE teams have the ability to regulate their workload.
+
+ 
+
+
+
+Outside of a large SRE organization, a team likely can’t embrace this concept from day one. This principle is open to interpretation and can be difficult to put into practice organizationally. It’s also the most subtle of our three principles, and bears some unpacking. The following sections walk through the stages of building a team, using Tuckman’s performance model and stages of forming, storming, norming, and performing.1
+
+
+
+Forming
+
+
+The team you assemble should have combined experience and expertise that includes the following:
+
+
+
+ 
+ Making changes to application software to improve reliability and performance.
+
+ 
+
+ 
+ Writing software to:
+
+
+ 
+ 
+ Expedite the detection and mitigation of problems in production.
+
+ 
+
+ 
+ Automate manual processes.
+
+ 
+
+ 
+ 
+
+ 
+ Establishing and using strong software practices and standards to facilitate long-term maintainability.
+
+ 
+
+ 
+ Having a methodical and careful approach to making operational changes: be able to describe why certain practices are reliable.
+
+ 
+
+ 
+ Understanding system architecture (distributed systems design and operation).
+
+ 
+
+
+
+Ideally, your team will be ready to adopt a new way of working, and have a balance of skills and established personal relationships with other teams. If possible, we recommend that you seed the team with internal transfers. This can reduce the time it takes your team to get up and running.
+
+
+
+Creating a new team as part of a major project
+
+
+You might create a new SRE team for a major project that is large enough to justify new headcount, and for which reliability and operational capability have been identified as project risks. Examples might include the creation of a new service or a substantial change in your technology (e.g., migration to a public cloud).
+
+
+
+
+
+Assembling a horizontal SRE team
+
+
+In this approach (well documented in Chapter 27 of our first book), a small team of SREs consults across a number of teams. This team might also establish best practices and tools for configuration management, monitoring, and alerting.
+
+
+
+
+
+Converting a team in place
+
+
+You might be able to convert an existing team into an SRE team. The existing team likely isn’t a product development team; typical candidates include an operations team or a team responsible for managing a popular open source component that your organization uses heavily. Be careful to avoid renaming a team from “Operations” to “SRE” without first applying SRE practices and principles! If your rebranding effort fails, your organization may be poisoned against the entire concept of SRE in the future.
+
+
+
+
+
+
+
+Storming
+
+
+Once assembled, the team needs to start working collaboratively: the team members need to work well with each other, and also with other teams.
+
+
+You might employ any number of tactics to promote this type of cohesion. At Google, we’ve had success providing a regular forum for learning and discussing SRE practices and reflecting on how the team is performing. For example, you might hold a regular television lunch, where you show a video from SREcon, or a book club, where you all preread some relevant content and then discuss how you can apply it.
+
+
+During this phase, encourage your new SRE team to stretch themselves. Your new SREs should be comfortable speaking out about SRE practices that don’t fit within your organization, and whether it’s worth making the change so they fit.
+
+
+
+Risks and mitigations
+
+
+During this nascent phase of the SRE journey, there are a number of ways the team might fail. Next we present some risks and possible mitigation strategies, broken down by how the new team formed. You might use one or more of the mitigation strategies for each risk.
+
+
+
+New team as part of a major project
+
+
+
+ Risks
+ 
+ The team:
+
+
+ 
+ 
+ Spreads itself too thin by taking responsibility for too many services at once.
+
+
+ 
+ 
+ A team that is constantly firefighting doesn’t have time to address risk in a more permanent way.
+
+ 
+
+ 
+ 
+
+ 
+ Becomes too introspective trying to understand SRE principles and how to implement them. As a result, it underdelivers.
+
+
+ 
+ 
+ For example, the team might become consumed with developing the perfect SLO definition, neglecting the needs of the service in the meantime.
+
+ 
+
+ 
+ 
+
+ 
+ Doesn’t examine its work thoroughly. As a result, service management reverts to previous behaviors.
+
+
+ 
+ 
+ The team is paged 100 times a day. Since the pages don’t indicate that immediate intervention is required, they ignore the pages.
+
+ 
+
+ 
+ 
+
+ 
+ Abandons SRE principles and practices in order to meet product milestones.
+
+
+ 
+ 
+ Reliability improvements to defend the SLO, such as architectural changes, may never be implemented because they set back development timelines.
+
+ 
+
+ 
+ 
+
+ 
+ Gets distracted by conflict with existing teams that perceive a loss of influence or power as a result of the new SRE team.
+
+ 
+
+ 
+ Does not have the necessary breadth of skills, so delivers only part of the necessary improvements.
+
+
+ 
+ 
+ Without the ability to, for example, program, SREs may be unable to instrument the product to measure reliability.
+
+ 
+
+ 
+ 
+
+ 
+ 
+ Mitigations
+ 
+ The team:
+
+
+ 
+ 
+ Engages initially on a single important service.
+
+ 
+
+ 
+ Engages as early as possible on the project, ideally at the design stage.
+
+ 
+
+ 
+ Has input into the design, with a particular focus on defining SLOs and analyzing reliability risks inherent in the design.
+
+ 
+
+ 
+ Partners with the product development team and works on features specific

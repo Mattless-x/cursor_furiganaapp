@@ -1,0 +1,283 @@
+=== The Site Reliability Workbook ===
+=== Chunk 78/100 ===
+
+en prioritizing a request is whether a joint engagement might help reduce our backlog.
+
+
+Defining the Engagement
+
+
+Our SREs work with product development teams according to two different models:
+
+
+
+ 
+ A full-time basis
+
+ 
+
+ 
+ A part-time basis for fairly brief and constrained projects
+
+ 
+
+
+
+We define the type of engagement based upon the SRE team’s bandwidth. For full-time engagements, we prefer to embed an SRE in a product development team. This helps provide focus and time to relieve some burden from the product engineering teams. The SRE and product teams have maximum time to learn about each other as the developers ramp up on SRE skills and capabilities. For long-term engagements, we prioritize applications that best fit into our company strategy.
+
+
+When defining the engagement scope, we attempt to gauge the maturity of the team or the application in relation to SRE practices. We find that various teams are at different levels of maturity when it comes to thinking about SRE practices and principles. We are working on applying an application maturity model to help here.
+
+
+Setting Shared Goals and Expectations
+
+
+Setting the right expectations is critical for meeting deadlines and task completion. To this end, we work according to the following principles:
+
+
+
+ 
+ We emphasize that the application owners, not SREs, are directly responsible for making changes to an application.
+
+ 
+
+ 
+ SRE engagement is for company-wide benefit. Any new automation or tooling should improve common tools and automation used across the company and avoid one-off script development.
+
+ 
+
+ 
+ SREs should give the developer team a heads up about any new processes the engagement might introduce (for example, load testing).
+
+ 
+
+ 
+ The engagements may involve Application Readiness Reviews (ARRs) and Production Readiness Reviews (PRRs), as described in Chapter 32 of Site Reliability Engineering. Proposed changes from ARR and PRR must be prioritized jointly by the developers and the SREs.
+
+ 
+
+ 
+ SREs are not traditional operations engineers. They do not support manual work such as running a job for deployment.
+
+ 
+
+
+
+When we set shared goals, we write them jointly with the development team and divide the goals into milestones. If you are an Agile-based company, you might write epics or stories. The SRE team can then map those goals into their own backlog.
+
+
+Our common pattern when setting goals is to:
+
+
+
+ 
+ Define the scope of the engagement.
+
+
+ 
+ 
+ Example 1: In the next quarter, I want all members of my team to handle GKE/GAE deployments, become comfortable with production environments, and be able to handle a production outage.
+
+ 
+
+ 
+ Example 2: In the next quarter, I want SRE to work with the dev team to stabilize the app in terms of scaling and monitoring, and to develop runbooks and automation for outages.
+
+ 
+
+ 
+ 
+
+ 
+ Identify the end result success story, and call it out explicitly.
+
+
+ 
+ 
+ Example: After the engagement, the product development team can handle our service outages in Google Kubernetes Engine without escalation.
+
+ 
+
+ 
+ 
+
+
+
+Sprints and Communication
+
+
+Any engagement with product development teams begins with a kickoff and planning meeting. Prior to kickoff, our SRE team reviews the application architecture and our shared goal to verify that the expected outcome is realistic within the given time frame. A joint planning meeting that creates epics and stories can be a good starting point for the engagement.
+
+
+A roadmap for this engagement might be:
+
+
+
+ 
+ Review the application architecture.
+
+ 
+
+ 
+ Define shared goals.
+
+ 
+
+ 
+ Hold the kickoff and planning session.
+
+ 
+
+ 
+ Implement development cycles to reach milestones.
+
+ 
+
+ 
+ Set up retrospectives to solicit engagement feedback.
+
+ 
+
+ 
+ Conduct Production Readiness Reviews.
+
+ 
+
+ 
+ Implement development cycles to reach milestones.
+
+ 
+
+ 
+ Plan and execute launches.
+
+ 
+
+
+
+We require that the teams define a feedback method and agree on its frequency. Both the SRE and development teams need feedback on what is working and what is not. For these engagements to be successful, we have found that providing a constant feedback loop outside of Agile sprint reviews via an agreed-upon method is useful—for example, setting up a biweekly retrospective or check-in with team managers. If an engagement isn’t working, we expect teams to not shy away from planning for disengagement.
+
+
+Measuring Impact
+
+
+We have found it important to measure the impact of the engagement to make sure that SREs are doing high-value work. We also measure the maturity level of each partner team so that the SREs can determine the most effective ways to work with them. One approach we adopted from working with Google’s Customer Reliability Engineering (CRE) team is to conduct a point-in-time assessment with leads of the product engineering team before starting the engagement.
+
+
+A point-in-time assessment consists of walking through a maturity matrix, gauging the maturity of the service along the various axes of concern to SRE (as described in Chapter 32 of Site Reliability Engineering), and agreeing on scores for functional areas such as observability, capacity planning, change management, and incident response. This also helps tailor the engagement more appropriately after we learn more about the team’s strengths, weaknesses, and blind spots.
+
+
+After the engagement ends and the development team is performing on its own, we perform the assessment again to measure the value SRE added. If we have a maturity model in place, we measure against the model to see if the engagement results in a higher level of maturity. As the engagement comes to an end, we plan for a celebration!
+
+
+
+
+
+
+
+Setting Ground Rules
+
+
+At Google, every SRE team has two major goals:
+
+
+
+ Short term
+ 
+ Fulfill the product’s business needs by providing an operationally stable system that is available and scales with demand, with an eye on maintainability.
+
+ 
+ Long term
+ 
+ Optimize service operations to a level where ongoing human work is no longer needed, so the SRE team can move on to work on the next high-value engagement.
+
+ 
+
+
+To this end, the teams should agree upon some principles of cooperation, such as:
+
+
+
+ 
+ Definitions of (and a hard limit on) operational work.
+
+ 
+
+ 
+ An agreed-upon and measured SLO for the service that is used to prioritize engineering work for both the developer and SRE teams. You can start without an SLO in place, but our experience shows that not establishing this context from the beginning of the relationship means you’ll have to backtrack to this step later. For an example of how engineering work proceeds less than ideally in the absence of an SLO, see “Case Study 1: Scaling Waze—From Ad Hoc to Planned Change”.
+
+ 
+
+ 
+ An agreed-upon quarterly error budget that determines release velocity and other safety parameters, such as excess service capacity to handle unexpected usage growth.
+
+ 
+
+ 
+ Developer involvement in daily operations to ensure that ongoing issues are visible, and that fixing their root causes is prioritized.
+
+ 
+
+
+
+
+
+
+Planning and Executing
+
+
+Proactive planning and coordinated execution ensure that SRE teams meet expectations and product goals while optimizing operations and reducing operational cost. We suggest planning at two (connected) levels:
+
+
+
+ 
+ With developer leadership, set priorities for products and services and publish yearly roadmaps.
+
+ 
+
+ 
+ Review and update roadmaps on a regular basis, and derive goals (quarterly or otherwise) that line up with the roadmap.
+
+ 
+
+
+
+Roadmaps ensure that each team has a long-term time horizon of clear, high-impact work. There can be good reasons to forego roadmaps (for example, if the development organization is changing too quickly). However, in a stable environment, the absence of a roadmap may be a signal that the SRE team can merge with another team, move service management work back to the development teams, expand scope, or dissolve.
+
+
+Holding ongoing strategy conversations with developer leadership helps to quickly identify shifts in focus, discuss new opportunities for SRE to add value to the business, or stop activities that are not cost-effective for the product.
+
+
+Roadmaps can focus on more than just improving the product. They can also address how to apply and improve common SRE technologies and processes to drive down operational cost.
+
+
+
+
+
+
+
+Sustaining an Effective Ongoing Relationship
+
+
+Healthy and effective relationships require ongoing effort. The strategies outlined in this section have worked well for us.
+
+
+
+Investing Time in Working Better Together
+
+
+The simple act of spending time with each other helps SREs and developers collaborate more effectively. We recommend that SREs meet regularly with their counterparts for the services they run. It’s also a good idea for SREs to meet periodically with other SRE teams who run services that either send traffic to the service or provide common infrastructure that the service uses. The SRE team can then escalate confidently and quickly during outages or disagreements because the teams know each other and have already set expectations of how escalations should be initiated and managed.
+
+
+
+
+
+Maintaining an Open Line of Communication
+
+
+In addition to the day-to-day communication between teams, we’ve found a couple methods of more formal information exchange to be particularly helpful over the course of the engagement. 
+
+
+SREs can give a quarterly “state of production” talk to product development leadership to help them understand where they should invest resources and how exactly SRE is helping their product or service. In a similar vein, developers can give a periodic “state of the product” talk to the SRE team or involve SRE in the developer team’s executive presentations. This gives the SRE team an overview of what the developer team has accomplished over the last quarter (and lets the SREs see how their own work enabled that). It also provides an update on where the product is going over the next few quarters, and where the product lead sees SRE engaging to make that happen.
+
+

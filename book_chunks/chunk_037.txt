@@ -1,0 +1,185 @@
+=== The Site Reliability Workbook ===
+=== Chunk 37/100 ===
+
+and equitable balance of on-call work and personal life is flexibility.
+
+
+There are a number of ways that you can apply flexibility to on-call rotations to meet the needs of team members while still ensuring coverage for your services or products. It is impossible to write down a comprehensive, one-size-fits-all set of guidelines. We encourage embracing flexibility as a principle rather than simply adopting the examples listed here.
+
+
+
+Automate on-call scheduling
+
+
+As teams grow, accounting for scheduling constraints—vacation plans, distribution of on-call weekdays versus weekends, individual preferences, religious requirements, and so on—becomes increasingly difficult. You can’t manage this task manually; it’s hard to find any solution at all, much less a fair one.
+
+
+“Fairness” doesn’t mean a completely uniform distribution of each type of shift across team members. Different people have different needs and different preferences. Therefore, it’s important for the team to share those preferences and try to meet them in an intelligent way. Team composition and preferences dictate whether your team prefers a uniform distribution, or a more customized way of meeting scheduling preferences.
+
+
+Using an automated tool to schedule on-call shifts makes this task much easier. This tool should have a few basic characteristics:
+
+
+
+ 
+ It should rearrange on-call shifts to accommodate the changing needs of team members.
+
+ 
+
+ 
+ It should automatically rebalance on-call load in response to any changes.
+
+ 
+
+ 
+ It should do its best to ensure fairness by factoring in personal preferences such as “no primary during weekends in April,” as well as historical information such as recent on-call load per engineer.
+
+ 
+
+ 
+ So that on-call engineers can plan around their on-call shifts, it must never change an already generated schedule.
+
+ 
+
+
+
+Schedule generation can be either fully automated or scheduled by a human. Likewise, some teams prefer to have members explicitly sign off on the schedule, while others are comfortable with a fully automated process. You might opt to develop your own tool in-house if your needs are complex, but there are a number of commercial and open source software packages that can aid in automating on-call scheduling.
+
+
+
+
+
+Plan for short-term swaps
+
+
+Requests for short-term changes in the on-call schedule happen frequently. No one can promise on Monday that they won’t have the flu on Thursday. Or you might need to run an unforeseen urgent errand in the middle of your on-call shift.
+
+
+You may also want to facilitate on-call swaps for nonurgent reasons—for example, to allow on-callers to attend sports training sessions. In this situation, team members can swap a subset of the on-call day (for example, half of Sunday). Nonurgent swaps are typically best-effort.
+
+
+Teams with a strict pager response SLO need to take commute coverage into account. If your pager response SLO is 5 minutes, and your commute is 30 minutes, you need to make sure that someone else can respond to emergencies while you get to work.
+
+
+To achieve these goals in flexibility, we recommend giving team members the ability to update the on-call rotation. Also, have a documented policy in place describing how swaps should work. Decentralization options range from a fully centralized policy, where only the manager can change the schedule, to a fully decentralized one, where any team member can change the policy independently. In our experience, instituting peer review of changes provides a good tradeoff between safety and flexibility.
+
+
+
+
+
+Plan for long-term breaks
+
+
+Sometimes team members need to stop serving in the on-call rotation because of changes in personal circumstances or burnout. It’s important that teams are structured to allow on-callers to temporarily leave the rotation.
+
+
+Ideally, team size should allow for a (temporary) staff reduction without causing the rest of the team to suffer too much operational load. In our experience, you need a bare minimum of five people per site to sustain on-call in a multisite, 24/7 configuration, and eight people in a single-site, 24/7 configuration. Therefore, it is safe to assume each site will need one extra engineer as protection against staff reduction, bringing the minimum staffing to six engineers per site (multisite) or nine per site (single-site).
+
+
+
+
+
+Plan for part-time work schedules
+
+
+Being on-call with part-time working schedules may seem incompatible, but we’ve found that on-call and part-time work arrangements are compatible if you take certain precautions. The following discussion assumes that if a member of your on-call rotation works part-time, they’ll be unavailable for on-call shifts outside of their part-time working week.
+
+
+There are two main models of part-time working:
+
+
+
+ 
+ Working a reduced amount of full days per week—for example, four 8-hour days a week, instead of five
+
+ 
+
+ 
+ Working a reduced amount of time each day—for example, 6 hours a day, instead of 8 hours a day
+
+ 
+
+
+
+Both models are compatible with on-call work, but require different adjustments to on-call scheduling.
+
+
+The first model easily coexists with on-call work, especially if the nonworking day(s) are constant over time. In response, you can adopt an on-call shift length of fewer than seven days a week (for example, Monday through Thursday, or Friday through Sunday) and configure the automated scheduler not to schedule the part-time engineer(s) to be on-call on the days they don’t work.
+
+
+The second model is possible in a couple ways:
+
+
+
+ 
+ Split on-call hours with another engineer, so that no one is on-call when they are not supposed to be. For example, if an on-call engineer needs to work from 9 a.m. to 4 p.m., you can assign the first half of the shift (9 a.m. to 3 p.m.) to them. Rotate the second half (3 p.m. to 9 p.m.) within the team the same way you rotate other on-call shifts.
+
+ 
+
+ 
+ The part-time engineer can work full hours on their on-call days, which may be feasible if the on-call shift is not too frequent.
+
+ 
+
+
+
+As mentioned in Chapter 11 of Site Reliability Engineering, Google SRE compensates support outside of regular hours with a reduced hourly rate of pay or time off, according to local labor law and regulations. Take a part-time engineer’s reduced schedule into account when determining on-call compensation.
+
+
+In order to maintain a proper balance between project time and on-call time, engineers working reduced hours should receive a proportionately smaller amount of on-call work. Larger teams absorb this additional on-call load more easily than smaller teams.
+
+
+
+
+
+
+
+
+
+On-Call Team Dynamics
+
+
+Our first book touched upon how stress factors like high pager load and time pressure can force on-call engineers to adopt decision strategies based on intuition and heuristics rather than reason and data (see the section “Feeling Safe” in Chapter 11 of that book). Working from this discussion of team psychology, how do you go about building a team with positive dynamics? Consider an on-call team with the following set of hypothetical problems.
+
+
+
+Scenario: A culture of “survive the week”
+
+
+A company begins with a couple of founders and a handful of employees, all feature developers. Everyone knows everyone else, and everyone takes pagers.
+
+
+The company grows bigger. On-call duty is limited to a smaller set of more experienced feature developers who know the system better.
+
+
+The company grows even bigger. They add an ops role to tackle reliability. This team is responsible for production health, and the job role is focused on operations, not coding. The on-call becomes a joint rotation between feature developers and ops. Feature developers have the final say in maintaining the service, and ops input is limited to operational tasks. By this time, there are 30 engineers in the on-call rotation: 25 feature developers and 5 ops, all located at the same site.
+
+
+The team is plagued by high pager volume. Despite following the recommendations described earlier in this chapter to minimize pager load, the team is suffering from low morale. Because the feature developers prioritize developing new features, on-call follow-up takes a long time to implement.
+
+
+To make matters worse, the feature developers are concerned about their own subsystem’s health. One feature developer insists on paging by error rate rather than error ratio for their mission-critical module, despite complaints from others on the team. These alerts are noisy, and return many false positives or unactionable pages.
+
+
+Other members of the on-call rotation aren’t especially bothered by the high pager volume. Sure, there are a lot of pages, but most of them don’t take much time to resolve. As one on-call engineer puts it: “I take a quick look at the page subject and know they are duplicates. So I just ignore them.”
+
+
+Sound familiar?
+
+
+Some Google teams experienced similar problems during their earlier days of maturity. If not handled carefully, these problems have the potential to tear the feature developer and ops teams apart and hinder on-call operation. There’s no silver bullet to solve these problems, but we found a couple of approaches particularly helpful. While your methodology may differ, your overall goal should be the same: build positive team dynamics, and carefully avoid tailspin.
+
+
+
+Proposal one: Empower your ops engineers
+
+
+You can remodel the operations organization according to the guidelines outlined in this book and Site Reliability Engineering, perhaps even including a change of name (SRE, or similar) to indicate the change of role. Simply retitling your ops organization is not a panacea, but it can be helpful in communicating an actual change in responsibilities away from the old ops-centric model. Make it clear to the team and the entire company that SREs own the site operation. This includes defining a shared roadmap for reliability, driving the full resolution of issues, maintaining monitoring rules, and so on. Feature developers are necessary collaborators but don’t own these endeavors.
+
+
+To return to our hypothetical team, this announcement ushered in the following operational changes:
+
+
+
+ 
+ Action items are assigned only to the five DevOps engineers—who are now SREs. SREs work with subject experts—many of them feature developers—to accomplish these tasks. SREs take on the previously mentioned “error rate versus error ratio” debate 

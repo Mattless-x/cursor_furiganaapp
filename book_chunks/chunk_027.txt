@@ -1,0 +1,261 @@
+=== The Site Reliability Workbook ===
+=== Chunk 27/100 ===
+
+
+
+
+Repair automation is not fire and forget
+
+
+Automation can have a very long lifetime, so make sure to plan for project continuity as people leave and join the team. New engineers should be trained on legacy systems so they can fix bugs. Due to parts shortages for Jupiter fabrics, Saturn-based fabrics lived on long after the originally targeted end-of-life date, requiring us to introduce some improvements quite late in Saturn’s overall lifespan.
+
+
+Once adopted, automation may become entrenched for a long time, with positive and negative consequences. When possible, design your automation to evolve in a flexible way. Relying on inflexible automation makes systems brittle to change. Policy-based automation can help by clearly separating intent from a generic implementation engine, allowing automation to evolve more transparently.
+
+
+
+
+
+Build in risk assessment and defense in depth
+
+
+After building new tools for Jupiter that determined the risk of a drain operation before executing it, the complexity we encountered led us to introduce a secondary check for defense in depth. The second check established an upper limit for the number of impacted links, and another limit for impacted devices. If we exceeded either threshold, a tracking bug to request further investigation opened automatically. We tuned these limits over time to reduce false positives. While we originally considered this a temporary measure until the primary risk assessment stabilized, the secondary check has proven useful for identifying atypical repair rates due to power outages and software bugs (for one example, see “Automation: Enabling Failure at Scale” in Site Reliability Engineering).
+
+
+
+
+
+Get a failure budget and manager support
+
+
+Repair automation can sometimes fail, especially when first introduced. Management support is crucial in preserving the project and empowering the team to persevere. We recommend establishing an error budget for antitoil automation. You should also explain to external stakeholders that automation is essential despite the risk of failures, and that it enables continuous improvement in reliability and efficiency.
+
+
+
+
+
+Think holistically
+
+
+Ultimately, the complexity of scenarios to be automated is the real hurdle to overcome. Reexamine the system before you work on automating it—can you simplify the system or workflow first?
+
+
+Pay attention to all aspects of the workflow you are automating, not just the aspects that create toil for you personally. Conduct testing with the people directly involved in the work and actively seek their feedback and assistance. If they make mistakes, find out how your UI could be clearer, or what additional safety checks you need. Make sure your automation doesn’t create new toil—for example, by opening unnecessary tickets that need human attention. Creating problems for other teams will increase resistance to future automation endeavors. 
+
+
+
+
+
+
+
+
+
+Case Study 2: Decommissioning Filer-Backed Home Directories
+
+
+Note
+Toil reduction strategies highlighted in Case Study 2:
+
+
+
+ 
+ Consider decommissioning legacy systems
+
+ 
+
+ 
+ Promote toil reduction as a feature
+
+ 
+
+ 
+ Get support from management and colleagues
+
+ 
+
+ 
+ Reject the toil
+
+ 
+
+ 
+ Start with human-backed interfaces
+
+ 
+
+ 
+ Provide self-service methods
+
+ 
+
+ 
+ Start small and then improve
+
+ 
+
+ 
+ Use feedback to improve
+
+ 
+
+
+
+
+
+
+Background
+
+
+In the early days of Google, the Corp Data Storage (CDS) SRE team provided home directories to all Googlers. Similar to Active Directory’s Roaming Profiles, common in Enterprise IT, Googlers could use the same home directories across workstations and platforms. The CDS team also offered “Team Shares” for cross-team collaboration in a shared storage space. We provided home directories and Team Shares via a fleet of Netapp Storage Appliances over NFS/CIFS (or “filers”). This storage was operationally expensive but provided a much-needed service to Googlers.
+
+
+
+
+
+Problem Statement
+
+
+As years passed, these filer solutions were mostly deprecated by other, better, storage solutions: our version control systems (Piper9/Git-on-borg10), Google Drive, Google Team Drive, Google Cloud Storage, and an internal, shared, globally distributed filesystem called x20. These alternatives were superior for a number of reasons:
+
+
+
+ 
+ NFS/CIFS protocols were never designed to operate over a WAN, so user experience rapidly degraded with even a few tens of milliseconds of latency. This created problems for remote workers or globally distributed teams, as the data could live only in one location.
+
+ 
+
+ 
+ Compared to alternatives, these appliances were expensive to run and scale.
+
+ 
+
+ 
+ It would have taken significant work to make NFS/CIFS protocols compatible with Google’s Beyond Corp11 network security model.
+
+ 
+
+
+
+Most relevant to this chapter, home directories and Team Shares were toil-intensive. Many facets of storage provisioning were ticket-driven. Although these workflows were often partially scripted, they represented a sizable amount of the CDS team’s toil. We spent a lot of time creating and configuring shares, modifying access, troubleshooting end user issues, and performing turnups and turndowns to manage capacity. CDS also managed the provisioning, racking, and cabling processes for this specialized hardware, in addition to their configuration, updates, and backups. Due to latency requirements, we often had to deploy in remote offices instead of Google datacenters—which sometimes required a team member to travel a substantial distance to manage a deployment.
+
+
+
+
+
+What We Decided to Do
+
+
+First, we gathered data: CDS created a tool called Moonwalk to analyze how employees used our services. We collected traditional business intelligence metrics like daily active users (DAU) and monthly active users (MAU), and asked questions like, “Which job families actually use their home directories?” and “Of the users who use filers every day, what kind of files do they access the most?” Moonwalk, combined with user surveys, validated that the business needs currently served by filers could be better served by alternative solutions that had lower operational overhead and cost. Another compelling business reason led us to move away from filers: if we could migrate most of our filer use cases to G Suite/GCP, then we could use the lessons we learned to improve these products, thereby enabling other large enterprises to migrate to G Suite/GCP.
+
+
+No single alternative could meet all of the current filer use cases. However, by breaking the problem into smaller addressable components, we found that in aggregate, a handful of alternatives could cover all of our use cases. The alternative solutions were more specialized, but each provided a better user experience than a generalized filer-powered solution. For example:
+
+
+
+ x2012
+ Was a great way for teams to globally share static artifacts like binaries
+
+ G Suite Team Drive
+ Worked well for office document collaboration, and was much more tolerant of user latency than NFS
+
+ Google’s Colossus File System
+ Allowed teams to share large data files more securely and scalably than NFS
+
+ Piper/Git-on-Borg
+ Could better sync dotfiles (engineers’ personalized tool preferences)
+
+ A new history-as-a-service tool
+ Could host cross-workstation command-line history
+
+
+
+As we catalogued use cases and found alternatives, the decommissioning plan took shape.
+
+
+
+
+
+Design and Implementation
+
+
+Moving away from filers was an ongoing, iterative, multiyear effort that entailed multiple internal projects:
+
+
+
+ Moira
+ Home directory decommissioning
+
+ Tekmor
+ Migrating the long tail of home directory users
+
+ Migra
+ Team Share decommissioning
+
+ Azog
+ Retiring home directory/share infrastructure and associated hardware
+
+
+
+This case study focuses on the first project, Moira. The subsequent projects built upon what we learned from and created for Moira.
+
+
+As shown in Figure 6-8, Moira consisted of four phases.
+
+
+
+Figure 6-8. The four stages of Project Moira
+
+
+
+The first step to retiring a legacy system is to stop or (often more realistically) to slow or discourage new adoption. It’s much more painful to take something away from users than never offer it in the first place. Moonwalk data showed that nonengineering Googlers used their shared home directories the least, so our initial phase targeted these users. As the phases grew in scope, so did our confidence in the alternative storage solutions and our migration processes and tooling. Each phase of the project had an associated design document that examined the proposal along dimensions like security, scalability, testing, and launch. We also paid special attention to user experience, expectations, and communication. Our goal was making sure that users affected by each phase understood the reasons for the decommissioning project and the easiest way to archive or migrate their data.
+
+
+
+
+
+Key Components
+
+
+
+Moonwalk
+
+
+While we had basic statistics about our users’ shares (share sizes, for example), we needed to understand our users’ workflows to help drive business decisions around the deprecation. We set up a system called Moonwalk to gather and report this information.
+
+
+Moonwalk stored the data about who was accessing what files and when in BigQuery, which allowed us to create reports and perform ad hoc queries to understand our users better. Using BigQuery, we summarized access patterns across 2.5 billion files using 300 terabytes of disk space. This data was owned by 60,000 POSIX users in 400 disk volumes on 124 NAS appliances in 60 geographic sites around the world.
+
+
+
+
+
+Moira Portal
+
+
+Our large user base made managing the home directory decommissioning effort with a manual ticket-based process untenable. We needed to make the entire process—surveying users, communicating the reasons for the decommissioning project, and walking through either archiving their data or migrating to an alternative—as low-touch as possible. Our final requirements were:
+
+
+
+ 
+ A landing page describing the project
+
+ 
+
+ 
+ A continually updated FAQ
+
+ 
+
+ 
+ The status and usage information associated with the current user’s share
+
+ 
+
+ 
+ Options to request, deactivate, archive, delete, extend, or reactivate a share
+
+ 
+
+
+
+Our business logic became fairly complicated because we had to account for a number of user scenarios. For example, a user might leave Go

@@ -1,0 +1,261 @@
+=== The Site Reliability Workbook ===
+=== Chunk 8/100 ===
+
+nteed to happen. Reliability of 100% is not an engineering culture SLO—it’s an operations team SLO.
+
+ 
+
+
+
+Once you have an SLO target below 100%, it needs to be owned by someone in the organization who is empowered to make tradeoffs between feature velocity and reliability.  In a small organization, this may be the CTO; in larger organizations, this is normally the product owner (or product manager).
+
+
+
+
+
+What to Measure: Using SLIs
+
+
+Once you agree that 100% is the wrong number, how do you determine the right number? And what are you measuring, anyway? Here, service level indicators come into play: an SLI is an indicator of the level of service that you are providing.
+
+
+While many numbers can function as an SLI, we generally recommend treating the SLI as the ratio of two numbers: the number of good events divided by the total number of events. For example:
+
+
+
+ 
+ Number of successful HTTP requests / total HTTP requests (success rate)
+
+ 
+
+ 
+ Number of gRPC calls that completed successfully in < 100 ms / total gRPC requests
+
+ 
+
+ 
+ Number of search results that used the entire corpus / total number of search results, including those that degraded gracefully
+
+ 
+
+ 
+ Number of “stock check count” requests from product searches that used stock data fresher than 10 minutes / total number of stock check requests
+
+ 
+
+ 
+ Number of “good user minutes” according to some extended list of criteria for that metric / total number of user minutes
+
+ 
+
+
+
+SLIs of this form have a couple of particularly useful properties. The SLI ranges from 0% to 100%, where 0% means nothing works, and 100% means nothing is broken. We have found this scale intuitive, and this style lends itself easily to the concept of an error budget: the SLO is a target percentage and the error budget is 100% minus the SLO. For example, if you have a 99.9% success ratio SLO, then a service that receives 3 million requests over a four-week period had a budget of 3,000 (0.1%) errors over that period. If a single outage is responsible for 1,500 errors, that error costs 50% of the error budget.4
+
+
+In addition, making all of your SLIs follow a consistent style allows you to take better advantage of tooling: you can write alerting logic, SLO analysis tools, error budget calculation, and reports to expect the same inputs: numerator, denominator, and threshold. Simplification is a bonus here.
+
+
+When attempting to formulate SLIs for the first time, you might find it useful to further divide SLIs into SLI specification and SLI implementation:
+
+
+
+ SLI specification
+ 
+ The assessment of service outcome that you think matters to users, independent of how it is measured.
+
+
+ For example: Ratio of home page requests that loaded in < 100 ms
+
+ 
+ SLI implementation
+ 
+ The SLI specification and a way to measure it.
+
+
+ For example:
+
+
+ 
+ 
+ Ratio of home page requests that loaded in < 100 ms, as measured from the Latency column of the server log. This measurement will miss requests that fail to reach the backend.
+
+ 
+
+ 
+ Ratio of home page requests that loaded in < 100 ms, as measured by probers that execute JavaScript in a browser running in a virtual machine. This measurement will catch errors when requests cannot reach our network, but may miss issues that affect only a subset of users.
+
+ 
+
+ 
+ Ratio of home page requests that loaded in < 100 ms, as measured by instrumentation in the JavaScript on the home page itself, and reported back to a dedicated telemetry recording service. This measurement will more accurately capture the user experience, although we now need to modify the code to capture this information and build the infrastructure to record it—a specification that has its own reliability requirements.
+
+ 
+
+ 
+ 
+
+
+As you can see, a single SLI specification might have multiple SLI implementations, each with its own set of pros and cons in terms of quality (how accurately they capture the experience of a customer), coverage (how well they capture the experience of all customers), and cost.
+
+
+Your first attempt at an SLI and SLO doesn’t have to be correct; the most important goal is to get something in place and measured, and to set up a feedback loop so you can improve. (We dive deeper into this topic in “Continuous Improvement of SLO Targets”.)
+
+
+In our first book, we advise against picking an SLO based upon current performance, because this can commit you to unnecessarily strict SLOs. While that advice is true, your current performance can be a good place to start if you don’t have any other information, and if you have a good process for iterating in place (which we’ll cover later). However, don’t let current performance limit you as you refine your SLO: your customers will also come to expect your service to perform at its SLO, so if your service returns successful requests 99.999% of the time in less than 10 ms, any significant regression from that baseline may make them unhappy.
+
+
+To create your first set of SLOs, you need to decide upon a few key SLI specifications that matter to your service. Availability and latency SLOs are pretty common; freshness, durability, correctness, quality, and coverage SLOs also have their place (we’ll talk more about those later).
+
+
+If you are having trouble figuring out what sort of SLIs to start with, it helps to start simple:
+
+
+
+ 
+ Choose one application for which you want to define SLOs. If your product comprises many applications, you can add those later.
+
+ 
+
+ 
+ Decide clearly who the “users” are in this situation. These are the people whose happiness you are optimizing.
+
+ 
+
+ 
+ Consider the common ways your users interact with your system—common tasks and critical activities.
+
+ 
+
+ 
+ Draw a high-level architecture diagram of your system; show the key components, the request flow, the data flow, and the critical dependencies. Group these components into categories listed in the following section (there may be some overlap and ambiguity; use your intuition and don’t let perfect be the enemy of the good).
+
+ 
+
+
+
+You should think carefully about exactly what you select as your SLIs, but you also shouldn’t overcomplicate things. Especially if you’re just starting your SLI journey, pick an aspect of your system that’s relevant but easy to measure—you can always iterate and refine later.
+
+
+
+Types of components
+
+
+The easiest way to get started with setting SLIs is to abstract your system into a few common types of components. You can then use our list of suggested SLIs for each component to choose the ones most relevant to your service: 
+
+
+
+ Request-driven
+ The user creates some type of event and expects a response. For example, this could be an HTTP service where the user interacts with a browser or an API for a mobile application.
+
+ Pipeline
+ 
+ A system that takes records as input, mutates them, and places the output somewhere else. This might be a simple process that runs on a single instance in real time, or a multistage batch process that takes many hours. Examples include:
+
+
+ 
+ 
+ A system that periodically reads data from a relational database and writes it into a distributed hash table for optimized serving
+
+ 
+
+ 
+ A video processing service that converts video from one format to another
+
+ 
+
+ 
+ A system that reads in log files from many sources to generate reports
+
+ 
+
+ 
+ A monitoring system that pulls metrics from remote servers and generates time series and alerts
+
+ 
+
+ 
+ 
+ Storage
+ A system that accepts data (e.g., bytes, records, files, videos) and makes it available to be retrieved at a later date. 
+
+
+
+
+
+
+
+
+
+
+A Worked Example
+
+
+Consider a simplified architecture for a mobile phone game, shown in Figure 2-1.
+
+
+
+Figure 2-1. Architecture for an example mobile phone game
+
+
+
+The app running on the user’s phone interacts with an HTTP API running in the cloud. The API writes state changes to a permanent storage system. A pipeline periodically runs over this data to generate league tables that provide high scores for today, this week, and all time. This data is written to a separate league table data store, and the results are available via the mobile app (for in-game scores) and a website. Users can upload custom avatars, which are used both in-game via the API and in the high score website, to the User Data table.
+
+
+Given this setup, we can start thinking about how users interact with the system, and what sort of SLIs would measure the various aspects of a user’s experience.
+
+
+Some of these SLIs may overlap: a request-driven service may have a correctness SLI, a pipeline may have an availability SLI, and durability SLIs might be viewed as a variant on correctness SLIs. We recommend choosing a small number (five or fewer) of SLI types that represent the most critical functionality to your customers.
+
+
+In order to capture both the typical user experience and the long tail, we also recommend using multiple grades of SLOs for some types of SLIs. For example, if 90% of users’ requests return within 100 ms, but the remaining 10% take 10 seconds, many users will be unhappy. A latency SLO can capture this user base by setting multiple thresholds: 90% of requests are faster than 100 ms, and 99% of requests are faster than 400 ms. This principle applies to all SLIs with parameters that measure user unhappiness. 
+
+
+Table 2-1 provides some common SLIs for different types of services.
+
+
+
+ Table 2-1. Potential SLIs for different types of components
+ 
+ 
+ Type of service
+ Type of SLI
+ Description
+ 
+
+ 
+ 
+ 
+ Request-driven
+ Availability
+ The proportion of requests that resulted in a successful response.
+ 
+
+ 
+ Request-driven
+ Latency
+ The proportion of requests that were faster than some threshold.
+ 
+
+ 
+ Request-driven
+ Quality
+ If the service degrades gracefully when overloaded or when backends are unavailable, you need to measure the proportion of responses that were served in an undegraded state. For example, if the User Data store is unavailable, the game is still playable but uses generic imagery.
+ 
+
+ 
+ Pipeline
+ Freshness
+ The proportion of the data that was updated more recently than some time threshold. Ideally this metric counts how many times a user accessed the data, so that it most accurately reflects the user experience.
+ 
+
+ 
+ Pipeline
+ Correctness
+ The proportion of records coming into the pipeline that resulted in the correct value coming out.
+ 
+
+ 
+ Pipeline
+ Coverage
+ For batch processing, the p

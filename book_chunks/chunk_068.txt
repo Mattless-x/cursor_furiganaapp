@@ -1,0 +1,298 @@
+=== The Site Reliability Workbook ===
+=== Chunk 68/100 ===
+
+ns the config language implementation only has to emit (and the application only has to consume) a single file. Also, since applications can combine files in different ways, this strategy explicitly and clearly delineates how the files are combined to form the application configuration.
+
+ 
+
+ 
+ Represent collections of named entities using objects, where the field contains the object name and the value contains the rest of the entity. Avoid using an array of objects where each element has a name field.
+
+
+ Bad JSON:
+
+
+ 
+[
+ { "name": "cat", ... },
+ { "name": "dog", ... }
+]
+
+
+ Good JSON:
+
+
+ 
+{
+ "cat": { ... },
+ "dog": { ... }
+}
+
+
+ This strategy makes the collection (and individual animals) easier to extend, and you can reference entities by name (e.g., animals.cat) instead of referencing brittle indexes (e.g., animals[0]).
+
+ 
+
+ 
+ Avoid grouping entities by type at the top level. Structure the JSON so that logically related configuration is grouped in the same subtree. This allows abstraction (at the config language level) to follow functional boundaries.
+
+
+ Bad JSON:
+
+
+ 
+{
+ "pots": { "pot1": { ... }, "pot2": { ... } },
+ "lids": { "lid1": { ... }, "lid2": { ... } }
+}
+
+
+ Good JSON:
+
+
+ 
+{
+ "pot_assembly1": { "pot": { ... }, "lid": { ... } },
+ "pot_assembly2": { "pot": { ... }, "lid": { ... } }
+}
+
+
+ At the config language level, this strategy enables abstractions like the following:
+
+
+ 
+local kitchen = import 'kitchen.libsonnet';
+{
+ pot_assembly1: kitchen.CrockPot,
+ pot_assembly2: kitchen.SaucePan { pot+: { color: 'red' } },
+}
+
+ 
+
+ 
+ Generally keep the data representation design simple:
+
+
+ 
+ 
+ Avoid embedding language features in the data representation (as mentioned in “Pitfall 1: Failing to Recognize Configuration as a Programming Language Problem”). These types of abstractions will be underpowered and only create confusion, since they force users to decide whether to use the abstraction features in the data representation or in the configuration language.
+
+ 
+
+ 
+ Don’t worry about overly verbose data representation. Solutions to reduce verbosity introduce complexity, and the problem can be managed in the configuration language.
+
+ 
+
+ 
+ Avoid interpreting custom string interpolation syntax, such as conditionals or placeholder references in strings, in your application. Sometimes interpretation is unavoidable—for example, when you need to describe actions that are performed after the pure data version of the config is generated (alerts, handlers, etc.). But otherwise, let the config language do as much of the language-level work as possible.
+
+ 
+
+ 
+ 
+
+
+
+As mentioned earlier, if you can remove configuration altogether, doing so is always your best option. Although the configuration language can hide the complexity of the underlying model by using templates with default values, the generated config data is not completely hidden—it may be processed by tools, inspected by humans, or loaded into config databases. For the same reason, don’t rely on the configuration language to fix inconsistent naming, plurals, or mistakes in the underlying model—fix them in the model itself. If you can’t fix inconsistencies in the model, it is better to live with them at the language level to avoid even more inconsistency.
+
+
+In our experience, configuration changes tend to dominate outage root causes over time in a system (see our list of top causes of outages in Appendix C). Validating your config changes is a key step to maintaining reliability. We recommend validating the generated config data immediately after configuration execution. Syntactic validation alone (i.e., checking whether JSON is parsable) won’t find many bugs. After generic schema validation, check properties that are specific to your application’s domain—for example, whether required fields are present, referenced filenames exist, and provided values are within allowed ranges.
+
+
+You can validate Jsonnet’s JSON with JSONschema. For applications using protocol buffers, you can easily generate the canonical JSON form of these buffers from Jsonnet, and the protocol buffer implementation will validate during deserialization.
+
+
+No matter how you decide to validate, do not ignore unrecognized field names, as they may indicate a typo at the configuration language level. Jsonnet can mask fields that should not be output using the :: syntax. It’s also a good idea to perform the same validation in a precommit hook.
+
+
+
+
+
+Effectively Operating a Configuration System
+
+
+When implementing “configuration as code” in any language, we recommend following the discipline and processes that aid software engineering generally.
+
+
+
+Versioning
+
+
+Configuration languages usually trigger engineers to write libraries of templates and utility functions. Often, one team maintains these libraries, but many other teams may consume them. When you need to make a breaking change to the library, you have two choices:
+
+
+
+ 
+ Commit a global update of all client code, refactoring the code so that it still works (this may not be organizationally possible).
+
+ 
+
+ 
+ Version the library so that different consumers can use different versions and migrate independently. Consumers who opt to use deprecated versions won’t get the benefits of the new versions and will incur technical debt—someday, they will have to refactor their code to use the new library.
+
+ 
+
+
+
+Most languages, including Jsonnet, do not provide any specific support for versioning; instead, you can easily use directories. For a practical example in Jsonnet, see the ksonnet-lib repository, where the version is the first component of the imported path:
+
+
+
+local k = import 'ksonnet.beta.2/k.libsonnet';
+
+
+
+
+
+Source Control
+
+
+Chapter 14 advocates keeping a historical record of config changes (including who made them) and ensuring that rollbacks are easy and reliable. Checking configuration into source control brings all these capabilities, plus the ability to code review config changes.
+
+
+
+
+
+Tooling
+
+
+Consider how you will enforce style and lint your configurations, and investigate if there’s an editor plug-in that integrates these tools into your workflow. Your goals here are to maintain a consistent style across all authors, to improve readability, and to detect errors. Some editors support post-write hooks that can run formatters and other external tools for you. You can also use precommit hooks to run the same tools to ensure checked-in config is high quality.
+
+
+
+
+
+Testing
+
+
+We recommend implementing unit tests for upstream template libraries. Make sure the libraries generate the expected concrete configuration when instantiated in various ways. Similarly, libraries of functions should include unit tests so they can be maintained with confidence.
+
+
+In Jsonnet, you can write tests as Jsonnet files that:
+
+
+
+ 
+ Import the library to be tested.
+
+ 
+
+ 
+ Exercise the library.
+
+ 
+
+ 
+ Use either the assert statement or the standard library assertEqual function to validate its output. The latter presents any mismatching values in its error messages.
+
+ 
+
+
+
+The following example tests the joinName function and MyTemplate:
+
+
+
+// utils_test.jsonnet
+local utils = import 'utils.libsonnet';
+
+std.assertEqual(utils.joinName(['foo', 'bar']), 'foo-bar') &&
+std.assertEqual(utils.MyTemplate { tier: 'frontend' }, { ... })
+
+
+For larger test suites, you can take advantage of a more comprehensive unit test framework developed by Jsonnet community members. You can use this framework to define and run suites of tests in a structured manner—for example, to report the set of all failing tests instead of aborting execution at the first failing assertion.
+
+
+
+
+
+
+
+When to Evaluate Configuration
+
+
+Our critical properties include hermeticity; that is, configuration languages must generate the same config data regardless of where or when they execute. As described in Chapter 14 a system can be hard or impossible to roll back if it depends on resources that can change outside of its hermetic environment. Generally, hermeticism means that Jsonnet code is always interchangeable with the expanded JSON it represents. Accordingly, you can generate JSON from Jsonnet at any time between when the Jsonnet is updated and when you need the JSON—even each time you need the JSON.
+
+
+We recommend storing configuration in version control. Then your earliest opportunity to validate the config is before check-in. At the other extreme, an application can evaluate the config when it needs the JSON data. As a middle-of-the-road option, you can evaluate at build time. Each of these options has various tradeoffs, and you should optimize according to the specifics of your use case.
+
+
+
+Very Early: Checking in the JSON
+
+
+You can generate JSON from the Jsonnet code before checking both in to version control. The typical workflow is as follows:
+
+
+
+ 
+ Modify the Jsonnet files.
+
+ 
+
+ 
+ Run the Jsonnet command-line tool (perhaps wrapped in a script) to regenerate JSON files.
+
+ 
+
+ 
+ Use a precommit hook to ensure that the Jsonnet code and JSON output are always consistent.
+
+ 
+
+ 
+ Package everything into a pull request for a code review.
+
+ 
+
+
+
+
+Pros
+
+
+
+ 
+ The reviewer can sanity-check the concrete changes—for example, a refactoring should not affect the generated JSON at all.
+
+ 
+
+ 
+ You can inspect line annotations by multiple authors across different versions at both the generated and abstracted level. This is useful for auditing changes.
+
+ 
+
+ 
+ You don’t need to run Jsonnet at runtime, which can help to limit complexity, binary size, and/or risk exposure.
+
+ 
+
+
+
+
+
+
+Cons
+
+
+
+ 
+ The generated JSON is not necessarily readable—for example, if it embeds long strings.
+
+ 
+
+ 
+ The JSON may not be suitable for checking into version control for other reasons—for example, if it’s too large or contains secrets.
+
+ 
+
+ 
+ Merge conflicts may arise if many concurrent edits to separate Jsonnet files converge to a single JSON file.
+
+ 
+
+
+
+
+

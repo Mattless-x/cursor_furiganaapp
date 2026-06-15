@@ -1,0 +1,243 @@
+=== The Site Reliability Workbook ===
+=== Chunk 59/100 ===
+
+date documentation
+
+
+ Training examples for new users
+
+ 
+ 
+
+ 
+ Unit and integration testing
+ 
+
+ 
+ Unit testing framework
+ No support or unit testing framework
+ 
+ Tests take a long time to run and frequently time out
+
+
+ Too many resource requirements
+
+
+ No code coverage support
+
+
+ Easy to switch data sources to test a resource
+
+ 
+ 
+ Runs with sanitizers (ASAN, TSAN, etc.)
+
+
+ The build dependency graph is as small as possible
+
+
+ Code coverage support
+
+
+ Provides debugging info and results
+
+
+ No external dependencies
+
+
+ Built-in test data generation library
+
+ 
+ 
+
+ 
+ Ease of configuration (this has direct relevance to the scalability aspect of the pipeline)
+ Test configuration is not supported or requires a significant amount of time to learn, in addition to learning about the pipeline itself—for example, testing uses a different programming language and a different API than the pipeline
+ The first integration test requires significant setup, but subsequent tests are either a copy/paste or an extension to the first with minimal overrides—for example, a test data generator could be minimally tweaked to support collecting test data for many different pipeline applications
+ Decoupling from production configuration, while not preventing reuse; easier to define integration test configuration and reuse relevant parts of prod configuration
+ 
+
+ 
+ Support for integration testing frameworks (this describes how well a pipeline should interact and support various integration testing methodologies, which are not necessarily part of the pipeline itself)
+ Using Cloud or third-party open source tools for diffing, monitoring, integration testing, and so on, can be difficult to implement and/or resource-intensive; requires in-house tools or tools do not exist
+ 
+ Minimal documentation and examples of integration testing tools and methodologies used in conjunction with the pipeline
+
+
+ Large amount of time required even for data sets with minimal input
+
+
+ Difficult to trigger on-demand execution for testing scenarios
+
+
+ Difficult to separate production from nonproduction concerns (e.g., all event logs go to production logging service)
+
+ 
+ 
+ Built-in support for scaled-down input data
+
+
+ Support for diffing of output data (e.g., persisting output test data)
+
+
+ Configurable monitoring for test run validation
+
+
+ Ample documentation and examples of integration tests built for the pipeline
+
+ 
+ 
+
+ 
+
+
+
+
+
+
+
+
+
+Pipeline Failures: Prevention and Response
+
+
+A pipeline can fail for many reasons, but the most common culprits are data delay and data corruption. When an outage occurs, finding and repairing the issue quickly will greatly reduce its impact. At Google, when an outage or SLO violation occurs, we track metrics for MTTD and MTTR. Tracking these metrics indicates how effective we are at detecting and repairing an issue. In the postmortem that follows any outage at Google, we analyze the cause of the outage to elicit any patterns and address sources of operational toil.
+
+
+This section describes some common failure modes, methods to effectively respond to pipeline failures, and strategies to help you prevent future pipeline failures.
+
+
+
+Potential Failure Modes
+
+
+
+Delayed data
+
+
+A pipeline can fail if its input or output is delayed. Without the proper precautions, a downstream job may start running even though it doesn’t have the necessary data. Stale data is almost always better than incorrect data. If your pipeline processes incomplete or corrupt data, errors will propagate downstream. Restoring or reprocessing bad data takes time and can prolong an outage. Instead, if your pipeline stalls, waits for data, and then resumes once the data becomes available, the data remains high quality. Creating data dependencies that are respected by all stages is important.
+
+
+Depending on the type of pipeline, the impact of delayed data can range from stale application data to stalled pipelines. In batch processing pipelines, each stage waits for its predecessor to finish before it begins. Streaming systems are more flexible: using event-time processing, such as Dataflow, a downstream stage can start a portion of work as soon as the corresponding upstream portion completes, rather than waiting for all portions to complete.
+
+
+When an outage of this nature occurs, you will likely need to notify any dependent services. If the outage is user-visible, you may also have to notify your customers. When you’re debugging pipeline outages, it’s helpful to see the progress of current and past pipeline runs, and to have direct links to log files and a diagram of the flow of data. It’s also useful to be able to trace a unit of work through the system while analyzing its counters and statistics.
+
+
+
+
+
+Corrupt data
+
+
+If undetected, corrupt pipeline data (input and/or output) can cause user-facing issues. You can circumvent many user-facing issues by having tests that identify corrupt data in place, and using logic that alerts you to potential corruption. For example, pipeline systems can implement blocking policies and abuse/spam detection to automatically or manually filter out bad sources of data.
+
+
+Corrupt data can have many causes: software bugs, data incompatibility, unavailable regions, configuration bugs, and so on. There are two main steps involved in fixing corrupt data:
+
+
+
+ 
+ Mitigate the impact by preventing further corrupt data from entering the system.
+
+ 
+
+ 
+ Restore your data from a previously known good version, or reprocess to repair the data.
+
+ 
+
+
+
+If a single region is serving corrupt data, you may need to drain your serving jobs and/or data processing from that region. If a software or configuration bug is at fault, you may need to quickly roll back the relevant binary. Often, data corruption can cause windows of data that are incorrect and need to be reprocessed once the underlying issue has been fixed, such as fixing a software bug in a pipeline binary. To reduce the cost of reprocessing, consider selective reprocessing—read in and process only the user or account information impacted by the data corruption. Alternatively, you could persist some intermediate data that can serve as a checkpoint to avoid reprocessing a pipeline from end to end.
+
+
+If the output of your pipeline is corrupt, downstream jobs may propagate the corrupt data or serving jobs may serve incorrect data. Even with the best testing, development, and release practices in place, a software or configuration bug can introduce data corruption. We recommend that you plan for this eventuality and have the ability to quickly reprocess and restore your data. Recovering from this kind of data corruption is labor-intensive and difficult to automate.
+
+
+
+
+
+
+
+Potential Causes
+
+
+
+Pipeline dependencies
+
+
+When you’re trying to determine the cause of an outage, it’s useful to investigate pipeline dependencies, such as storage, network systems, or other services. These dependencies may be throttling your requests/traffic or, if they are out of resources, refusing any new data. The rate of input/output can slow for a variety of reasons:
+
+
+
+ 
+ The output sink or storage could be refusing writes of a piece of data.
+
+ 
+
+ 
+ There could be a particular hotspot data range that cannot complete.
+
+ 
+
+ 
+ There might be a storage bug.
+
+ 
+
+
+
+Some pipeline dependency issues won’t resolve themselves. It’s important to file a ticket or bug, and to allow for enough time to add more resources or address traffic patterns. Implementing load balancing and dropping low-priority data may help mitigate the impact.
+
+
+
+
+
+Pipeline application or configuration
+
+
+A pipeline failure could be the result of a bottleneck, a bug in your pipeline jobs, or a bug in the configurations themselves (e.g., CPU-intensive processing, performance regression, out-of-memory failures, abusive data prone to hotspotting, or configs that point to the incorrect input/output locations). Depending on the cause, there are several possible solutions:
+
+
+
+ 
+ Roll back the binary/config, cherry-pick a fix, or repair any permission issues.
+
+ 
+
+ 
+ Consider restructuring the data that’s causing the issue.
+
+ 
+
+
+
+Application or configuration errors can introduce data incorrectness or lead to delayed data. These kinds of errors are the most common causes of outages. We recommend spending time on pipeline development and ensuring that new binaries and configurations perform well in a nonproduction environment before they are fully deployed.
+
+
+
+
+
+Unexpected resource growth
+
+
+A sudden and unplanned jump in system load may cause a pipeline to fail. You may need additional unplanned resources to keep your service running. Automatic scaling of your application jobs can help meet the demand of new load, but you should also be aware that an increased pipeline load can also put a strain on downstream dependencies—you may also need to plan for more storage and/or network resources.
+
+
+Good resource planning and accurate growth prediction can help in these cases, but such predictions may not always be correct. We recommend becoming familiar with the process of requesting additional emergency resources. Depending on the nature of your pipeline’s deployment and the quantity of resources required, the time needed to acquire these resources can be substantial. Therefore, we recommend preparing interim solutions to keep your service up and running—for example, prioritize different classes of data through your pipeline.
+
+
+
+
+
+Region-level outage
+
+
+A regional outage is bad for all pipelines, but singly homed pipelines are particularly vulnerable. If your pipeline runs in a single region that suddenly becomes unavailable, the pipeline will stop until the region comes back up. If you have multihomed pipelines with automatic failover, your response may be as simple as draining processing or serving from an affected region until the outage is over. When a region is down, data can become stranded or delayed, resulting in incorrect output from your pipeline. As a result, the correctness of the data output from any dependent jobs or services may be compromised.
+
+
+
+
+
+

@@ -1,0 +1,218 @@
+=== The Site Reliability Workbook ===
+=== Chunk 38/100 ===
+
+by negotiating a change in alerting with the feature developers.
+
+ 
+
+ 
+ SREs are encouraged to dive into the code to make the changes themselves, if possible. They send code reviews to the subject experts. This has the benefit of building a sense of ownership among SREs, as well as upgrading their skills and authority for future occasions.
+
+ 
+
+
+
+With this arrangement, feature developers are explicit collaborators on reliability features, and SREs are given the responsibility to own and improve the site.
+
+
+
+
+
+Proposal two: Improve team relations
+
+
+Another possible solution is to build stronger team bonds between team members. Google designates a “fun budget” specifically for organizing offsite activities to strengthen team bonds.
+
+
+We’ve found that more robust team relationships create a spirit of increased understanding and collaboration among teammates. As a result, engineers are more likely to fix bugs, finish action items, and help out their colleagues. For example, say you turned off a nightly pipeline job, but forgot to turn off the monitoring that checked if the pipeline ran successfully. As a result, you accidentally page a colleague at 3 a.m. If you’ve spent a little time with that colleague, you’d feel much worse about what happened, and strive to be considerate by being more careful in the future. The mentality of “I protect my colleagues” translates to a more productive work atmosphere.
+
+
+We’ve also found that making all members of the on-call rotation sit together, regardless of job title and function area, helps improve team relations tremendously. Encourage teams to eat lunch with each other. Don’t underestimate the power of relatively straightforward changes like these. It plays directly into team dynamics.
+
+
+
+
+
+
+
+
+
+
+
+Conclusion
+
+
+SRE on-call is different than traditional ops roles. Rather than focusing solely on day-to-day operations, SRE fully owns the production environment, and seeks to better it through defining appropriate reliability thresholds, developing automation, and undertaking strategic engineering projects. On-call is critical for site operations, and handling it right is crucial to the company’s bottom line.
+
+
+On-call is a source of much tension, both individually and collectively. But if you’ve stared into the eyes of the monster long enough, there is wisdom to be found. This chapter illustrates some of the lessons about on-call that we learned the hard way; we hope that our experience can help others avoid or tackle similar issues.
+
+
+If your on-call team is drowning in endless alerts, we recommend taking a step back to observe the situation from a higher level. Compare notes with other SRE and partner teams. Once you’ve gathered the necessary information, address the problems in a systematic way. Thoughtfully structuring on-call is time well spent for on-call engineers, on-call teams, and the whole company.
+
+
+
+1 Note that this example is often a red flag situation for organizations that aren’t actually practicing DevOps, in which case, a name change won’t fix more structural problems.
+2 One “incident” is defined as one “problem,” no matter how many alerts have been fired for the same “problem.” One shift is 12 hours.
+3 There is more on this topic in Seeking SRE by David Blank-Edelman (O’Reilly).
+4 SRE teams at Google are paired across time zones for service continuity.
+5 A “bug” in this context is any undesirable system behavior resulting from software or configuration error. Logic errors in code, incorrect configuration of a binary, incorrect capacity planning, misconfigured load balancers, or newly discovered vulnerabilities are all valid examples of “production bugs” that contribute to pager load.
+
+Incident Response
+
+Chapter 9. Incident Response
+
+
+By Jennifer Mace, Jelena Oertel, Stephen Thorne,
+
+and Arup Chakrabarti (PagerDuty)
+
+with Jian Ma and Jessie Yang
+
+
+Everyone wants their services to run smoothly all the time, but we live in an imperfect world in which outages do occur. What happens when a not-so-ordinary, urgent problem requires multiple individuals or teams to resolve it? You are suddenly faced with simultaneously managing the incident response and resolving the problem.
+
+
+Resolving an incident means mitigating the impact and/or restoring the service to its previous condition. Managing an incident means coordinating the efforts of responding teams in an efficient manner and ensuring that communication flows both between the responders and to those interested in the incident’s progress. Many tech companies, including Google, have adopted and adapted best practices for managing incidents from emergency response organizations, which have been using these practices for many years.
+
+
+The basic premise of incident management is to respond to an incident in a structured way. Large-scale incidents can be confusing; a structure that teams agree on beforehand can reduce chaos. Formulating rules about how to communicate and coordinate your efforts before disaster strikes allows your team to concentrate on resolving an incident when it occurs. If your team has already practiced and familiarized themselves with communication and coordination, they don’t need to worry about these factors during an incident.
+
+
+Setting up an incident response process doesn’t need to be a daunting task. There are a number of widely available resources that can provide some guidance, such as Managing Incidents in the first SRE Book. The basic principles of incident response include the following:
+
+
+
+ 
+ Maintain a clear line of command.
+
+ 
+
+ 
+ Designate clearly defined roles.
+
+ 
+
+ 
+ Keep a working record of debugging and mitigation as you go.
+
+ 
+
+ 
+ Declare incidents early and often.
+
+ 
+
+
+
+This chapter shows how incident management is set up at Google and PagerDuty, and gives examples of where we got this process right and where we didn’t. The simple checklist in “Putting Best Practices into Practice” can help you get started on creating your own incident response practice, if you don’t already have one.
+
+
+
+Incident Management at Google
+
+
+Incident response provides a system for responding to and managing an incident. A framework and set of defined procedures allow a team to respond to an incident effectively and scale up their response. Google’s incident response system is based on the Incident Command System (ICS).
+
+
+
+Incident Command System
+
+
+ICS was established in 1968 by firefighters as a way to manage wildfires. This framework provides standardized ways to communicate and fill clearly specified roles during an incident. Based upon the success of the model, companies later adapted ICS to respond to computer and system failures. This chapter explores two such frameworks: PagerDuty’s Incident Response process and Incident Management At Google (IMAG).
+
+
+Incident response frameworks have three common goals, also known as the “three Cs” (3Cs) of incident management:
+
+
+
+ 
+ Coordinate response effort.
+
+ 
+
+ 
+ Communicate between incident responders, within the organization, and to the outside world. 
+
+ 
+
+ 
+ Maintain control over the incident response.
+
+ 
+
+
+
+When something goes wrong with incident response, the culprit is likely in one of these areas. Mastering the 3Cs is essential for effective incident response.
+
+
+
+
+
+Main Roles in Incident Response
+
+
+The main roles in incident response are the Incident Commander (IC), Communications Lead (CL), and Operations or Ops Lead (OL). IMAG organizes these roles into a hierarchy: the IC leads the incident response, and the CL and OL report to the IC. 
+
+
+When disaster strikes, the person who declares the incident typically steps into the IC role and directs the high-level state of the incident. The IC concentrates on the 3Cs and does the following:
+
+
+
+ 
+ Commands and coordinates the incident response, delegating roles as needed. By default, the IC assumes all roles that have not been delegated yet.
+
+ 
+
+ 
+ Communicates effectively.
+
+ 
+
+ 
+ Stays in control of the incident response.
+
+ 
+
+ 
+ Works with other responders to resolve the incident.
+
+ 
+
+
+
+The IC may either hand off their role to someone else and assume the OL role, or assign the OL role to someone else. The OL works to respond to the incident by applying operational tools to mitigate or resolve the incident.
+
+
+While the IC and OL work on mitigating and resolving the incident, the CL is the public face of the incident response team. The CL’s main duties include providing periodic updates to the incident response team and stakeholders, and managing inquiries about the incident.
+
+
+Both the CL and OL may lead a team of people to help manage their specific areas of incident response. These teams can expand or contract as needed. If the incident becomes small enough, the CL role can be subsumed back into the IC role.
+
+
+
+
+
+
+
+Case Studies
+
+
+The following four large-scale incidents illustrate how incident response works in practice. Three of these case studies are from Google, and the last is a case study from PagerDuty, which provides perspective on how other organizations use ICS-derived frameworks. The Google examples start with an incident that wasn’t managed effectively, and progress to incidents that were managed well.
+
+
+
+Case Study 1: Software Bug—The Lights Are On but No One’s (Google) Home
+
+
+This example shows how failing to declare an incident early on can leave a team without the tools to respond to an incident quickly and efficiently. While this incident was resolved without major calamity, early escalation would have produced a quicker, more organized response, and a better outcome.
+
+
+
+Context
+
+
+Google Home is a smart speaker and home assistant that responds to voice commands. The voice commands interact with Google Home’s software, which is called Google Assistant.
+
+
+Interacting with Google Home starts when a user says a hotword, a given phrase that triggers Google Assistant. Multiple users can use the same Google Home device by training the assistant to listen for a given hotword. The hotword model that identifies speakers is trained on the client, but the training data (i.e., the speaker recognition files) is stored on the server. The server handles bidirectional streaming of data. To handle overload during busy times, the server has a quota policy for Google Assistant. In order to protect servers from overly large request values, the quota limit is significantly higher than the baseline usage 

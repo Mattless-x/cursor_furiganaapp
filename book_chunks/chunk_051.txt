@@ -1,0 +1,188 @@
+=== The Site Reliability Workbook ===
+=== Chunk 51/100 ===
+
+mizes latency by routing to the location closest to the user. Autoscaling can work together with load balancing to increase the size of locations close to the user and then route more traffic there, creating a positive feedback loop.
+
+
+ If demand is primarily closest to one location, that location will grow in size until all serving capacity is in one spot. If this location goes down, the remaining locations will become overloaded and traffic may be dropped. Scaling these locations up will not be instant. You can avoid this situation by setting a minimum number of instances per location to keep spare capacity for failover.
+
+ 
+ Load shedding
+ It’s a good idea to set your thresholds such that your system autoscales before load shedding kicks in. Otherwise, your system might start shedding traffic it could have served had it scaled up first.
+
+ Managing load with RPC
+ 
+ Handling the right requests is important for efficiency: you don’t want to autoscale up to serve requests that won’t benefit users, or shed load unnecessarily because you’re processing unimportant requests. When using both autoscaling and load shedding, it’s important that you set deadlines on your RPC requests.
+
+
+ Processes hold resources for all in-flight requests, and release those resources when the requests are completed. In the absence of a specific deadline, the system will hold resources for all in-progress requests, up to the maximum possible limit. By default, this deadline is a very large number (which depends on the language implementation—some language APIs work in terms of a fixed point in time, and others with a duration of time). This behavior causes clients, and ultimately users, to experience higher latency. The service is also at risk of running out of resources (like memory) and crashing.
+
+
+ To handle this scenario gracefully, we recommend that the server terminates requests that take too long, and that clients cancel requests that are no longer useful to them. For example, a server shouldn’t start an expensive search operation if the client already returned an error to the user. To set behavior expectations for a service, you could simply provide a comment in the API’s .proto file to suggest a default deadline. Also, set deliberate deadlines for the client (for examples, see our blog post “gRPC and Deadlines”).
+
+ 
+
+
+
+
+
+
+
+
+
+Conclusion
+
+
+In Google’s experience, there are no perfect traffic management configurations. Autoscaling is a powerful tool, but it’s easy to get wrong. Unless carefully configured, autoscaling can result in disastrous consequences—for example, potentially catastrophic feedback cycles between load balancing, load shedding, and autoscaling when these tools are configured in isolation. As the Pokémon GO case study illustrates, traffic management works best when it’s based upon a holistic view of the interactions between systems.
+
+
+Time and time again, we’ve seen that no amount of load shedding, autoscaling, or throttling will save our services when they all fail in sync. For example, in the Pokémon GO case study, we had a “thundering herd” of synchronized client retries combined with load balancers that waited for unresponsive backend servers. To fail your services gracefully, you need to plan ahead to mitigate potential problems. Your mitigation strategy might involve setting flags, changing default behaviors, enabling expensive logging, or exposing the current value of parameters the traffic management system uses for decisions.
+
+
+We hope the strategies and insights provided in this chapter can help you manage traffic for your own services and keep your users happy.
+
+
+
+1 5-tuple includes the following: source address, destination address, source port, destination port, and the transport protocol type.
+2 See the Google Cloud Platform blog post “SLOs, SLIs, SLAs, Oh My—CRE Life Lessons” for an explanation of the difference between SLOs and SLAs.
+3 For more information on this topic, see Chapter 22 of the first SRE book.
+4 See Site Reliability Engineering, Chapter 19.
+5 For more info about redundancy in capacity planning, see Site Reliability Engineering, Appendix B.
+
+Introducing Non-Abstract Large System Design
+
+Chapter 12. Introducing Non-Abstract Large System Design
+
+
+By Salim Virji, James Youngman, Henry Robertson,
+
+Stephen Thorne, Dave Rensin, and Zoltan Egyed
+
+with Richard Bondi
+
+
+With responsibilities that span production operations and product engineering, SRE is in a unique position to align business case requirements and operational costs. Product engineering teams may not be aware of the maintenance cost of systems they design, especially if that product team is building a single component that factors into a greater production ecosystem.
+
+
+Based on Google’s experience developing systems, we consider reliability to be the most critical feature of any production system. We find that deferring reliability issues during design is akin to accepting fewer features at higher costs. By following an iterative style of system design and implementation, we arrive at robust and scalable designs with low operational costs. We call this style Non-Abstract Large System Design (NALSD).
+
+
+
+What Is NALSD?
+
+
+This chapter presents a NALSD approach: we begin with the problem statement, gather requirements, and iterate through designs that become increasingly sophisticated until we reach a viable solution. Ultimately, we arrive at a system that defends against many failure modes and satisfies both the initial requirements and additional details that emerged as we iterated.
+
+
+NALSD describes a skill critical to SRE: the ability to assess, design, and evaluate large systems. Practically, NALSD combines elements of capacity planning, component isolation, and graceful system degradation that are crucial to highly available production systems. Google SREs are expected to be able to start resource planning with a basic whiteboard diagram of a system, think through the various scaling and failure domains, and focus their design into a concrete proposal for resources. Because these systems change over time, it’s vitally important that an SRE is able to analyze and evaluate the key aspects of the system design.
+
+
+
+
+
+Why “Non-Abstract”?
+
+
+All systems will eventually have to run on real computers in real datacenters using real networks. Google has learned (the hard way) that the people designing distributed systems need to develop and continuously exercise the muscle of turning a whiteboard design into concrete estimates of resources at multiple steps in the process. Without this rigor, it’s too tempting to create systems that don’t quite translate in the real world.
+
+
+This extra bit of work up front typically leads to fewer last-minute system design changes to account for some unforeseen physical constraint.
+
+
+Please note that while we drive these exercises to discrete results (e.g., number of machines), examples of sound reasoning and assumption making are more important than any final values. Early assumptions heavily influence calculation results, and making perfect assumptions isn’t a requirement for NALSD. The value of this exercise is in combining many imperfect-but-reasonable results into a better understanding of the design.
+
+
+
+
+
+AdWords Example
+
+
+The Google AdWords service displays text advertisements on Google Web Search. The click-through rate (CTR) metric tells advertisers how well their ads are performing. CTR is the ratio of times the ad is clicked versus the number of times the ad is shown.
+
+
+This AdWords example aims to design a system capable of measuring and reporting an accurate CTR for every AdWords ad. The data we need to calculate CTR is recorded in logs of the search and ad serving systems. These logs record the ads that are shown for each search query and the ads that are clicked, respectively.
+
+
+
+Design Process
+
+
+Google uses an iterative approach to design systems that meet our goals. Each iteration defines a potential design and examines its strengths and weaknesses. This analysis either feeds into the next iteration or indicates when the design is good enough to recommend.
+
+
+In broad strokes, the NALSD process has two phases, each with two to three questions.
+
+
+In the basic design phase, we try to invent a design that works in principle. We ask two questions:
+
+
+
+ Is it possible?
+ 
+ Is the design even possible? If we didn’t have to worry about enough RAM, CPU, network bandwidth, and so on, what would we design to satisfy the requirements?
+
+ 
+ Can we do better?
+ 
+ For any such design, we ask, “Can we do better?” For example, can we make the system meaningfully faster, smaller, more efficient? If the design solves the problem in O(N) time, can we solve it more quickly—say, O(ln(N))?
+
+ 
+
+
+In the next phase, we try to scale up our basic design—for example, by dramatically increasing a requirement. We ask three questions:
+
+
+
+ Is it feasible?
+ 
+ Is it possible to scale this design, given constraints on money, hardware, and so on? If necessary, what distributed design would satisfy the requirements?
+
+ 
+ Is it resilient?
+ 
+ Can the design fail gracefully? What happens when this component fails? How does the system work when an entire datacenter fails?
+
+ 
+ Can we do better?
+  
+
+
+While we generally cover these phases and questions in this approximate order, in practice, we bounce around between the questions and phases. For example, during the basic design phase, we often have growth and scaling in the back of our minds.
+
+
+Then we iterate. One design may successfully pass most of the phases, only to flounder later. When that happens, we start again, modifying or replacing components. The final design is the end of a story of twists and turns.
+
+
+With these concepts in mind, let’s walk through the iterative NALSD process.
+
+
+
+
+
+Initial Requirements
+
+
+Each advertiser may have multiple advertisements. Each ad is keyed by ad_id and is associated with a list of search terms selected by the advertiser.
+
+
+When displaying a dashboard to an advertiser, we need to know the following for each ad and search term:
+
+
+
+ 
+ How often this search term triggered this ad to be shown
+
+ 
+
+ 
+ How many times the ad was clicked by someone who saw the ad
+
+ 
+
+
+
+With this information, we can calculate the CTR: the number of clicks divided by the number of impressions.
+
+
+We know our advertisers care about two things: that the dashboard displays quickly

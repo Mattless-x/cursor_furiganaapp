@@ -1,0 +1,414 @@
+=== The Site Reliability Workbook ===
+=== Chunk 44/100 ===
+
+s one of the most important reasons to write a postmortem. Our example contains a small paragraph that describes the root causes and trigger, but it doesn’t explore the lower-level details of the issue.
+
+ 
+ Recovery efforts
+ 
+ A postmortem acts as the record of an incident for its readers. A good postmortem will let readers know what happened, how the issue was mitigated, and how users were impacted. The answers to many of these questions are typically found in the Recovery Efforts section, which was left empty in our example.
+
+ 
+
+
+If an outage merits a postmortem, you should also take the time to accurately capture and document the necessary details. The reader should get a complete view of the outage and, more importantly, learn something new.
+
+
+
+
+
+Key action item characteristics missing
+
+
+The Action Items (AIs) section of our example is missing the core aspects of an actionable plan to prevent recurrence. For example:
+
+
+
+ 
+ The action items are mostly mitigative. To minimize the likelihood of the outage recurring, you should include some preventative action items and fixes. The one “preventative” action item suggests we “make humans less error-prone.” In general, trying to change human behavior is less reliable than changing automated systems and processes. (Or as Dan Milstein once quipped: “Let’s plan for a future where we’re all as stupid as we are today.”)
+
+ 
+
+ 
+ All of the action items have been tagged with an equal priority. There’s no way to determine which action to tackle first.
+
+ 
+
+ 
+ The first two action items in the list use ambiguous phrases like “Improve” and “Make better.” These terms are vague and open to interpretation. Using unclear language makes it difficult to measure and understand success criteria.
+
+ 
+
+ 
+ Only one action item was assigned a tracking bug. Without a formal tracking process, action items from postmortems are often forgotten, resulting in outages.
+
+ 
+
+
+
+Note
+In the words of Ben Treynor Sloss, Google’s VP for 24/7 Operations: “To our users, a postmortem without subsequent action is indistinguishable from no postmortem. Therefore, all postmortems which follow a user-affecting outage must have at least one P[01] bug associated with them. I personally review exceptions. There are very few exceptions.”
+
+
+
+
+
+
+
+Counterproductive finger pointing
+
+
+Every postmortem has the potential to lapse into a blameful narrative. Let’s take a look at some examples:
+
+
+
+ Things that went poorly
+ 
+ The entire team is blamed for the outage, while two members (maxone@ and logantwo@) are specifically called out.
+
+ 
+ Action items
+ 
+ The last item in the list targets sydneythree@ for succumbing to pressure and mismanaging the cross-site handoff.
+
+ 
+ Root causes and trigger
+ 
+ dylanfour@ is held solely responsible for the outage.
+
+ 
+
+
+It may seem like a good idea to highlight individuals in a postmortem. Instead, this practice leads team members to become risk-averse because they’re afraid of being publicly shamed. They may be motivated to cover up facts critical to understanding and preventing recurrence.
+
+
+
+
+
+Animated language
+
+
+A postmortem is a factual artifact that should be free from personal judgments and subjective language. It should consider multiple perspectives and be respectful of others. Our example postmortem contains multiple examples of undesirable language:
+
+
+
+ Root causes and trigger
+ 
+ Superfluous language (e.g., “careless ignorance”)
+
+ 
+ Things that went poorly
+ 
+ Animated text (e.g., “which is ridiculous”)
+
+ 
+ Where we got lucky
+ 
+ An exclamation of disbelief (e.g., “I can’t believe we survived this one!!!”)
+
+ 
+
+
+Animated language and dramatic descriptions of events distract from the key message and erode psychological safety. Instead, provide verifiable data to justify the severity of a statement.
+
+
+
+
+
+Missing ownership
+
+
+Declaring official ownership results in accountability, which leads to action. Our example postmortem contains several examples of missing ownership:
+
+
+
+ 
+ The postmortem lists four owners. Ideally, an owner is a single point of contact who is responsible for the postmortem, follow-up, and completion.
+
+ 
+
+ 
+ The Action Items section has little or no ownership for its entries. Actions items without clear owners are less likely to be resolved.
+
+ 
+
+
+
+It’s better to have a single owner and multiple collaborators.
+
+
+
+
+
+Limited audience
+
+
+Our example postmortem was shared only among members of the team. By default, the document should have been accessible to everyone at the company. We recommend proactively sharing your postmortem as widely as possible—perhaps even with your customers. The value of a postmortem is proportional to the learning it creates. The more people that can learn from past incidents, the less likely they are to be repeated. A thoughtful and honest postmortem is also a key tool in restoring shaken trust.
+
+
+As your experience and comfort grows, you will also likely expand your “audience” to nonhumans. Mature postmortem cultures often add machine-readable tags (and other metadata) to enable downstream analytics.
+
+
+
+
+
+Delayed publication
+
+
+Our example postmortem was published four months after the incident. In the interim, had the incident recurred (which in reality, did happen), team members likely would have forgotten key details that a timely postmortem would have captured. 
+
+
+
+
+
+
+
+
+
+Good Postmortem
+
+
+Note
+This is an actual postmortem. In some cases, we fictionalized names of individuals and teams. We also replaced actual values with placeholders to protect sensitive capacity information. In the postmortems that you create for your internal consumption, you should absolutely include specific numbers!
+
+
+
+
+
+Postmortem: All Satellite Machines Sent to Diskerase
+
+
+2014-August-11
+
+
+
+ 
+ 
+ Owner:
+ 
+ Postmortem: maxone@, logantwo@
+
+
+ Datacenter Automation: sydneythree@
+
+
+ Network: dylanfour@
+
+
+ Server Management: finfive@
+
+ 
+ 
+
+ 
+ Shared with:
+ all_engineering_employees@google.com
+ 
+
+ 
+ Status:
+ Final
+ 
+
+ 
+ Incident date:
+ Mon, August 11, 2014, 17:10 to 17:50 PST8PDT
+ 
+
+ 
+ Published:
+ Fri, August 15, 2014
+ 
+
+ 
+
+
+Executive Summary
+
+
+
+ 
+ 
+ Impact:
+ 
+ Frontend queries dropped
+
+
+ Some ads were not served
+
+
+ There was a latency increase for all services normally served from satellite for nearly two days
+
+ 
+ 
+
+ 
+ Root cause:
+ A bug in turndown automation caused all satellite machines, instead of just one rack of satellite machines, to be sent to diskerase. This resulted in all satellite machines entering the decom workflow, which wiped their disks. The result was a global satellite frontend outage.
+ 
+
+ 
+
+
+Problem Summary
+
+
+
+ 
+ 
+ Duration of problem:
+ 
+ Main outage: Mon, August 11, 17:10 to 17:50 PST8PDT
+
+
+ Reconstruction work and residual pains through Wed, August 13, 07:46 PST8PDT, then the incident was closed.
+
+ 
+ 
+
+ 
+ Product(s) affected:
+ Frontend Infrastructure, specifically all satellite locations.
+ 
+
+ 
+ % of product affected:
+ Global—all traffic normally served from satellites (typically 60% of global queries).
+ 
+
+ 
+ User impact:
+ 
+ [Value redacted] frontend queries dropped over a period of 40 minutes ([value redacted] QPS averaged over the period, [value redacted] % of global traffic).
+
+
+ Latency increase for all services normally served from satellite for nearly two days.
+
+ 
+ 
+
+ 
+ Revenue impact:
+ The exact revenue impact unknown at this time.
+ 
+
+ 
+ Detection:
+ Blackbox alerting: traffic-team was paged with “satellite a12bcd34 failing too many HTTP requests” for ~every satellite in the world.
+ 
+
+ 
+ Resolution:
+ The outage itself was rapidly mitigated by moving all of Google’s frontend traffic to core clusters, at the cost of additional latency for user traffic.
+ 
+
+ 
+
+
+Background (optional)
+
+
+If you’re unfamiliar with frontend traffic serving and the lower layers of serving automation at Google, read the glossary before you continue.
+
+
+Impact
+
+
+User impact
+
+
+
+ 
+ [Value redacted] frontend queries dropped over a period of [value redacted] minutes. [Value redacted] QPS averaged over the period, [value redacted] % of global traffic. Our monitoring suggests a much larger crater; however, the data was unreliable as it ceased monitoring satellites that were still serving, thinking they were turned down. The appendix describes how the above numbers were estimated.
+
+ 
+
+ 
+ There was a latency increase for all services normally served from satellite for nearly two days:
+
+
+ 
+ 
+ [Value redacted] ms RTT spikes for countries near core clusters
+
+ 
+
+ 
+ Up to+[value redacted] ms for locations relying more heavily on satellites (e.g., Australia, New Zealand, India)
+
+ 
+
+ 
+ 
+
+
+
+Revenue impact
+
+
+Some ads were not served due to the lost queries. The exact revenue impact is unknown at this time:
+
+
+
+ 
+ Display and video: The data has very wide error bars due to day-on-day fluctuations, but we estimate between [value redacted] % and [value redacted] % of revenue loss on the day of the outage.
+
+ 
+
+ 
+ Search: [Value redacted] % to [value redacted] % loss between 17:00 to 18:00, again with wide error bars.
+
+ 
+
+
+
+Team impact
+
+
+
+ 
+ The Traffic team spent ~48 hours with all hands on deck rebuilding satellites.
+
+ 
+
+ 
+ NST had a higher-than-normal interrupt/pager load because they needed to traffic-engineer overloaded peering links.
+
+ 
+
+ 
+ Some services may have seen increased responses served at their frontends due to reduced cache hit rate in the GFEs.
+
+
+ 
+ 
+ For example, see this thread [link] about [cache-dependent service].
+
+ 
+
+ 
+ [Cache-dependent service] saw their cache hit rate at the GFEs drop from [value redacted ] % to [value redacted] % before slowly recovering.
+
+ 
+
+ 
+ 
+
+
+
+Incident document
+
+
+[The link to our incident tracking document has been redacted.]
+
+
+Root Causes and Trigger
+
+
+A longstanding input validation bug in the Traffic Admin server was triggered by the manual reexecution of a workflow to decommission the a12bcd34 satellite. The bug removed the machine constraint on the decom action, sending all satellite machines to decommission.
+
+
+From there, datacenter automation executed the decom workflow, wiping the hard drives of the majority of satellite machines before this action could be stopped.
+
+
+The Traffic Admin server provides a ReleaseSatelliteMachines RPC. This handler initiates satellite decommissio

@@ -1,0 +1,128 @@
+=== The Site Reliability Workbook ===
+=== Chunk 65/100 ===
+
+s that went into the change. This enables confident rollbacks, and the ability to notify parties whose configurations were impacted.
+
+
+
+
+
+Safe Configuration Change Application
+
+
+As discussed earlier, configuration is an easy way to make large changes to system functionality, but it is often not unit-tested or even easily testable. Since we want to avoid reliability incidents, we should inspect what the safe application of a configuration change means.
+
+
+For a configuration change to be safe, it must have three main properties:
+
+
+
+ 
+ The ability to be deployed gradually, avoiding an all-or-nothing change
+
+ 
+
+ 
+ The ability to roll back the change if it proves dangerous
+
+ 
+
+ 
+ Automatic rollback (or at a minimum, the ability to stop progress) if the change leads to loss of operator control
+
+ 
+
+
+
+When deploying a new configuration, it is important to avoid a global all-at-once push. Instead, push the new configuration out gradually—doing so allows you to detect issues and abort a problematic push before causing a 100% outage. This is one reason why tools such as Kubernetes use a rolling update strategy for updating software or configuration instead of updating every pod all at once. (See Chapter 16 for related discussions.)
+
+
+The ability to roll back is important for decreasing incident duration. Rolling back the offending configuration can mitigate an outage much more quickly than attempting to patch it with a temporary fix—there is inherently lower confidence that a patch will improve things.
+
+
+Note
+In order to be able to roll forward and roll back configuration, it must be hermetic. Configuration that requires external resources that can change outside of its hermetic environment can be very hard to roll back. For example, configuration stored in a version control system that references data on a network filesystem is not hermetic.
+
+
+
+
+Last but not least, the system should be especially careful when handling changes that might lead to sudden loss of operator control. On desktop systems, screen resolution changes often prompt a countdown and reset if a user does not confirm changes. This is because an incorrect monitor setting might prevent the user from reverting the change. Similarly, it is common for system admins to accidentally firewall themselves out of the system that they are currently setting up.
+
+
+These principles are not unique to configuration and apply to other methods of changing deployed systems, such as upgrading binaries or pushing new data sets.
+
+
+
+
+
+
+
+Conclusion
+
+
+Trivial configuration changes can impact a production system in dramatic ways, so we need to deliberately design configuration to mitigate these risks. Configuration design carries aspects of both API and UI design and should be purposeful—not just a side effect of system implementation. Separating configuration into philosophy and mechanics helps us gain clarity as we design internal systems, and enables us to scope discussion correctly.
+
+
+Applying these recommendations takes time and diligence. For an example of how we’ve applied these principles in practice, see the ACM Queue article on Canary Analysis Service. When designing this practical internal system, we spent about a month trying to reduce mandatory questions and finding good answers for optional questions. Our efforts created a simple configuration system. Because it was easy to use, it was widely adopted internally. We’ve seen little need for user support—since users can easily understand the system, they can make changes with confidence. Of course, we have not eliminated misconfigurations and user support entirely, nor do we ever expect to.
+
+
+
+1 Kim Vicente, The Human Factor (New York: Routledge, 2006), 71–6.
+2 While clearly a hyperbole, a Reddit thread about the worst volume control interface can provide insight into the difference between good and bad mechanics of answering the same question, “What should the volume be?”
+3 Full text: http://www.dangoldstein.com/papers/DefaultsScience.pdf.
+4 Jsonnet is used to compile into Kubernetes YAML, providing a real-world illustration for this parallel. See http://ksonnet.heptio.com/.
+5 This can be useful when an organization performs migrations to new technologies, integrates acquisitions, or focuses on shared infrastructure but otherwise has divergent development and system management practices.
+6 There are various practical ways to automate compiling a new configuration into raw data. For example, if you store your configuration in a version control system, a post-commit hook can facilitate this. Alternatively, a periodic update process can perform this, at the cost of some delay.
+7 Although C++ is unlikely to be used for configuration, clang-format nicely demonstrates that even a language more complex than most languages used for configuration can in fact be fully autoformatted.
+8 In very large organizations, it is also useful to be able to annotate pieces of a broadly reused configuration that has been deprecated. When a replacement is available, automatic rewriting tools facilitate centralized changes, helping to avoid legacy issues.
+
+Configuration Specifics
+
+Chapter 15. Configuration Specifics
+
+
+By Dave Cunningham and Misha Brukman
+
+with Christophe Kalt and Betsy Beyer
+
+
+Managing production systems is one of the many ways SREs provide value to an organization. The task of configuring and running applications in production requires insight into how those systems are put together and how they work. When things go wrong, the on-call engineer needs to know exactly where the configurations are and how to change them. This responsibility can become a burden if a team or organization hasn’t invested in addressing configuration-related toil.
+
+
+This book covers the subject of toil at length (see Chapter 6). If your SRE team is burdened with a lot of configuration-related toil, we hope that implementing some of the ideas presented in this chapter will help you reclaim some of the time you spend making configuration changes.
+
+
+
+Configuration-Induced Toil
+
+
+At the start of a project’s lifecycle, configuration is usually relatively lightweight and straightforward. You might have a few files in a data-only format like INI, JSON, YAML, or XML. Managing these files requires little toil. As the number of applications, servers, and variations increases over time, configuration can become very complex and verbose. For example, you might have originally “changed a setting” by editing one configuration file, but now you have to update configuration files in multiple locations. Reading such configuration is also hard, as important differences are hidden in a sea of irrelevant duplicated details. We can characterize this configuration-related toil as replication toil: the mundane task of managing configuration replicated across a system. This kind of toil isn’t limited to large organizations and huge systems—it’s especially common to microservice architectures with many independently configured components.
+
+
+Engineers often respond to replication toil by building automation or a configuration framework. They aim to remove duplication in the config system, and to make configuration easier to understand and maintain. Reusing techniques from software engineering, this approach often makes use of a “configuration language.” Google SRE has created a number of configuration languages with the aim of reducing toil for our largest and most complex production systems.
+
+
+Unfortunately, this tactic doesn’t necessarily eliminate configuration toil. Freed from an overwhelming number of individual configs, the project (and its config corpus) grows with renewed energy. Inevitably, you run up against complexity toil: the challenging and frustrating task of dealing with the emergent and sometimes undesirable behaviors of complex automation. This kind of toil typically materializes in larger organizations (10+ engineers) and compounds with growth. The earlier you can tackle complexity toil, the better; the size and complexity of configuration will only grow over time.
+
+
+
+
+
+Reducing Configuration-Induced Toil
+
+
+If your project is riddled with configuration-related toil, you have a few basic strategies for improving the situation.
+
+
+In rare cases, and if your application is custom-built, you might opt to remove the configuration altogether. The application may be naturally better than a configuration language at handling certain aspects of configuration: it might make sense for the application to assign defaults because it has access to information about the machine, or to vary some values dynamically because it can scale according to load.
+
+
+If removing configuration is not an option, and replication toil is becoming a problem, consider automation to reduce the duplication in your configuration corpus. You might integrate a new configuration language, or you might need to improve or replace your existing configuration setup.1 The next section, “Critical Properties and Pitfalls of Configuration Systems”, provides some guidance on choosing or designing that system.
+
+
+If you go the route of setting up a new configuration framework, you’ll need to integrate the configuration language with the application that needs to be configured. “Integrating an Existing Application: Kubernetes” uses Kubernetes as an example of an existing application to be integrated, and “Integrating Custom Applications (In-House Software)” gives some more general advice. These sections walk through some examples using Jsonnet (which we chose as a representative configuration language for illustration purposes).
+
+
+Once you have a configuration system in place to help with replication toil—whether you’re already committed to your existing solution, or you choose to implement a new configuration language—the best practices in “Effectively Operating a Configuration System”, “When to Evaluate Configuration”, and “Guarding Against Abusive Configuration” should be helpful in optimizing your setup, no matter which language you’re using. Adopting those processes and tools can help minimize complexity toil.
+
+

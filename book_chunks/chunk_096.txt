@@ -1,0 +1,169 @@
+=== The Site Reliability Workbook ===
+=== Chunk 96/100 ===
+
+w many time zones apart should the teams be?
+should both halves of the team start at the same time, Timing: Should both halves of the team start at the same time?
+
+Global Software Load Balancer (GSLB), Global Software Load Balancer
+glossary in good postmortem example, Good Postmortem, Clarity
+goals, aligning between SRE and development teams, Aligning Goals-Aligning Goals
+golden signals (see Four Golden Signals)
+Google AdWords (see AdWords NALSD example)
+Google Analytics, Data Analytics
+Google Apps Script, Google’s template
+Google Assistant (version 1.88), bug in, Context
+Google Cloud Load Balancer (GCLB), Google Cloud Load Balancinghigh availability with, GCLB: High Availability
+
+Google Cloud Load Balancing, Google Cloud Load Balancing-Future-proofinganycast network addressing and routing, Anycaststabilized anycast, Stabilized anycast
+
+case study, Pokémon GO on GCLB, Case Study 1: Pokémon GO on GCLB-Future-proofingfuture-proofing, Future-proofing
+migrating to GCLB, Migrating to GCLB
+resolving issue with request spikes and GFE, Resolving the issue
+
+Global Software Load Balancer (GSLB), Global Software Load Balancer
+Google Front End (GFE), Google Front End
+low latency with GCLB, GCLB: Low Latency
+Maglev packet-level load balancer, Maglev
+
+Google Cloud Platform (GCP), SLO Engineering Case Studies, Moving our on-prem infrastructure to the cloudbreaking down SLO wall between GCP and Evernote, Breaking Down the SLO Wall Between Customer and Cloud Provider
+
+Google Compute Engine (GCE), Data collectionAutoscaler, Data delivery, Capacity planning
+losing large number of disk trays, incident response case study, Incident-Review
+
+Google Front Ends (GFE), Maglev, Google Front Endcapacity reduction caused by synchronous client retries, Migrating to GCLB
+
+Google Home software bug incident response case study, Case Study 1: Software Bug—The Lights Are On but No One’s (Google) Home-Review
+Google Kubernetes Engine (GKE), CreateCluster failure case study, Case Study 2: Service Fault—Cache Me If You Can-What could have been handled better?
+Google’s Colossus File System, What We Decided to Do
+Google’s Customer Reliability Engineering (CRE) team, SLO Engineering Case Studies, Engaging with CRE
+Google’s template for postmortems, Google’s template
+GSLB (Global Software Load Balancer), Global Software Load Balancer
+
+H
+HashiCorp Configuration Language, Generating Config in Specific Formats
+health checking, automated, problems with, New bugs
+help, asking for, Identification delay
+HIGH_FAST requests, Alerting at Scale
+HIGH_SLOW requests, Alerting at Scale
+Home Depot, SLO case study, The Home Depot’s SLO Story-Future Aspirationsapplying VALET to batch applications, Applying VALET to Batch Applications
+automating VALET data collection, Automating VALET Data Collection
+evangelizing SLOs, Evangelizing SLOs
+first set of SLOs, Our First Set of SLOs-VALET
+future aspirations, Future Aspirations
+proliferation of SLOs, The Proliferation of SLOs
+using VALET in testing, Using VALET in Testing
+
+horizontal projects, Horizontal Projects
+horizontal SRE team, Assembling a horizontal SRE teamrisks and mitigations for, Horizontal SRE team
+
+hotspotting, reducing in data processing pipeline, Reduce Hotspotting and Workload Patterns
+HTTP requestsgrading importance of, Grading Interaction Importance
+success of, SLIs for, What to Measure: Using SLIs
+
+HTTP servers, availability and latency, API and HTTP server availability and latency
+HTTP status codes, Errors, Problem, Clarifications and Caveatsincluding in metrics-based monitoring, Proposed solution
+monitoring system metrics on served traffic, Status of Served Traffic
+
+human error causing new bugs in production, New bugs
+human processes in pager load, Pager load inputs
+human-backed interfaces, starting with, Start with Human-Backed Interfaces, Start with human-backed interfaces
+Hyrum’s Law, Measuring Complexity
+
+I
+IC (Incident Commander), Main Roles in Incident Response
+ICS (Incident Command System), Incident Command System
+idempotent mutations, Idempotent and Two-Phase Mutations
+identification delay for causes of pages, Identification delay
+incentivesfor SLO setting and measuring at Home Depot, The SLO Culture Project
+for successful adoption of DevOps and SRE, Organizational Context and Fostering Successful Adoption-Strive for Parity of Esteem: Career and Financialavoiding passing of blame, It’s Better to Fix It Yourself; Don’t Blame Someone Else
+narrow incentives narrowing success, Narrow, Rigid Incentives Narrow Your Success
+striving for parity of esteem, Strive for Parity of Esteem: Career and Financial
+
+incident response, Incident Response-Conclusionbasic principles, Incident Response
+best practices, using, Putting Best Practices into Practice-Drillsdrills, Drills
+preparing beforehand, Prepare Beforehand
+training, Incident Response Training
+
+case study, Google Home software bug and failure to communicate, Case Study 1: Software Bug—The Lights Are On but No One’s (Google) Home-Reviewincident, Incident
+review, Review
+
+case study, Google Kubernetes Engine (GKE), cluster creation failure, Case Study 2: Service Fault—Cache Me If You Can-What could have been handled better?incident, Incident
+responses that needed improvement, What could have been handled better?
+responses that went well, What went well?
+
+case study, incident response at PagerDuty, Case Study 4: Incident Response at PagerDuty-Tools used for incident responsemajor incident response, Major incident response at PagerDuty
+tools used, Tools used for incident response
+
+case study, lightning strikes at Google datacenter, Case Study 3: Power Outage—Lightning Never Strikes Twice…Until It Does-Reviewincident, Incident
+review, Review
+
+incident management at Google, Incident Management at Google-Main Roles in Incident ResponseIncident Command System (ICS), Incident Command System
+main roles in incident response, Main Roles in Incident Response
+
+practicing in SRE with customers, Step 5: Practice, Practice, Practice
+
+incidentsestablishing criteria for, Establish criteria for an incident
+finding causes of repeating incidents, Repeating incidents
+incident handling in Spotify case study, Incident handling
+root cause and trigger, in postmortem analysis results, Results of Postmortem Analysis
+weekly reporting of, Report incidents and outages weekly
+
+infrastructure-centric view (configuration), Configuration Asks Users Questions
+intent-based configuration, monitoring system, Treat Your Configuration as Code
+interpersonal risk taking, Problem Statement
+interrupts, Identifying and Recovering from Overloadtriaging, Lessons Learned
+work overload and, From Load to Overload
+
+iterations for SLO quality improvement, Improving the Quality of Your SLO
+
+J
+JavaScript, Generating Config in Specific Formats
+jitter, Future-proofing
+JSON, Generating Config in Specific Formatsconfiguration data in, Separate Configuration and Resulting Data
+configuration items in Kubernetes represented as JSON objects, What Kubernetes Provides
+examples of bad and good JSON output by Jsonnet, Integrating Custom Applications (In-House Software)
+
+Jsonnet, Separate Configuration and Resulting Data, Pitfall 5: Using an Existing General-Purpose Scripting Language Like Python, Ruby, or Lua, Integrating Custom Applications (In-House Software)converting existing template to, Integrating the Configuration Language
+generating JSON for configuration evaluation, When to Evaluate Configuration-Cons
+guarding against abusive configurations in, Guarding Against Abusive Configuration
+library functions for outputting INI and XML, Generating Config in Specific Formats
+quick introduction to, Pitfall 5: Using an Existing General-Purpose Scripting Language Like Python, Ruby, or Lua
+using with Kubernetes configurations, Integrating the Configuration Language
+validating JSON with JSONschema, Integrating Custom Applications (In-House Software)
+versioning in, Versioning
+writing tests as Jsonnet files, Testing
+
+K
+key details omitted in bad postmortem, Key details omitted
+kill switches and manual overrides in autoscaling, Including Kill Switches and Manual Overrides
+Kotter’s eight-step process for leading change, Kotter’s Eight-Step Process for Leading Change, How These Theories Apply to SREin Waze case study, Background
+
+Kubernetes, What we decided to do, Integrating an Existing Application: Kubernetes-Integrating the Configuration Languagecapabilities of, What Kubernetes Provides
+example Kubernetes config, Example Kubernetes Config
+GKE CreateCluster failure, incident response case study, Case Study 2: Service Fault—Cache Me If You Can-What could have been handled better?
+integrating the configuration language, Integrating the Configuration Language
+using Jsonnet to build and deploy objects, Guarding Against Abusive Configuration
+
+Kübler-Ross Change Curve, Emotion-Based Models, How These Theories Apply to SRE
+
+L
+languages, configurationchoosing language to store configuration in, Separate Configuration and Resulting Data
+configuration syntax features, Configuration syntax
+failing to recognize configuration as programming language problem, Pitfall 1: Failing to Recognize Configuration as a Programming Language Problem
+integrating a configuration language, Integrating a Configuration Language
+integrating in Kubernetes, Integrating the Configuration Language
+semantic validation, Semantic validation
+using existing general-purpose scripting languges for configuration, Pitfall 5: Using an Existing General-Purpose Scripting Language Like Python, Ruby, or Lua
+
+latencycalculations for multidatacenter design in AdWords example, Calculations
+for API calls in Home Depot case study, Availability and latency for API calls
+low latency with GCLB, GCLB: Low Latency
+measurement in Home Depot case study, The SLO Culture Project
+SLOs in Home Depot case study, Latency
+
+latency SLI, A Worked ExampleAPI and HTTP server latency, API and HTTP server availability and latency
+
+Launch Coordination Engineering (LCE) teams, Launch Coordination Engineering Teams
+leadership in geographically split SRE teams, Leadership: Joint ownership of a service
+legacy systems, Use Feedback to Improvedecommissioning filer-backed home directories, case study, Case Study 2: Decommissioning Filer-Backed Home Directories-Employ organizational nudges
+

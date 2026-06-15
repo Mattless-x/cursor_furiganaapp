@@ -1,0 +1,241 @@
+=== The Site Reliability Workbook ===
+=== Chunk 57/100 ===
+
+
+
+
+Deploying to production
+
+
+Once you have fully promoted your new pipeline binaries and/or config to production, you should be reasonably confident that you’ve vetted any potential issues (and if an issue does occur, that your monitoring will alert you). If your deployment goes wrong, be able to quickly restore from a known good state (e.g., roll back the binaries) and mark any potentially broken data as bad (e.g., replace the bad data with data from a previous backup version, make sure no jobs read the affected data, and/or reprocess the data if necessary).
+
+
+
+
+
+
+
+Reduce Hotspotting and Workload Patterns
+
+
+Hotspotting happens when a resource becomes overloaded from excessive access, resulting in an operation failure. Pipelines are susceptible to workload patterns—both through reads and writes—that can cause delays in isolated regions of data. Some common examples of hotspotting include:
+
+
+
+ 
+ Errors thrown because multiple pipeline workers are accessing a single serving task, causing overload.
+
+ 
+
+ 
+ CPU exhaustion due to concurrent access to a piece of data that is available on only one machine. Often, the internals of your data storage have a lowest level of granularity that may become unavailable if accessed heavily (e.g., a Spanner tablet can become overloaded due to a problematic section of data even though most of the data storage is fine).
+
+ 
+
+ 
+ Latency due to row-level lock contention in a database.
+
+ 
+
+ 
+ Latency due to concurrent access to a hard drive, which exceeds the physical ability of the drive head to move fast enough to quickly locate the data. In this case, consider using solid state drives.
+
+ 
+
+ 
+ A large work unit that requires many resources.
+
+ 
+
+
+
+Hotspotting can be isolated to a subset of data. To combat hotspotting, you can also block fine-grained data such as individual records. If that data is blocked, the rest of the pipeline can progress. Typically, your infrastructure can provide this functionality. If a chunk of processing work is consuming a disproportionate amount of resources, the pipeline framework can dynamically rebalance by breaking the work into smaller pieces. To be safe, it’s still best to build an emergency shutdown into your client logic to allow you to stop processing and isolate fine-grained chunks of processing work characterized by large resource usage or errors. For example, you should be able to quickly set a flag or push a config that allows you to skip input data that matches a certain pattern or problematic user.
+
+
+Other strategies to reduce hotspotting include:
+
+
+
+ 
+ Restructuring your data or access patterns to spread the load evenly
+
+ 
+
+ 
+ Reducing the load (e.g., statically allocate some or all of your data)
+
+ 
+
+ 
+ Reducing lock granularity to avoid data lock contention
+
+ 
+
+
+
+
+
+
+Implement Autoscaling and Resource Planning
+
+
+Spikes in workload are common and can lead to service outages if you’re unprepared for them. Autoscaling can help you handle these spikes. By using autoscaling, you don’t have to provision for peak load 100% of the time (for more details on autoscaling, see Chapter 11). Constantly running the number of workers required for peak capacity is an expensive and inefficient use of resources. Autoscaling turns down idle workers so you won’t pay for resources you don’t need. This strategy is particularly important for streaming pipelines and workloads that are variable. Batch pipelines may run simultaneously and will consume as many resources as are available.
+
+
+Predicting the future growth of your system and allocating capacity accordingly ensures that your service won’t run out of resources. It’s also important to weigh the cost of resources against the engineering effort needed to make the pipeline more efficient. When conducting resource planning with an estimate of future growth, keep in mind that costs may not be isolated to just running your pipeline job. You may also be paying the data storage and network bandwidth costs for replicating data across regions or cross-region writes and reads. Additionally, some data store systems are more expensive than others. Even though unit storage costs are low, these costs can quickly add up for very large data sets or expensive data access patterns that use a lot of computing resources on the storage servers. It’s good practice to help drive down costs by periodically examining your data set and pruning unused content.
+
+
+Although the effectiveness of a series of pipeline stages should be measured according to its end-to-end SLO, the pipeline efficiency and resource usage should be measured at each individual stage. For example, imagine that you have many jobs using BigQuery and notice a significant increase in BigQuery resource usage after a release. If you can quickly determine which jobs are responsible, you can focus your engineering effort on those jobs to drive down costs.
+
+
+
+
+
+Adhere to Access Control and Security Policies
+
+
+Data flows through your system and is often persisted along the way. When managing any persisted data, we recommend you adhere to the following privacy, security, and data integrity principles:
+
+
+
+ 
+ Avoid storing personally identifiable information (PII) in temporary storage. If you’re required to store PII temporarily, make sure the data is properly encrypted.
+
+ 
+
+ 
+ Restrict access to the data. Grant each pipeline stage only the minimal access it needs to read the output data from the previous stage.
+
+ 
+
+ 
+ Put time to live (TTL) limits on logs and PII.
+
+ 
+
+
+
+Consider a BigQuery instance that is tied to a GCP project whose access permissions can be managed with Google Cloud Identity and Access Management (e.g., the Dressy example described earlier). Creating different projects and instances per function allows more fine-grained scoping to restrict access. Tables can have a master project and cross-create views among client projects to allow them controlled access. For example, Dressy has restricted access to tables containing sensitive customer information for jobs from specific project roles.
+
+
+
+
+
+Plan Escalation Paths
+
+
+It is important to design your pipeline to be resilient so that a system failure (like a machine or zonal outage) never triggers an SLO violation page. By the time you get paged, you need to manually intervene because all automated measures have been exhausted. If you have well-defined SLOs and reliable metrics and alert detection, you’ll be alerted before your customers notice or report issues. When an SLO is violated, it’s important to respond quickly and send proactive communication to your customers.
+
+
+
+
+
+
+
+Pipeline Requirements and Design
+
+
+Today’s market provides many pipeline technology and framework options, and it can be overwhelming to identify which one best suits your use case. Some platforms provide fully managed pipelines. Others give you more flexibility but require more hands-on management. In SRE, we often take a significant amount of time during the design phase to assess which technology is the best fit. We compare and contrast the various design options based on user needs, product requirements, and system constraints. This section discusses tools you can use to both assess your pipeline technology options and make improvements to existing pipelines.
+
+
+
+What Features Do You Need?
+
+
+Table 13-1 provides a list of features we recommend you optimize for when managing a data processing pipeline. Some of these features may already be present in your existing pipeline technology (e.g., via managed pipeline platforms, client application logic, or operational tools). Your application may not need some of these features—for example, you don’t need “exactly once” semantics if your work units are idempotent and can be performed more than once for the same result.
+
+
+
+ Table 13-1. Recommended data pipeline features
+ 
+ 
+ Pipeline item
+ Feature
+ 
+
+ 
+ 
+ 
+ Latency
+ Use an API that supports streaming, batch, or both. Streaming processing is generally better than batch processing at supporting lower-latency applications. If you choose batch but might at some point want streaming, an API that is interchangeable may reduce the migration cost later.
+ 
+
+ 
+ Data correctness
+ 
+ Exactly-once semantics globally. You can require that data is processed (at most) once to get correct results.
+
+
+ Two-phase mutations.
+
+
+ Windowing functions for event processing and aggregations. You may want fixed time, session, or sliding windows to divide data (since data is not always processed in the order in which it’s received). You may also want in-order guarantees.
+
+
+ Black-box monitoring.
+
+
+ The ability to control the flow of multiple jobs or stages of your pipeline. This control should allow you to gate a job until another completes so the job does not process incomplete data.
+
+ 
+ 
+
+ 
+ High availability
+ 
+ Multihoming.
+
+
+ Autoscaling.
+
+ 
+ 
+
+ 
+ Mean Time to Resolve (MTTR) incidents in data processing
+ 
+ Tie your code changes to a release, which allows for fast rollbacks.
+
+
+ Have tested data backup and restore procedures in place.
+
+
+ In the event of an outage, ensure that you can easily drain a region from serving or processing.
+
+
+ Have useful alert messages, dashboards, and logs for debugging. In particular, your monitoring should be quick to identify the reason(s) why a pipeline is delayed and/or why data is corrupt.
+
+
+ Use data checkpointing to help recover faster when a pipeline is interrupted.
+
+ 
+ 
+
+ 
+ Mean Time to Detect (MTTD) outages
+ Ensure you have SLO monitoring in place. Monitoring out-of-SLO alerts allows you to detect issues that impact your customers. Alerting on the symptom (versus the cause) reduces monitoring gaps.
+ 
+
+ 
+ Development lifecycle to prevent errors from reaching production
+ We recommend running any changes in a canary environment before deploying to production. This strategy lowers the possibility of a change impacting SLOs in production.
+ 
+
+ 
+ Inspect and predict resource usage or cost
+ 
+ Create (or use an existing) resource accounting dashboard. Be sure to include resources like storage and network.
+
+
+ Create a metric that allows you to correlate or predict growth.
+
+ 
+ 
+
+ 
+ Ease of development
+ 
+ Support a language that best fits your use case. Often pipeline technologies limit your options to one or two languages.
+
+
+ Use a simple API for defining data transformations and expressing your pipeline logic. C

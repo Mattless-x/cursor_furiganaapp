@@ -1,0 +1,268 @@
+=== The Site Reliability Workbook ===
+=== Chunk 21/100 ===
+
+erity: ticket
+
+
+We recommend the parameters listed in Table 5-8 as the starting point for your SLO-based alerting configuration.
+
+
+
+ Table 5-8. Recommended parameters for a 99.9% SLO alerting configuration
+ 
+ 
+ Severity
+ Long window
+ Short window
+ Burn rate
+ Error budget consumed
+ 
+
+ 
+ 
+ 
+ Page
+ 1 hour
+ 5 minutes
+ 14.4
+ 2%
+ 
+
+ 
+ Page
+ 6 hours
+ 30 minutes
+ 6
+ 5%
+ 
+
+ 
+ Ticket
+ 3 days
+ 6 hours
+ 1
+ 10%
+ 
+
+ 
+
+
+We have found that alerting based on multiple burn rates is a powerful way to implement SLO-based alerting.
+
+
+Table 5-9 shows the benefits and limitations of using multiple burn rates and window sizes.
+
+
+
+ Table 5-9. Pros and cons of using multiple burn rates and window sizes
+ 
+ 
+ Pros
+ Cons
+ 
+
+ 
+ 
+ 
+ 
+ A flexible alerting framework that allows you to control the type of alert according to the severity of the incident and the requirements of the organization.
+
+
+ Good precision, as with all fixed-budget portion alert approaches.
+
+
+ Good recall, because of the three-day window.
+
+ 
+ Lots of parameters to specify, which can make alerting rules hard to manage. For more on managing alerting rules, see “Alerting at Scale”.
+ 
+
+ 
+
+
+
+
+
+
+
+Low-Traffic Services and Error Budget Alerting
+
+
+The multiwindow, multi-burn-rate approach just detailed works well when a sufficiently high rate of incoming requests provides a meaningful signal when an issue arises. However, these approaches can cause problems for systems that receive a low rate of requests. If a system has either a low number of users or natural low-traffic periods (such as nights and weekends), you may need to alter your approach.
+
+
+It’s harder to automatically distinguish unimportant events in low-traffic services. For example, if a system receives 10 requests per hour, then a single failed request results in an hourly error rate of 10%. For a 99.9% SLO, this request constitutes a 1,000x burn rate and would page immediately, as it consumed 13.9% of the 30-day error budget. This scenario allows for only seven failed requests in 30 days. Single requests can fail for a large number of ephemeral and uninteresting reasons that aren’t necessarily cost-effective to solve in the same way as large systematic outages.
+
+
+The best solution depends on the nature of the service: what is the impact3 of a single failed request? A high-availability target may be appropriate if failed requests are one-off, high-value requests that aren’t retried. It may make sense from a business perspective to investigate every single failed request. However, in this case, the alerting system notifies you of an error too late.
+
+
+We recommend a few key options to handle a low-traffic service:
+
+
+
+ 
+ Generate artificial traffic to compensate for the lack of signal from real users.
+
+ 
+
+ 
+ Combine smaller services into a larger service for monitoring purposes.
+
+ 
+
+ 
+ Modify the product so that either:
+
+
+ 
+ 
+ It takes more requests to qualify a single incident as a failure.
+
+ 
+
+ 
+ The impact of a single failure is lower.
+
+ 
+
+ 
+ 
+
+
+
+
+Generating Artificial Traffic
+
+
+A system can synthesize user activity to check for potential errors and high-latency requests. In the absence of real users, your monitoring system can detect synthetic errors and requests, so your on-call engineers can respond to issues before they impact too many actual users.
+
+
+Artificial traffic provides more signals to work with, and allows you to reuse your existing monitoring logic and SLO values. You may even already have most of the necessary traffic-generating components, such as black-box probers and integration tests.
+
+
+Generating artificial load does have some downsides. Most services that warrant SRE support are complex, and have a large system control surface. Ideally, the system should be designed and built for monitoring using artificial traffic. Even for a nontrivial service, you can synthesize only a small portion of the total number of user request types. For a stateful service, the greater number of states exacerbates this problem.
+
+
+Additionally, if an issue affects real users but doesn’t affect artificial traffic, the successful artificial requests hide the real user signal, so you aren’t notified that users see errors.
+
+
+
+
+
+Combining Services
+
+
+If multiple low-traffic services contribute to one overall function, combining their requests into a single higher-level group can detect significant events more precisely and with fewer false positives. For this approach to work, the services must be related in some way—you can combine microservices that form part of the same product, or multiple request types handled by the same binary.
+
+
+A downside to combining services is that a complete failure of an individual service may not count as a significant event. You can increase the likelihood that a failure will affect the group as a whole by choosing services with a shared failure domain, such as a common backend database. You can still use longer-period alerts that eventually catch these 100% failures for individual services.
+
+
+
+
+
+Making Service and Infrastructure Changes
+
+
+Alerting on significant events aims to provide sufficient notice to mitigate problems before they exhaust the entire error budget. If you can’t adjust the monitoring to be less sensitive to ephemeral events, and generating synthetic traffic is impractical, you might instead consider changing the service to reduce the user impact of a single failed request. For example, you might:
+
+
+
+ 
+ Modify the client to retry, with exponential backoff and jitter.4
+
+ 
+
+ 
+ Set up fallback paths that capture the request for eventual execution, which can take place on the server or on the client.
+
+ 
+
+
+
+These changes are useful for high-traffic systems, but even more so for low-traffic systems: they allow for more failed events in the error budget, more signal from monitoring, and more time to respond to an incident before it becomes significant.
+
+
+
+
+
+Lowering the SLO or Increasing the Window
+
+
+You might also want to reconsider if the impact of a single failure on the error budget accurately reflects its impact on users. If a small number of errors causes you to lose error budget, do you really need to page an engineer to fix the issue immediately? If not, users would be equally happy with a lower SLO. With a lower SLO, an engineer is notified only of a larger sustained outage.
+
+
+Once you have negotiated lowering the SLO with the service’s stakeholders (for example, lowering the SLO from 99.9% to 99%), implementing the change is very simple: if you already have systems in place for reporting, monitoring, and alerting based upon an SLO threshold, simply add the new SLO value to the relevant systems.
+
+
+Lowering the SLO does have a downside: it involves a product decision. Changing the SLO affects other aspects of the system, such as expectations around system behavior and when to enact the error budget policy. These other requirements may be more important to the product than avoiding some number of low-signal alerts.
+
+
+In a similar manner, increasing the time window used for the alerting logic ensures alerts that trigger pages are more significant and worthy of attention.
+
+
+In practice, we use some combination of the following methods to alert for low-traffic services:
+
+
+
+ 
+ Generating fake traffic, when doing so is possible and can achieve good coverage
+
+ 
+
+ 
+ Modifying clients so that ephemeral failures are less likely to cause user harm
+
+ 
+
+ 
+ Aggregating smaller services that share some failure mode
+
+ 
+
+ 
+ Setting SLO thresholds commensurate with the actual impact of a failed request
+
+ 
+
+
+
+
+
+
+
+
+Extreme Availability Goals
+
+
+Services with an extremely low or an extremely high availability goal may require special consideration. For example, consider a service that has a 90% availability target. Table 5-8 says to page when 2% of the error budget in a single hour is consumed. Because a 100% outage consumes only 1.4% of the budget in that hour, this alert could never fire. If your error budgets are set over long time periods, you may need to tune your alerting parameters.
+
+
+For services with an extremely high availability goal, the time to exhaustion for a 100% outage is extremely small. A 100% outage for a service with a target monthly availability of 99.999% would exhaust its budget in 26 seconds—which is smaller than the metric collection interval of many monitoring services, let alone the end-to-end time to generate an alert and pass it through notification systems like email and SMS. Even if the alert goes straight to an automated resolution system, the issue may entirely consume the error budget before you can mitigate it.
+
+
+Receiving notifications that you have only 26 seconds of budget left isn’t necessarily a bad strategy; it’s just not useful for defending the SLO. The only way to defend this level of reliability is to design the system so that the chance of a 100% outage is extremely low. That way, you can fix issues before consuming the budget. For example, if you initially roll out that change to only 1% of your users, and burn your error budget at the same rate of 1%, you now have 43 minutes before you exhaust your error budget. See Chapter 16 for tactics on designing such a system.
+
+
+
+
+
+Alerting at Scale
+
+
+When you scale your service, make sure that your alerting strategy is likewise scalable. You might be tempted to specify custom alerting parameters for individual services. If your service comprises 100 microservices (or equivalently, a single service with 100 different request types), this scenario very quickly accumulates toil and cognitive load that does not scale.
+
+
+In this case, we strongly advise against specifying the alert window and burn rate parameters independently for each service, because doing so quickly becomes overwhelming.5 Once you decide on your alerting parameters, apply them to all your services.
+
+
+One technique for managing a large number of SLOs is to group request types into buckets of approximately similar availability requirements. For example, for a service with availability and latency SLOs, you can group its request types into the following buckets:
+
+
+
+ CRITICAL
+ For request types that are the most important, such as a request when a user logs in to the service.
+
+ HIGH_FAST
+ For requests with high availability and low latency requirements. These requests involve core interac

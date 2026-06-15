@@ -1,0 +1,272 @@
+=== The Site Reliability Workbook ===
+=== Chunk 25/100 ===
+
+any substantially better solutions commercially available. Avoidance is effectively choosing to accept technical debt and to move away from SRE principles and toward system administration.
+
+ 
+
+ 
+ Encapsulation/augmentation: You can bring SREs on board to build a shell of abstracted APIs, automation, configuration management, monitoring, and testing around these legacy systems that will offload work from SAs. The legacy system remains brittle to change, but now you can at least reliably identify misbehavior and roll back when appropriate. This tactic is still avoidance, but is a bit like refinancing high-interest technical debt into low-interest technical debt. It’s usually a stopgap measure to prepare for an incremental replacement.
+
+ 
+
+ 
+ Replacement/refactoring: Replacing a legacy system can require a vast amount of determination, patience, communication, and documentation. It’s best undertaken incrementally. One approach is to define a common interface that sits in front of and abstracts a legacy system. This strategy helps you slowly and safely migrate users to alternatives using release engineering techniques like canarying or blue-green deployments. Often, the “specification” of a legacy system is really defined only by its historical usage, so it’s helpful to build production-sized data sets of historical expected inputs and outputs to build confidence that new systems aren’t diverging from expected behavior (or are diverging in an expected way).
+
+ 
+
+ 
+ Retirement/custodial ownership: Eventually the majority of customers or functionality is migrated to one or more alternatives. To align business incentives, stragglers who haven’t migrated can assume custodial ownership of remnants of the legacy system.
+
+ 
+
+
+
+
+
+
+
+
+
+
+Case Studies
+
+
+The following case studies illustrate the strategies for toil reduction just discussed. Each story describes an important area of Google’s infrastructure that reached a point at which it could no longer scale sublinearly with human effort; over time, an increasing number of engineer hours resulted in smaller returns on that investment. Much of that effort you’ll now recognize as toil. For each case study, we detail how the engineers identified, assessed, and mitigated that toil. We also discuss the results and the lessons we learned along the way.
+
+
+In the first case study, Google’s datacenter networking had a scaling problem: we had a massive number of Google-designed components and links to monitor, mitigate, and repair. We needed a strategy to minimize the toilsome nature of this work for datacenter technicians.
+
+
+The second case study focuses on a team running their own “outlier” specialized hardware to support toil-intensive business processes that had become deeply entrenched within Google. This case study illustrates benefits of reevaluating and replacing operationally expensive business processes. It demonstrates that with a little persistence and perseverance, it’s possible to move to alternatives even when constrained by the institutional inertia of a large organization.
+
+
+Taken together, these case studies provide a concrete example of each toil reduction strategy covered earlier. Each case study begins with a list of relevant toil reduction strategies.
+
+
+
+
+
+Case Study 1: Reducing Toil in the Datacenter with Automation
+
+
+Note
+Toil reduction strategies highlighted in Case Study 1:
+
+
+
+ 
+ Engineer toil out of the system
+
+ 
+
+ 
+ Start small and then improve
+
+ 
+
+ 
+ Increase uniformity
+
+ 
+
+ 
+ Use SLOs to reduce toil
+
+ 
+
+ 
+ Assess risk within automation
+
+ 
+
+ 
+ Use feedback to improve
+
+ 
+
+ 
+ Automate toil response
+
+ 
+
+
+
+
+
+
+Background
+
+
+This case study takes place in Google’s datacenters. Similar to all datacenters, Google’s machines are connected to switches, which are connected to routers. Traffic flows in and out from these routers via links that in turn connect to other routers on the internet. As Google’s requirements for handling internet traffic grew, the number of machines required to serve that traffic increased dramatically. Our datacenters grew in scope and complexity as we figured out how to serve a large amount of traffic efficiently and economically. This growth changed the nature of datacenter manual repairs from occasional and interesting to frequent and rote—two signals of toil.
+
+
+When Google first began running its own datacenters, each datacenter’s network topology featured a small number of network devices that managed traffic to a large number of machines. A single network device failure could significantly impact network performance, but a relatively small team of engineers could handle troubleshooting the small number of devices. At this early stage, engineers debugged problems and shifted traffic away from failed components manually.
+
+
+Our next-generation datacenter had significantly more machines and introduced software-defined networking (SDN) with a folded Clos topology, which greatly increased the number of switches. Figure 6-2 shows the complexity of traffic flow for a small datacenter Clos switch network. This proportionately larger number of devices meant that a larger number of components could now fail. While each individual failure had less impact on network performance than before, the sheer volume of issues began to overwhelm the engineering staff.
+
+
+In addition to introducing a heavy load of new problems to debug, the complex layout was confusing to technicians: Which exact links needed to be checked? Which line card6 did they need to replace? What was a Stage 2 switch, versus a Stage 1 or Stage 3 switch? Would shutting down a switch create problems for users?
+
+
+
+Figure 6-2. A small Clos network, which supports 480 machines attached below Stage 1
+
+
+
+Repairing failed datacenter line cards was one obvious growing work backlog, so we targeted this task as our first stage of creating datacenter network repair automation. This case study describes how we introduced repair automation for our first generation of line cards (named Saturn). We then discuss the improvements we introduced with the next generation of line cards for Jupiter fabrics.
+
+
+As shown in Figure 6-3, before the automation project, each fix in the datacenter line-card repair workflow required an engineer to do the following:
+
+
+
+ 
+ Check that it was safe to move traffic from the affected switch.
+
+ 
+
+ 
+ Shift traffic away from the failed device (a “drain” operation).
+
+ 
+
+ 
+ Perform a reboot or repair (such as replacing a line card).
+
+ 
+
+ 
+ Shift traffic back to the device (an “undrain” operation).
+
+ 
+
+
+
+This unvarying and repetitive work of draining, undraining, and repairing devices is a textbook example of toil. The repetitive nature of the work introduced problems of its own—for example, engineers might multitask by working on a line card while also debugging more challenging problems. As a result, the distracted engineer might accidentally introduce an unconfigured switch back to the network.
+
+
+
+Figure 6-3. Datacenter (Saturn) line-card repair workflow before automation: all steps require manual work
+
+
+
+
+
+
+Problem Statement
+
+
+The datacenter repairs problem space had the following dimensions:
+
+
+
+ 
+ We couldn’t grow the team fast enough to keep up with the volume of failures, and we couldn’t fix problems fast enough to prevent negative impact to the fabric.
+
+ 
+
+ 
+ Performing the same steps repeatedly and frequently introduced too many human errors.
+
+ 
+
+ 
+ Not all line-card failures had the same impact. We didn’t have a way to prioritize more serious failures.
+
+ 
+
+ 
+ Some failures were transient. We wanted the option to restart the line card or reinstall the switch as a first pass at repair. Ideally, we could then programmatically capture the problem if it happened again and flag the device for replacement.
+
+ 
+
+ 
+ The new topology required us to manually assess the risk of isolating capacity before we could take action. Every manual risk assessment was an opportunity for human error that could result in an outage. Engineers and technicians on the floor didn’t have a good way to gauge how many devices and links would be impacted by their planned repair.
+
+ 
+
+
+
+
+
+
+What We Decided to Do
+
+
+Instead of assigning every issue to an engineer for risk assessment, drain, undrain, and validation, we decided to create a framework for automation that, when coupled with an on-site technician where appropriate, could support these operations programmatically.
+
+
+
+
+
+Design First Effort: Saturn Line-Card Repair
+
+
+Our high-level goal was to build a system that would respond to problems detected on network devices, rather than relying on an engineer to triage and fix these problems. Instead of sending a “line card down” alert to an engineer, we wrote the software to request a drain (to remove traffic) and create a case for a technician. The new system had a few notable features:
+
+
+
+ 
+ We leveraged existing tools where possible. As shown in Figure 6-3, our alerting could already detect problems on the fabric line cards; we repurposed that alerting to trigger an automated repair. The new workflow also repurposed our ticketing system to support network repairs.
+
+ 
+
+ 
+ We built in automated risk assessment to prevent accidental isolation of devices during a drain and to trigger safety mechanisms where required. This eliminated a huge source of human errors.
+
+ 
+
+ 
+ We adopted a strike policy that was tracked by software: the first failure (or strike) only rebooted the card and reinstalled the software. A second failure triggered card replacement and full return to the vendor.
+
+ 
+
+
+
+
+
+
+Implementation
+
+
+The new automated workflow (shown in Figure 6-4) proceeded as follows:
+
+
+
+ 
+ The problematic line card is detected and a symptom is added to a specific component in the database.
+
+ 
+
+ 
+ The repair service picks up the problem and enables repairs on the switch. The service performs a risk assessment to confirm that no capacity will be isolated by the operation, and then:
+
+
+ 
+ 
+ Drains traffic from the entire switch.
+
+ 
+
+ 
+ Shuts down the line card.
+
+ 
+
+ 
+ If this is a first failure, reboots the card and undrains the switch, restoring service to the switch. At this point, the workflow is complete.
+
+ 
+
+ 
+ If this is the second failure, the workflow proceeds to step 3.
+
+ 
+
+ 
+ 
+
+ 
+ The workflow manager detects the new case and sends it to a pool of repair cases for a tec

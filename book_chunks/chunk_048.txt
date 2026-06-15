@@ -1,0 +1,156 @@
+=== The Site Reliability Workbook ===
+=== Chunk 48/100 ===
+
+e.
+
+
+Before we dive in to this chapter, we recommend reading the philosophies discussed in Chapters 19 (“Load Balancing at the Frontend”) and 20 (“Load Balancing in the Datacenter”) of our first SRE book.
+
+
+
+Google Cloud Load Balancing
+
+
+These days, most companies don’t develop and maintain their own global load balancing solutions, instead opting to use load balancing services from a larger public cloud provider. We’ll discuss Google Cloud Load Balancer (GCLB) as a concrete example of large-scale load balancing, but nearly all of the best practices we describe also apply to other cloud providers’ load balancers.
+
+
+Google has spent the past 18 years building infrastructure to make our services fast and reliable. Today we use these systems to serve YouTube, Maps, Gmail, Search, and many other products and services. GCLB is our publicly consumable global load balancing solution, and is the externalization of one of our internally developed global load balancing systems.
+
+
+This section describes the components of GCLB and how they work together to serve user requests. We trace a typical user request from its creation to delivery at its destination. The Niantic Pokémon GO case study provides a concrete implementation of GCLB in the real world.
+
+
+Chapter 19 of our first SRE book described how DNS-based load balancing is the simplest and most effective way to balance load before the user’s connection even starts. We also discussed an endemic problem of this approach: it relies on client cooperation to properly expire and refetch DNS records. For this reason, GCLB does not use DNS load balancing.
+
+
+Instead, we use anycast, a method for sending clients to the closest cluster without relying on DNS geolocation. Google’s global load balancer knows where the clients are located and directs packets to the closest web service, providing low latency to users while using a single virtual IP (VIP). Using a single VIP means we can increase the time to live (TTL) of our DNS records, which further reduces latency.
+
+
+
+Anycast
+
+
+Anycast is a network addressing and routing methodology. It routes datagrams from a single sender to the topologically nearest node in a group of potential receivers, which are all identified by the same destination IP address. Google announces IPs via Border Gateway Protocol (BGP) from multiple points in our network. We rely on the BGP routing mesh to deliver packets from a user to the closest frontend location that can terminate a transmission control protocol (TCP) session. This deployment eliminates the problems of unicast IP proliferation and finding the closest frontend for a user. Two main issues remain:
+
+
+
+ 
+ Too many nearby users can overwhelm a frontend site.
+
+ 
+
+ 
+ BGP route calculation might reset connections.
+
+ 
+
+
+
+Consider an ISP that frequently recalculates its BGP routes such that one of its users prefers either of two frontend sites. Each time the BGP route “flaps,” all in-progress TCP streams are reset as the unfortunate user’s packets are directed to a new frontend with no TCP session state. To address these problems, we have leveraged our connection-level load balancer, Maglev (described shortly), to cohere TCP streams even when routes flap. We refer to this technique as stabilized anycast.
+
+
+
+Stabilized anycast
+
+
+As shown in Figure 11-1, Google implements stabilized anycast using Maglev, our custom load balancer. To stabilize anycast, we provide each Maglev machine with a way to map client IPs to the closest Google frontend site. Sometimes Maglev processes a packet destined for an anycast VIP for a client that is closer to another frontend site. In this case, Maglev forwards that packet to another Maglev on a machine located at the closest frontend site for delivery. The Maglev machines at the closest frontend site then simply treat the packet as they would any other packet, and route it to a local backend.
+
+
+
+Figure 11-1. Stabilized anycast
+
+
+
+
+
+
+
+
+Maglev
+
+
+Maglev, shown in Figure 11-2, is Google’s custom distributed packet-level load balancer. An integral part of our cloud architecture, Maglev machines manage incoming traffic to a cluster. They provide stateful TCP-level load balancing across our frontend servers. Maglev differs from other traditional hardware load balancers in a few key ways:
+
+
+
+ 
+ All packets destined for a given IP address can be evenly spread across a pool of Maglev machines via Equal-Cost Multi-Path (ECMP) forwarding. This enables us to boost Maglev capacity by simply adding servers to a pool. Spreading packets evenly also enables Maglev redundancy to be modeled as N + 1, enhancing availability and reliability over traditional load balancing systems (which typically rely on active/passive pairs to give 1 + 1 redundancy).
+
+ 
+
+ 
+ Maglev is a Google custom solution. We control the system end-to-end, which allows us to experiment and iterate quickly.
+
+ 
+
+ 
+ Maglev runs on commodity hardware in our datacenters, which greatly simplifies deployment.
+
+ 
+
+
+
+
+Figure 11-2. Maglev
+
+
+
+Maglev packet delivery uses consistent hashing and connection tracking. These techniques coalesce TCP streams at our HTTP reverse proxies (also known as Google Front Ends, or GFEs), which terminate TCP sessions. Consistent hashing and connection tracking are key to Maglev’s ability to scale by packet rather than by number of connections. When a router receives a packet destined for a VIP hosted by Maglev, the router forwards the packet to any Maglev machine in the cluster through ECMP. When a Maglev receives a packet, it computes the packet’s 5-tuple hash1 and looks up the hash value in its connection tracking table, which contains routing results for recent connections. If Maglev finds a match and the selected backend service is still healthy, it reuses the connection. Otherwise, Maglev falls back to consistent hashing to choose a backend. The combination of these techniques eliminates the need to share connection state among individual Maglev machines.
+
+
+
+
+
+Global Software Load Balancer
+
+
+GSLB is Google’s Global Software Load Balancer. It allows us to balance live user traffic between clusters so that we can match user demand to available service capacity, and so we can handle service failures in a way that’s transparent to users. As shown in Figure 11-3, GSLB controls both the distribution of connections to GFEs and the distribution of requests to backend services. GSLB allows us to serve users from backends and GFEs running in different clusters. In addition to load balancing between frontends and backends, GSLB understands the health of backend services and can automatically drain traffic away from failed clusters.
+
+
+
+Figure 11-3. GSLB
+
+
+
+
+
+
+Google Front End
+
+
+As shown in Figure 11-4, the GFE sits between the outside world and various Google services (web search, image search, Gmail, etc.) and is frequently the first Google server a client HTTP(S) request encounters. The GFE terminates the client’s TCP and SSL sessions and inspects the HTTP header and URL path to determine which backend service should handle the request. Once the GFE decides where to send the request, it reencrypts the data and forwards the request. For more information on how this encryption process works, see our whitepaper “Encryption in Transit in Google Cloud”.
+
+
+The GFE is also responsible for health-checking its backends. If a backend server returns a negative acknowledgment (“NACKs” the request) or times out health checks, GFEs stop sending traffic to the failed backend. We use this signal to update GFE backends without impacting uptime. By putting GFE backends into a mode in which they fail health checks while continuing to respond to in-flight requests, we can gracefully remove GFE backends from service without disrupting any user requests. We call this “lame duck” mode and we discuss it in more detail in Chapter 20 of the first SRE book.
+
+
+
+Figure 11-4. GFE
+
+
+
+The GFEs also maintain persistent sessions to all their recently active backends so that a connection is ready to use as soon as a request arrives. This strategy helps reduce latency for our users, particularly in scenarios when we use SSL to secure the connection between GFE and the backend.
+
+
+
+
+
+GCLB: Low Latency
+
+
+Our network provisioning strategy aims to reduce end-user latency to our services. Because negotiating a secure connection via HTTPS requires two network round trips between client and server, it’s particularly important that we minimize the latency of this leg of the request time. To this end, we extended the edge of our network to host Maglev and GFE. These components terminate SSL as close to the user as possible, then forward requests to backend services deeper within our network over long-lived encrypted connections.
+
+
+We built GCLB atop this combined Maglev/GFE-augmented edge network. When customers create a load balancer, we provision an anycast VIP and program Maglev to load-balance it globally across GFEs at the edge of our network. GFE’s role is to terminate SSL, accept and buffer HTTP requests, forward those requests to the customer’s backend services, and then proxy the responses back to users. GSLB provides the glue between each layer: it enables Maglev to find the nearest GFE location with available capacity, and enables GFE to route requests to the nearest VM instance group with available capacity.
+
+
+
+
+
+GCLB: High Availability
+
+
+In the interest of providing high availability to our customers, GCLB offers an availability SLA2 of 99.99%. In addition, GCLB provides support tools that enable our customers to improve and manage the availability of their own applications. It’s useful to think of the load balancing system as a sort of traffic manager. During normal operation, GCLB routes traffic to the nearest backend with available capacity. When one instance of your service fails, GCLB detects the failure on your behalf and routes traffic to healthy instances.
+
+
+Canarying and gradual rollouts help GCLB maintain high availability. Canarying is one of our standard release procedures. As described in Chapter 16 this process involves deploying a new application to a very small number of servers, then gradually increasing traffic and carefully observing system behavior to verify that there are no regressions. This practice reduces the impact of any regressions by catching them early in the canary phase. If the new version crashes or otherwise fails health checks, 

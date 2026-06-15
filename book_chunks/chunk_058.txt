@@ -1,0 +1,329 @@
+=== The Site Reliability Workbook ===
+=== Chunk 58/100 ===
+
+onsider the tradeoff between simplicity and flexibility.
+
+
+ Reuse base libraries, metrics, and reporting. When you’re creating a new pipeline, reusable resources allow you to focus development on any new business logic.
+
+ 
+ 
+
+ 
+ Ease of operation
+ 
+ Use existing automation and operational tools as much as possible. Doing so reduces operational costs, as you don’t need to maintain your own tools.
+
+
+ Automate as many operational tasks as possible.
+
+
+ Larger tasks that are performed infrequently may include a chain of dependencies and prerequisites that can be too numerous or complex for a human to assess in a timely manner (e.g., moving your data and pipeline stack from region A to region B, then turning down region A). To ease a transition like this, consider investing in automation. Perhaps introduce some pipeline health checks on the pipeline stack in region B before putting it into production.
+
+ 
+ 
+
+ 
+
+
+
+
+
+Idempotent and Two-Phase Mutations
+
+
+Pipelines can process large amounts of data. When a pipeline fails, some data must be reprocessed. You can use the idempotent mutations design pattern to prevent storing duplicate or incorrect data. An idempotent mutation is a type of mutation that can be applied multiple times with the same result. Implementing this design pattern allows separate executions of a pipeline with the same input data to always produce the same result.
+
+
+When testing or canarying a pipeline, you need to know if your applied mutations are acceptable to the pipeline owner according to the expected output. The two-phase mutation design pattern can help here. Typically, the data is read from a source and transformed, and then a mutation is applied. With two-phase mutation, the mutations themselves are stored in a temporary location. A separate verification step (or pipeline) can run against these potential mutations to validate them for correctness. A follow-up pipeline step applies the verified mutations only after the mutations pass validation. Figure 13-4 shows an example of two-phase mutation.
+
+
+
+Figure 13-4. Two-phase mutation
+
+
+
+
+
+
+Checkpointing
+
+
+Typically, pipelines are long-running processes that analyze or mutate large amounts of data. Without special consideration, pipelines that are terminated early will lose their state, requiring the entire pipeline to be executed again. This is especially true for pipelines that create AI models, as each iteration of the model calculation relies on previous calculations. Checkpointing is a technique that enables long-running processes like pipelines to periodically save partial state to storage so that they can resume the process later.
+
+
+While checkpointing is often used for the failure case, it’s also useful when a job needs to be preempted or rescheduled (e.g., to change CPU or RAM limits). The job can be cleanly shut down, and upon rescheduling, it’s able to detect which work units have already been processed. Checkpointing has the added advantage of enabling a pipeline to skip potentially expensive reads or computations because it already knows the work is done.
+
+
+
+
+
+Code Patterns
+
+
+Some common code patterns can make your pipelines more efficient to manage and reduce the effort required to make changes or updates.
+
+
+
+Reusing code
+
+
+If you operate multiple similar pipelines and want to implement a new monitoring capability or metric, you have to instrument each separate system. This common workflow isn’t difficult if you use the right strategy. Implementing reusable code libraries allows you to add a metric for monitoring in one place and share it across multiple pipelines or stages. Shared libraries allow you to:
+
+
+
+ 
+ Gain insight across all data pipelines in a standard way.
+
+ 
+
+ 
+ Reuse other data analytics systems for each pipeline (e.g., a traffic report that works for all of your pipelines).
+
+ 
+
+ 
+ Alert on the same metric for multiple jobs, such as a generic data freshness alert.
+
+ 
+
+
+
+
+
+
+Using the microservice approach to creating pipelines
+
+
+When using microservices, it’s important to have a service perform a single task and do it well. It’s easier to operate a group of microservices that use the same core libraries, varying only in their business logic, than it is to operate many custom services. A similar pattern can apply to pipelines. Instead of creating one monolithic pipeline application, create smaller pipelines that you can release and monitor separately. In doing so, you will get the same benefits as you get from a microservices architecture.
+
+
+
+
+
+
+
+Pipeline Production Readiness
+
+
+As discussed in Chapter 18, a PRR (Production Readiness Review) is the process that Google SRE teams use to onboard a new service. In the same spirit, we use a pipeline maturity matrix when consulting on the choice or design of a pipeline technology.
+
+
+
+Pipeline maturity matrix
+
+
+The matrix in Table 13-2 measures five key characteristics (but you can extend the matrix to measure other characteristics you wish to optimize or standardize for):
+
+
+
+ 
+ Failure tolerance
+
+ 
+
+ 
+ Scalability
+
+ 
+
+ 
+ Monitoring and debugging
+
+ 
+
+ 
+ Transparency and ease of implementation
+
+ 
+
+ 
+ Unit and integration testing
+
+ 
+
+
+
+The maturity matrix represents the collective knowledge of many pipeline experts at Google. These individuals are responsible for running pipelines across multiple Google products and productionizing the associated systems.
+
+
+Each characteristic is measured on a scale of 1 to 5, where 1 represents “Chaotic” (unplanned, ad hoc, risky, fully manual) and 5 represents “Continuous improvement.” To score your system, read the descriptions for each characteristic below, and select the best matching milestone. If more than one milestone applies, use the score in the middle (i.e., 2 or 4). A completed scoresheet will give you a clear picture of where your system needs improvement.
+
+
+We recommend that you spend the time to make improvements in any weak areas identified by the matrix. Instrumenting monitoring, alerting, and other tooling recommended by the matrix can be time-intensive. When making improvements, you can start by looking for existing products or open source tools that fit your needs instead of creating your own. At Google, we encourage teams to use existing pipeline technologies or tools that provide out-of-the-box pipeline support and features. The more tools and processes that can be reused, the better.
+
+
+
+ Table 13-2. Pipeline maturity matrix, with example milestones for beginning, medium, and advanced maturity
+ 
+ 
+  
+ 1. Chaotic
+ 3. Functional
+ 5. Continuous improvement
+ 
+
+ 
+ 
+ 
+ Failure tolerance
+ 
+
+ 
+ Failover
+ No support for failover
+ Some support for work unit retries (even if manual)
+ Multihomed with automatic failover
+ 
+
+ 
+ Global work scheduling
+ No support for global work scheduling, multihoming, or failover
+ Support for hot/hot/hot processing (process same work in all three regions so if any region is unavailable, there is at least one still running)
+ Support for effective warm/warm/warm processing (distribute work in all three regions and store work centrally to deal with any region loss)
+ 
+
+ 
+ Failed task management
+ No support for failed work units
+ —
+ 
+ Automatic retries for failed work units
+
+
+ Automatic quarantine of bad work units
+
+ 
+ 
+
+ 
+ Scalability
+ 
+
+ 
+ Automatic scaling of available worker pool
+ No autoscaling; manual intervention required
+ Autoscaling works with the use of additional manual tools
+ Built-in automatic autoscaling support with no requirement for configuration inside a third-party tool
+ 
+
+ 
+ Automatic dynamic resharding to effect balanced load across the pool
+ Work units are fixed with no ability to make changes
+ Supports manual resharding of work, or resharding can be achieved automatically with additional code
+ Built-in support for dynamic subsharding to balance work across the available worker pool
+ 
+
+ 
+ Load shedding/task prioritization
+ No work unit prioritization exists
+ Some capability for work unit prioritization
+ 
+ An easy-to-use feature for work unit prioritization exists
+
+
+ Built-in support for load shedding
+
+
+ Workers understand preemption notification, after which a worker will clean up (finish work/mitigate)
+
+ 
+ 
+
+ 
+ Monitoring and debugging
+ 
+
+ 
+ Debugging tools and capabilities
+ No logs; no way to identify or track failed work units
+ There is a solution to identify a failed work unit and extract associated logs
+ 
+ There is a solution that allows a user to access logs for the time at which the work unit failed; this data is retrieved directly from the failed work unit
+
+
+ There is a solution to automatically quarantine and replay a failed work unit
+
+ 
+ 
+
+ 
+ Dashboards and visualizations
+ No dashboards or visualization solutions that support the display of pipeline information
+ 
+ There is an easy-to-configure dashboard showing the following information:
+
+
+ 
+ 
+ Number of work units in various stages of completion
+
+ 
+
+ 
+ Latency and aging information for each stage
+
+ 
+
+ 
+ 
+ 
+ A fine-grained visualization of the entire execution map for a pipeline
+
+
+ A visualization for delays up to each stage
+
+
+ A visualization and rationale for throttling and pushback
+
+
+ Information about limiting factors due to resource usage
+
+
+ Information about the distribution of internal state worker machines (e.g., stack graph)
+
+
+ Information about how many work units are failing, stuck, or slow
+
+
+ Historical run statistics are presented and preserved
+
+ 
+ 
+
+ 
+ Ease of implementation and transparency
+ 
+
+ 
+ Discoverability
+ No feature for discoverability (a list of the pipelines that are running and their status)
+ Some support for discoverability; manual setup might be required, or not all pipelines are discoverable
+ Built-in support for automatic discoverability; a global data registry service that allows the listing of configured pipelines
+ 
+
+ 
+ Code
+ Significant setup cost for using the technology
+ Some reusable components available
+ 
+ Base frameworks are available and require minimum code
+
+
+ The pipeline can be configured in machine-readable format
+
+
+ Zero config
+
+
+ Libraries with semantics similar to other pipeline solutions that are most heavily used in related teams
+
+ 
+ 
+
+ 
+ Documentation and best practices
+ Sparse or outdated documentation
+ Minimal setup documentation for each component
+ 
+ Comprehensive and up-to-

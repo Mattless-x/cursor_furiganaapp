@@ -1,0 +1,171 @@
+=== The Site Reliability Workbook ===
+=== Chunk 98/100 ===
+
+operational load (or operational workload), Identifying and Recovering from Overload
+operational overload (or work overload), Identifying and Recovering from Overload
+operations, How SRE Relates to DevOpsand separation between development and production, Share Ownership with Developers
+benefits provided by release engineering principles, Release Engineering Principles
+covering in interviews with SREs, Finding Your First SRE
+creating operational rigor with customers, Step 5: Practice, Practice, Practice
+developer involvement in, Setting Ground Rules
+empowering ops engineers in SRE, Proposal one: Empower your ops engineers
+placing your first SRE in operations team, Placing Your First SRE
+
+Operations or Ops Lead (OL), Main Roles in Incident Response
+organizational change (positive), rewarding, Reward positive organizational change
+organizational change management in SRE, Organizational Change Management in SRE-Conclusioncase study, common tooling adoption in SRE, Background-Lessons Learned
+case study, scaling Waze, Background-Lessons Learned
+introduction to change management, Introduction to Change Management-How These Theories Apply to SREDeming Cycle, The Deming Cycle
+emotion-based models, Emotion-Based Models
+how the theories apply to SRE, How These Theories Apply to SRE
+Kotter’s eight-step process, Kotter’s Eight-Step Process for Leading Change
+Lewin’s three-stage model, Lewin’s Three-Stage Model
+McKinsey’s 7-S model, McKinsey’s 7-S Model
+Prosci ADKAR model, The Prosci ADKAR Model
+
+SRE embraces change, SRE Embraces Change
+
+outagesproblem summary in postmortems, Key details omitted
+reporting weekly, Report incidents and outages weekly
+top triggers of, Results of Postmortem Analysis
+
+overload, identifying and recovering from, Identifying and Recovering from Overload-Conclusioncase study, perceived overload after organizational and workload changes, Background-Lessons Learneddecision on the solution, What We Decided to Do
+lessons learned, Lessons Learned
+long-term actions to address, Long-term actions
+mid-term actions to address, Mid-term actions
+problem statement, Problem Statement
+results of actions, Effects
+short-term actions to address, Short-term actions
+
+case study, work overload when half a team leaves, Background-Lessons Learneddecision on the solution, What We Decided to Do
+implementation of the solution, Implementation
+lessons learned, Lessons Learned
+problem statement, Problem Statement
+
+from load to overload, From Load to Overload-From Load to Overload
+mitigation strategies, Strategies for Mitigating Overload-Protect yourself in the futurerecognizing symptoms of overload, Recognizing the Symptoms of Overload
+reducing overload and restoring team health, Reducing Overload and Restoring Team Health
+
+ownershipaction items in good postmortem example, Concrete action items
+missing, in bad postmortem example, Missing ownership
+of a service in geographically split SRE team, Leadership: Joint ownership of a service
+of configurations, Ownership and Change Tracking
+viewing postmortem owners as leaders, Hold up postmortem owners as leaders
+
+P
+pager load, Anatomy of Pager Load-Vigilanceappropriate response times, Anatomy of Pager Load
+determining causes of high load, Pager load inputsalerting, Alerting
+data quality, Data quality
+identification delay for root cause of pages, Identification delay
+mitigation delay, Mitigation delay
+new bugs in production, New bugs
+preexisting bugs, Preexisting bugs
+rigor of follow-up, Rigor of follow-up
+vigilance, Vigilance
+
+scenario, a team in overload, Scenario: A team in overload
+
+PagerDuty, incident response case study, Case Study 4: Incident Response at PagerDuty-Tools used for incident response
+part-time work schedules for on-call engineers, Plan for part-time work schedules
+participatory management, What We Decided to Do
+Paxos consensus algorithm, Multidatacenter
+pDNS (Production DNS), eliminating dependency on itself (case study), Background
+peak-end rule, Your Users, Not Your Monitoring, Decide Your Reliability
+perceived overload, Identifying and Recovering from Overload, From Load to Overloadafter organizational and workload changes, case study, Background-Lessons Learned
+reducing by giving team members more control and power, Reducing Overload and Restoring Team Health
+
+performancecurrent performance as determinant of SLOs, What to Measure: Using SLIs
+KPI (key performance indicator), SLO compliance as, Getting Started
+
+performing (SRE team), Performingpartnering on architecture, Partnering on architecture
+self-regulating workload, Self-regulating workload
+
+pets vs. cattle approach, Increase Uniformity
+pipeline components, Types of componentsSLIs for freshness, coverage, and correctness, Pipeline freshness, coverage, and correctness
+
+pipelines, data processing (see data processing pipelines)
+Piper/Git-on-Borg version control system, What We Decided to Do
+Plan-Do-Check-Act (or PDCA) Cycle, The Deming Cycle
+planning by SRE and development teams, Planning and Executing
+platformseverything important becomes a platform, Everything Important Eventually Becomes a Platform
+running, reliability and, If You Run a Platform, Then Reliability Is a Partnership
+
+playbooks, maintaining, Training roadmapentries for data processing pipelines, Playbook entries
+
+point fixes for paging alerts, Rigor of follow-up
+Pokémon GO on GCLB, case study, Case Study 1: Pokémon GO on GCLB-Future-proofing
+positive behaviors, Be positive
+postmortems, Postmortem Culture: Learning from Failure-Conclusionbad postmortem example, Case Study-Why Is This Postmortem Bad?flaws in, Why Is This Postmortem Bad?-Delayed publication
+
+blameless, Compare and Contrast, It’s Better to Fix It Yourself; Don’t Blame Someone Else
+case study, rack decommission leading to service latency, Case Study-Case Study
+conducting joint postmortems with customers, Step 5: Practice, Practice, Practice
+good postmortem example, Good Postmortem-Why Is This Postmortem Better?good writing practices used, Why Is This Postmortem Better?
+
+organizational incentives for, Organizational Incentives-Repeating incidentsmodeling and enforcing blameless behavior, Model and Enforce Blameless Behavior
+responding to postmortem culture failures, Respond to Postmortem Culture Failures
+rewarding postmortem outcomes, Reward Postmortem Outcomes
+sharing postmortems openly, Share Postmortems Openly
+
+results of postmortem analysis, Results of Postmortem Analysis
+templates for, Tools and TemplatesGoogle template, Google’s template
+other industry templates, Other industry templates
+
+tools for, Postmortem Toolingchecklist, Postmortem checklist
+follow-up on postmortems, Postmortem follow-up
+other industry tools, Other industry tools
+postmortem analysis, Postmortem analysis
+postmortem creation, Postmortem creation
+storage, Postmortem storage
+
+precision in SLO alerts, Alerting Considerations
+preparations for incidents, Prepare Beforehand
+preventative actions in postmortems, Key action item characteristics missing, Concrete action items
+prioritiesadjusting according to SLOs and error budget, Adjusting Priorities According to Your SLOs and Error Budget
+business and production, understanding, Communicating Business and Production Priorities
+
+prioritizing and triaging issues, Prioritize and triage within one quarter
+probers, What to Measure: Using SLIs, Introduction of SLOs: A Journey in Progress, Generating Artificial Trafficuse at Evernote in monitoring, Introduction of SLOs: A Journey in Progress
+
+problem summary (postmortems), Key details omitted
+problems (simulated), practicing with customers, Step 5: Practice, Practice, Practice
+process documentation for data processing pipelines, Process documentation
+productionautomation, covering in interviews with SREs, Finding Your First SRE
+boundaries between application development and, Share Ownership with Developers
+contributors to high pager load, Pager load inputspreexisting bugs, Preexisting bugs
+
+data processing pipeline readiness for, Pipeline Production Readiness-Pipeline Failures: Prevention and Response
+managing services in DevOps and SRE, Compare and Contrast
+priorities, communication by SRE and developer teams, Communicating Business and Production Priorities
+production excellence reviews, Production Excellence
+wisdom from, Work to Minimize Toil
+
+production interrupts, Production Interrupts
+Production Readiness Reviews (PRRs), Pipeline Production Readiness, SRE Engagement Model, Aligning Goals
+productionizing a service, Phase 2: Active Development
+programming languagesconfiguration as code, Separate Configuration and Resulting Data
+designing accidental or ad hoc language features in configuration system, Pitfall 2: Designing Accidental or Ad Hoc Language Features
+failing to recognize configuration as programming language problem, Pitfall 1: Failing to Recognize Configuration as a Programming Language Problem
+use for configuration, What Is Configuration?
+using existing general-purpose scripting languages for configuration, Pitfall 5: Using an Existing General-Purpose Scripting Language Like Python, Ruby, or Lua
+
+project lifecycle complexity, case study, Case Study 2: Project Lifecycle Complexity
+Prometheus monitoring system, Prefer Loose Coupling
+Prosci ADKAR model, The Prosci ADKAR Model, How These Theories Apply to SRE, Background, What We Decided to Domapping implementation phase of change project, Design
+
+protocol buffers, Pitfall 1: Failing to Recognize Configuration as a Programming Language Problem, Integrating Custom Applications (In-House Software)
+psychological safetyin on-call rotations, Recap of “Being On-Call” Chapter of First SRE Book
+interpersonal risk taking, Problem Statement
+regaining by identifying and alleviating psychological stressors, Identify and alleviate psychosocial stressors
+
+publication of postmortems, Delayed publication, Promptness
+
+Q
+quality of service (QoS)agreement on definition at Evernote, Introduction of SLOs: A Journey in Progress
+maintaining while increasing feature velocity, Evernote’s SLO Story
+
+quality SLI, A Worked Example
+QueryMap (AdWords example), LogJoinerscaling, calculations forin multidatacenter design, Calculations
+
+QueryStore (AdWords example), LogJoinerscaling, calculations for, Calculations
+

@@ -1,0 +1,123 @@
+=== The Site Reliability Workbook ===
+=== Chunk 88/100 ===
+
+ training or coaching requires pacing and investment in communication, which are difficult to implement in the context of globally distributed, operationally focused teams. That said, Google has successfully used ADKAR-style processes for introducing and building support for high-level changes—for example, introducing global organizational change to the SRE management team while preserving local autonomy for implementation details.
+
+
+
+
+
+Emotion-Based Models
+
+
+The Bridges Transition Model describes people’s emotional reactions to change. While a useful management tool for people managers, it’s not a framework or process for change management. Similarly, the Kübler-Ross Change Curve describes ranges of emotions people may feel when faced with change. Developed from Elisabeth Kübler-Ross’s research on death and dying,1 it has been applied to understanding and anticipating employee reactions to organizational change. Both models can be useful in maintaining high employee productivity throughout periods of change, since unhappy people are rarely productive.
+
+
+
+
+
+The Deming Cycle
+
+
+Also known as the Plan-Do-Check-Act (or PDCA) Cycle, this process from statistician Edward W. Deming is commonly used in DevOps environments for process improvements—for example, adoption of continuous integration/continuous delivery techniques.  It is not suited to organizational change management because it does not cover the human side of change, including motivations and leadership styles. Deming’s focus is to take existing processes (mechanical, automated, or workflow) and cyclically apply continuous improvements. The case studies we refer to in this chapter deal with larger, organizational changes where iteration is counterproductive: frequent, wrenching org-chart changes can sap employee confidence and negatively impact company culture.
+
+
+
+
+
+How These Theories Apply to SRE
+
+
+No change management model is universally applicable to every situation, so it’s not surprising that Google SRE hasn’t exclusively standardized on one model. That said, here’s how we like to think about applying these models to common change management scenarios in SRE:
+
+
+
+ 
+ Kotter’s Eight-Step Process is a change management model for SRE teams who necessarily embrace change as a core responsibility.
+
+ 
+
+ 
+ The Prosci ADKAR model is a framework that SRE management may want to consider to coordinate change across globally distributed teams.
+
+ 
+
+ 
+ All individual SRE managers will benefit from familiarity with both the Bridges Transition Model and the Kübler-Ross Change Curve, which provide tools to support employees in times of organizational change.
+
+ 
+
+
+
+Now that we’ve introduced the theories, let’s look at two case studies that show how change management has played out at Google.
+
+
+
+
+
+
+
+Case Study 1: Scaling Waze—From Ad Hoc to Planned Change
+
+
+
+Background
+
+
+Waze is a community-based navigation app acquired by Google in 2013. After the acquisition, Waze entered a period of significant growth in active users, engineering staff, and computing infrastructure, but continued to operate relatively autonomously within Google. The growth introduced many challenges, both technical and organizational.
+
+
+Waze’s autonomy and startup ethos led them to meet these challenges with a grassroots technical response from small groups of engineers, rather than management-led, structured organizational change as implied by the formal models discussed in the previous section. Nevertheless, their approach to propagating changes throughout the organization and infrastructure significantly resembles Kotter’s model of change management. This case study examines how Kotter’s process (which we apply retroactively) aptly describes a sequence of technical and organizational challenges Waze faced as they grew post-acquisition.
+
+
+
+
+
+The Messaging Queue: Replacing a System While Maintaining Reliability
+
+
+Kotter’s model begins the cycle of change with a sense of urgency. Waze’s SRE team needed to act quickly and decisively when the reliability of Waze’s message queueing system regressed badly, leading to increasingly frequent and severe outages. As shown in Figure 21-2, the message queueing system was critical to operations because every component of Waze (real time, geocoding, routing, etc.) used it to communicate with other components internally.
+
+
+
+Figure 21-2. Communication paths between Waze components
+
+
+
+As throughput on the message queue grew significantly, the system simply couldn’t cope with the ever-increasing demands. SREs needed to manually intervene to preserve system stability at shorter and shorter intervals. At its worst, the entire Waze SRE team spent most of a two-week period firefighting 24/7, eventually resorting to restarting some components of the message queue hourly to keep messages flowing and tens of millions of users happy.
+
+
+Because SRE was also responsible for building and releasing all of Waze’s software, this operational load had a noticeable impact on feature velocity—when SREs spent all of their time fighting fires, they hardly had time to support new feature rollouts. By highlighting the severity of the situation, engineers convinced Waze’s leadership to reevaluate priorities and dedicate some engineering time to reliability work. A guiding coalition of two SREs and a senior engineer came together to form a strategic vision of a future where SRE toil was no longer necessary to keep messages flowing. This small team evaluated off-the-shelf message queue products, but quickly decided that they could only meet Waze’s scaling and reliability requirements with a custom-built solution.
+
+
+Developing this message queue in-house would be impossible without some way to maintain operations in the meantime. The coalition removed this barrier to action by enlisting a volunteer army of developers from the teams who used the current messaging queue. Each team reviewed the codebase for their service to identify ways to cut the volume of messages they published. Trimming unnecessary messages and rolling out a compression layer on top of the old queue reduced some load on the system. The team also gained some more operational breathing room by building a dedicated messaging queue for one particular component that was responsible for over 30% of system traffic. These measures yielded enough of a temporary operational reprieve to allow for a two-month window to assemble and test a prototype of the new messaging system.
+
+
+Migrating a message queue system that handles tens of thousands of messages per second is a daunting task even without the pressure of imminent service meltdown. But gradually reducing the load on the old system would relieve some of this pressure, affording the team a longer time window to complete the migration. To this end, Waze SRE rebuilt the client libraries for the message queue so they could publish and receive messages using either or both systems, using a centralized control surface to switch the traffic over.
+
+
+Once the new system was proven to work, SRE began the first phase of the migration: they identified some low-traffic, high-importance message flows for which messaging outages were catastrophic. For these flows, writing to both messaging systems would provide a backup path. A couple of near misses, where the backup path kept core Waze services operating while the old system faltered, provided the short-term wins that justified the initial investment.
+
+
+Mass migration to the new system required SRE to work closely with the teams who use it. The team needed to figure out both how to best support their use cases and how to coordinate the traffic switch. As the SRE team automated the process of migrating traffic and the new system supported more use cases by default, the rate of migrations accelerated significantly.
+
+
+Kotter’s change management process ends with instituting change. Eventually, with enough momentum behind the adoption of the new system, the SRE team could declare the old system deprecated and no longer supported. They migrated the last stragglers a few quarters later. Today, the new system handles more than 1000 times the load of the previous one, and requires little manual intervention from SREs for ongoing support and maintenance.
+
+
+
+
+
+The Next Cycle of Change: Improving the Deployment Process
+
+
+The process of change as a cycle was one of Kotter’s key insights. The cyclical nature of meaningful change is particularly apparent when it comes to the types of technical changes that face SRE. Eliminating one bottleneck in a system often highlights another one. As each change cycle is completed, the resulting improvements, standardization, and automation free up engineering time. Engineering teams now have the space to more closely examine their systems and identify more pain points, triggering the next cycle of change.
+
+
+When Waze SRE could finally take a step back from firefighting problems related to the messaging system, a new bottleneck emerged, bringing with it a renewed sense of urgency: SRE’s sole ownership of releases was noticeably and seriously hindering development velocity. The manual nature of releases required a significant amount of SRE time. To exacerbate an already suboptimal situation, system components were large, and because releases were costly, they were relatively infrequent. As a result, each release represented a large delta, significantly increasing the possibility that a major defect would necessitate a rollback.
+
+
+Improvements toward a better release process happened incrementally, as Waze SRE didn’t have a master plan from square one. To slim down system components so the team could iterate each more rapidly, one of the senior Waze developers created a framework for building microservices. This provided a standard “batteries included” platform that made it easy for the engineering organization to start breaking their components apart. SRE worked with this developer to include some reliability-focused features—for example, a common control surface and a set of behaviors that were amenable to automation. As a result, SRE could develop a suite of tools to manage the previously costly parts of the release process. One of these tools incentivized adoption by bundling all of the steps needed to create a new microservice with the framework.
+
+
+These tools were quick-and-dirty at first—the initial prototypes were built by one SRE over the course of several days. As 

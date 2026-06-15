@@ -1,0 +1,144 @@
+=== The Site Reliability Workbook ===
+=== Chunk 4/100 ===
+
+
+Chapter 17: Andrew Harvey, Aleksander Szymanek, Brad Kratochvil, Ed Wehrwein, Duncan Sargeant, Jessika Reissland, Matt Brown, Piotr Sieklucki and Thomas Adamcik
+
+
+Chapter 18: Brian Balser (New York Times), Deep Kapadia (New York Times), Michelle Duffy, Xavier Llorà
+
+
+Chapter 19: Matt Brown
+
+
+Chapter 20: Brian Balser (New York Times), Christophe Kalt, Daniel Rogers, Max Luebbe, Niall Richard Murphy, Ramón Medrano Llamas, Richard Bondi, Steven Carstensen, Stephen Thorne, Steven Thurgood, Thomas Wright
+
+
+Chapter 21: Dave Rensin, JC Van Winkel, Max Luebbe, Ronen Louvton, Stephen Thorne, Tom Feiner, Tsiki Rosenman
+
+
+
+We are also grateful to the following contributors, who supplied significant expertise or resources, or had some otherwise excellent effect on this work: Caleb Donaldson, Charlene Perez, Evan Leonard, Jennifer Petoff, Juliette Benton, and Lea Miller.
+
+We very much appreciate the thoughtful and in-depth feedback that we received from industry reviewers: Mark Burgess, David Blank-Edelman, John Looney, Jennifer Davis, Björn Rabenstein, Susan Fowler, Thomas A. Limoncelli, James Meickle, Theo Schlossangle, Jez Humble, Alice Goldfuss, Arup Chakrabarti, John Allspaw, Angus Lees, Eric Liang, Brendan Gregg, and Bryan Liles.
+
+We would like to extend a special thanks to Shylaja Nukala, who generously committed the time and skills of the SRE Technical Writing Team. She enthusiastically supported their necessary and valued efforts.
+
+Thanks also to the O’Reilly Media team—Virginia Wilson, Kristen Brown, Rachel Monaghan, Nikki McDonald, Melanie Yarbrough, and Gloria Lukos—for their help and support making the book a reality in our ambitious timeline.
+
+And an extra special thanks to Niall Richard Murphy: despite the fact that he moved on from Google before this book hit the shelves, his continual insights and dedication were crucial for getting a goodly portion of meaningful content over the finish line. His leadership, thoughtfulness, tenacity, and wit are nothing short of inspirational!
+
+Finally, the editors would also like to personally thank the following people:
+
+
+Betsy Beyer: To Grandmother, my go-to source for encouragement, inspiration, popcorn, pep, and puzzling. You made both this book and my everyday life better! To Duzzie, Hammer, Joan, Kiki, and Mini (note the alphabetical order—ha!) who helped shape me into the obsessive writer slash person I am today. And of course, Riba, for providing the DMD and other provisions necessary to fuel this effort.
+
+
+Niall Richard Murphy: To Léan, Oisín, Fiachra, and Kay, north stars. To someone whose protestations of self-interest are entirely out of odds with how he acts. To Sharon, more influential than she knows. To Alex, in a light-filled sitting room, with a cup of tea, a book, a box of dice, and thou.
+
+
+Stephen Thorne: To my mum and dad, who have always encouraged me to push myself. To my wife, Elspeth. To my colleagues who have given me more respect and encouragement than I think I deserve: Ola, Štěpán, Perry, and David.
+
+
+Dave Rensin: After I wrote my first book, I swore I’d never write another. That was six books ago and I say exactly the same thing each time. To my wife, Lia, who gives me the space to do it and never says “I told you so.” (Even though she tells me so.) To my colleagues at Google—and particularly to the family of SRE—who have taught me more these last few years about production engineering at scale than I had learned in the previous 20. Finally, to Benjamin Treynor Sloss, who interviewed me and convinced me to come to Google in the first place.
+
+
+Kent Kawahara: To my parents, Denby and Setsuko, and my Aunt Asako for helping me get to where I am. To my siblings, Randy and Patti, for their support over the years. To my wife, Angela, and my sons, Ryan, Ethan, and Brady, for their love and support. Finally, to the core team of Dave, Betsy, Niall, Juliette, and Stephen, I feel honored to have worked with you on this project.
+
+How SRE Relates to DevOps
+
+Chapter 1. How SRE Relates to DevOps
+
+
+class SRE implements interface DevOps
+
+
+By Niall Richard Murphy,
+
+Liz Fong-Jones, and Betsy Beyer,
+
+with Todd Underwood, Laura Nolan,
+
+and Dave Rensin
+
+
+Operations, as a discipline, is hard.1 Not only is there the generally unsolved question of how to run systems well, but the best practices that have been found to work are highly context-dependent and far from widely adopted. There is also the largely unaddressed question of how to run operations teams well. Detailed analysis of these topics is generally thought to originate with Operational Research devoted to improving processes and output in the Allied military during World War II, but in reality, we have been thinking about how to operate things better for millennia.
+
+
+Yet, despite all this effort and thought, reliable production operations remains elusive—particularly in the domains of information technology and software operability. The enterprise world, for example, often treats operations as a cost center,2 which makes meaningful improvements in outcomes difficult if not impossible. The tremendous short-sightedness of this approach is not yet widely understood, but dissatisfaction with it has given rise to a revolution in how to organize what we do in IT.
+
+
+That revolution stemmed from trying to solve a common set of problems. The newest solutions to these problems are called by two separate names—DevOps and Site Reliability Engineering (SRE). Although we talk about them individually as if they are totally separate reactions to the enterprise mentality just described,3 we hope to persuade you that in fact they are much more alike, and practitioners of each have much more in common, than you might assume.
+
+
+But first, some background on the key tenets of each.
+
+
+
+Background on DevOps
+
+
+DevOps is a loose set of practices, guidelines, and culture designed to break down silos in IT development, operations, networking, and security. Articulated by John Willis, Damon Edwards, and Jez Humble, CA(L)MS—which stands for Culture, Automation, Lean (as in Lean management; also see continuous delivery), Measurement, and Sharing—is a useful acronym for remembering the key points of DevOps philosophy. Sharing and collaboration are at the forefront of this movement. In a DevOps approach, you improve something (often by automating it), measure the results, and share those results with colleagues so the whole organization can improve. All of the CALMS principles are facilitated by a supportive culture.
+
+
+DevOps, Agile, and a variety of other business and software reengineering techniques are all examples of a general worldview on how best to do business in the modern world. None of the elements in the DevOps philosophy are easily separable from each other, and this is essentially by design. There are, however, a few key ideas that can be discussed in relative isolation.
+
+
+
+No More Silos
+
+
+The first key idea is no more silos. This is a reaction to a couple ideas:
+
+
+
+ 
+ The historically popular but now increasingly old-fashioned arrangement of separate operations and development teams
+
+ 
+
+ 
+ The fact that extreme siloization of knowledge, incentives for purely local optimization, and lack of collaboration have in many cases been actively bad for business4
+
+ 
+
+
+
+
+
+
+Accidents Are Normal
+
+
+The second key idea is that accidents are not just a result of the isolated actions of an individual, but rather result from missing safeguards for when things inevitably go wrong.5 For example, a bad interface inadvertently encourages the wrong action under pressure; a system misfeature makes failure inevitable if the (unarticulated) wrong circumstances occur; broken monitoring makes it impossible to know if something is wrong, never mind what is wrong. Some more traditionally minded businesses possess the cultural instinct to root out the mistake maker and punish them. But doing so has its own consequences: most obviously, it creates incentives to confuse issues, hide the truth, and blame others, all of which are ultimately unprofitable distractions. Therefore, it is more profitable to focus on speeding recovery than preventing accidents.
+
+
+
+
+
+Change Should Be Gradual
+
+
+The third key idea is that change is best when it is small and frequent. In environments where change committees meet monthly to discuss thoroughly documented plans to make changes to the mainframe configuration, this is a radical idea. However, this is not a new idea. The notion that all changes must be considered by experienced humans and batched for efficient consideration turns out to be more or less the opposite of best practice. Change is risky, true, but the correct response is to split up your changes into smaller subcomponents where possible. Then you build a steady pipeline of low-risk change out of regular output from product, design, and infrastructure changes.6 This strategy, coupled with automatic testing  of smaller  changes and reliable rollback of bad changes, leads to approaches to change management like continuous integration (CI) and continuous delivery or deployment (CD).
+
+
+
+
+
+Tooling and Culture Are Interrelated
+
+
+Tooling is an important component of DevOps, particularly given the emphasis on managing change correctly—today, change management relies on highly specific tools. Overall, however, proponents of DevOps strongly emphasize organizational culture—rather than tooling—as the key to success in adopting a new way of working. A good culture can work around broken tooling, but the opposite rarely holds true. As the saying goes, culture eats strategy for breakfast. Like operations, change itself is hard.
+
+
+
+
+
+Measurement Is Crucial
+
+
+Finally, measurement is particularly crucial in the overall business context of, for example, breaking down silos and incident resolution. In each of these environments, you establish the reality of what’s happening by means of objective measurement, verify that you’re changing the situation as you expect, and create an objective foundation for conversations that different functions agree upon. (This applies in both business and other contexts, such as on-call.)
+
+
+
+

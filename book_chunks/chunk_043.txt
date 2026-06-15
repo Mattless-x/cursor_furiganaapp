@@ -1,0 +1,362 @@
+=== The Site Reliability Workbook ===
+=== Chunk 43/100 ===
+
+
+1 When three or more people work on an incident, it’s useful to start a collaborative document that lists working theories, eliminated causes, and useful debugging information, such as error logs and suspect graphs. The document preserves this information so it doesn’t get lost in the conversation.
+2 Kripa Krishan, “Weathering the Unexpected,” Communications of the ACM 10, no. 9 (2012), https://queue.acm.org/detail.cfm?id=2371516.
+
+Postmortem Culture: Learning from Failure
+
+Chapter 10. Postmortem Culture: Learning from Failure
+
+
+By Daniel Rogers, Murali Suriar, Sue Lueder,
+
+Pranjal Deo, and Divya Sudhakar
+
+with Gary O’Connor and Dave Rensin
+
+
+Our experience shows that a truly blameless postmortem culture results in more reliable systems—which is why we believe this practice is important to creating and maintaining a successful SRE organization.
+
+
+Introducing postmortems into an organization is as much a cultural change as it is a technical one. Making such a shift can seem daunting. The key takeaway from this chapter is that making this change is possible, and needn’t seem like an insurmountable challenge. Don’t emerge from an incident hoping that your systems will eventually remedy themselves. You can start small by introducing a very basic postmortem procedure, and then reflect and tune your process to best suit your organization—as with many things, there is no one size that fits all.
+
+
+When written well, acted upon, and widely shared, postmortems can be a very effective tool for driving positive organizational change and preventing repeat outages. To illustrate the principles of good postmortem writing, this chapter presents a case study of an actual outage that happened at Google. An example of a poorly written postmortem highlights the reasons why “bad” postmortem practices are damaging to an organization that’s trying to create a healthy postmortem culture. We then compare the bad postmortem with the actual postmortem that was written after the incident, highlighting the principles and best practices of a high-quality postmortem.
+
+
+The second part of this chapter shares what we’ve learned about creating incentives for nurturing of a robust postmortem culture and how to recognize (and remedy) the early signs that the culture is breaking down.
+
+
+Finally, we provide tools and templates that you can use to bootstrap a postmortem culture.
+
+
+For a comprehensive discussion on blameless postmortem philosophy, see Chapter 15 in our first book, Site Reliability Engineering.
+
+
+
+Case Study
+
+
+This case study features a routine rack decommission that led to an increase in service latency for our users. A bug in our maintenance automation, combined with insufficient rate limits, caused thousands of servers carrying production traffic to simultaneously go offline.
+
+
+While the majority of Google’s servers are located in our proprietary datacenters, we also have racks of proxy/cache machines in colocation facilities (or “colos”). Racks in colos that contain our proxy machines are called satellites. Because satellites undergo regular maintenance and upgrades, a number of satellite racks are being installed or decommissioned at any point in time. At Google, these maintenance processes are largely automated.
+
+
+The decommission process overwrites the full content of all drives in the rack using a process we call diskerase. Once a machine is sent to diskerase, the data it once stored is no longer retrievable. The steps for a typical rack decommission are as follows:
+
+
+
+# Get all active machines in "satellite"
+machines = GetMachines(satellite)
+
+# Send all candidate machines matching "filter" to decom
+SendToDecom(candidates=GetAllSatelliteMachines(),
+ filter=machines)
+
+
+Our case study begins with a satellite rack that was marked for decommissioning. The diskerase step of the decommission process finished successfully, but the automation responsible for the remainder of the machine decommission failed. To debug the failure, we retried the decommission process. The second decommission ran as follows:
+
+
+
+# Get all active machines in "satellite"
+machines = GetMachines(satellite)
+
+# "machines" is an empty list, because the decom flow has already run.
+# API bug: an empty list is treated as "no filter", rather than "act on no
+# machines"
+
+# Send all candidate machines matching "filter" to decom
+SendToDecom(candidates=GetAllSatelliteMachines(),
+ filter=machines)
+
+# Send all machines in "candidates" to diskerase.
+
+
+Within minutes, the disks of all satellite machines, globally, were erased. The machines were rendered inert and could no longer accept connections from users, so subsequent user connections were routed directly to our datacenters. As a result, users experienced a slight increase in latency. Thanks to good capacity planning, very few of our users noticed the issue during the two days it took us to reinstall machines in the affected colo racks. Following the incident, we spent several weeks auditing and adding more sanity checks to our automation to make our decommission workflow idempotent.
+
+
+Three years after this outage, we experienced a similar incident: a number of satellites were drained, resulting in increased user latency. The action items implemented from the original postmortem dramatically reduced the blast radius and rate of the second incident.
+
+
+Suppose you were the person responsible for writing the postmortem for this case study. What would you want to know, and what actions would you propose to prevent this outage from happening again?
+
+
+Let’s start with a not-so-great postmortem for this incident.
+
+
+
+
+
+Bad Postmortem
+
+
+
+Postmortem: All Satellite Machines Sent to Diskerase
+
+
+2014-August-11
+
+
+
+ 
+ 
+ Owner:
+ maxone@, logantwo@, sydneythree@, dylanfour@
+ 
+
+ 
+ Shared with:
+ satellite-infra-team@
+ 
+
+ 
+ Status:
+ Final
+ 
+
+ 
+ Incident date:
+ 2014-August-11
+ 
+
+ 
+ Published:
+ 2014-December-30
+ 
+
+ 
+
+
+Executive Summary
+
+
+
+ 
+ 
+ Impact:
+ All Satellite machines are sent to diskerase, which practically wiped out Google Edge.
+ 
+
+ 
+ Root cause:
+ dylanfour@ ignored the automation setup and ran the cluster turnup logic manually, which triggered an existing bug.
+ 
+
+ 
+
+
+Problem Summary
+
+
+
+ 
+ 
+ Duration of problem:
+ 40min
+ 
+
+ 
+ Product(s) affected:
+ satellite-infra-team
+ 
+
+ 
+ % of product affected:
+ All satellite clusters.
+ 
+
+ 
+ User impact:
+ All queries that normally go to satellites were served from the core instead, causing increased latency.
+ 
+
+ 
+ Revenue impact:
+ Some ads were not served due to the lost queries. Exact revenue impact unknown at this time.
+ 
+
+ 
+ Detection:
+ Monitoring alert.
+ 
+
+ 
+ Resolution:
+ Diverting traffic to core followed by manual repair of edge clusters.
+ 
+
+ 
+
+
+Background (optional)
+
+
+ 
+
+
+Impact
+
+
+
+ User impact
+ All queries that normally go to satellites were instead served from the core, causing increased latency to user traffic.
+
+ Revenue impact
+ Some ads were not served due to the lost queries.
+
+
+
+Root Causes and Trigger
+
+
+Cluster turnup/turndown automation is not meant to be idempotent. The tool has safeguards to ensure that certain steps cannot be run more than once. Unfortunately, there is nothing to stop someone from running the code manually as many times as they want. None of the documentation mentioned this gotcha. As a result, most team members think it’s okay to run the process multiple times if it doesn’t work.
+
+
+This is exactly what happened during a routine decommissioning of a rack. The rack was being replaced with a new Iota-based satellite. dylanfour@ completely ignored the fact that the turnup had already executed once and was stuck in the first attempt. Due to careless ignorance, they triggered a bad interaction that assigned all the satellite machines to the diskerase team.
+
+
+Recovery Efforts
+
+
+ 
+
+
+Lessons Learned
+
+
+Things that went well
+
+
+
+ 
+ Alerting caught the issue immediately.
+
+ 
+
+ 
+ Incident management went well.
+
+ 
+
+
+
+Things that went poorly
+
+
+
+ 
+ The team (especially maxone@, logantwo@) never wrote any documentation to tell SREs not to run the automation multiple times, which is ridiculous.
+
+ 
+
+ 
+ On-call did not act soon enough to prevent most satellite machines from being erased. This is not the first time that on-call failed to react in time.
+
+ 
+
+
+
+Where we got lucky
+
+
+
+ 
+ Core was able to serve all the traffic that normally would have gone to the Edge. I can’t believe we survived this one!!!
+
+ 
+
+
+
+Action Items
+
+
+
+ 
+ 
+ Action item
+ Type
+ Priority
+ Owner
+ Tracking bug
+ 
+
+ 
+ 
+ 
+ Make automation better.
+ mitigate
+ P2
+ logantwo@
+  
+ 
+
+ 
+ Improve paging and alerting.
+ detect
+ P2
+  
+  
+ 
+
+ 
+ sydneythree@ needs to learn proper cross-site handoff protocol so nobody has to work on duplicate issues.
+ mitigate
+ P2
+  
+ BUG6789
+ 
+
+ 
+ Train humans not to run unsafe commands.
+ prevent
+ P2
+  
+  
+ 
+
+ 
+
+
+Glossary
+
+
+
+
+
+Why Is This Postmortem Bad?
+
+
+The example “bad” postmortem contains a number of common failure modes that we try to avoid. The following sections explain how to improve upon this postmortem.
+
+
+
+Missing context
+
+
+From the outset, our example postmortem introduces terminology that’s specific to traffic serving (e.g., “satellites”) and lower layers of machine management automation at Google (e.g., “diskerase”). If you need to provide additional context as part of the postmortem, use the Background and/or Glossary sections (which can link to longer documents). In this case, both sections were blank.
+
+
+If you don’t properly contextualize content when writing a postmortem, the document might be misunderstood or even ignored. It’s important to remember that your audience extends beyond the immediate team.
+
+
+
+
+
+Key details omitted
+
+
+Multiple sections contain high-level summaries but lacked important details. For example:
+
+
+
+ Problem summary
+ 
+ For outages affecting multiple services, you should present numbers to give a consistent representation of impact. The only numerical data our example provides is the duration of the problem. We don’t have enough details to estimate the size or impact of the outage. Even if there is no concrete data, a well-informed estimate is better than no data at all. After all, if you don’t know how to measure it, then you can’t know it’s fixed!
+
+ 
+ Root causes and trigger
+ 
+ Identifying the root causes and trigger i

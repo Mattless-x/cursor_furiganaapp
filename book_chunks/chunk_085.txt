@@ -1,0 +1,333 @@
+=== The Site Reliability Workbook ===
+=== Chunk 85/100 ===
+
+
+
+
+Performing
+
+
+The SRE team’s experience with production and work up to this point should have earned the respect and attention of the wider organization, and laid the foundation for strategically moving forward. In the final stage of Tuckman’s performance model, performing, you should expect to:
+
+
+
+ Partner on all architecture design and change.
+ 
+ From the initial design phase onward, SRE should define the patterns for how software is built and structured for reliability.
+
+ 
+ Have complete workload self-determination.
+ 
+ Teams should consistently apply Principle 3 with a view toward the holistic health of the system.
+
+ 
+
+
+
+Partnering on architecture
+
+
+The product development team should start to reach out to its partner SRE team for advice on all significant service changes. The SRE team now has the opportunity to have some of its greatest impact.
+
+
+For example, the SRE team might provide early input into the design of new service architecture to reduce the likelihood of high-cost reengineering at a later date. The product development and SRE teams can acknowledge their differences in perspective on architectural decisions to arrive at a good design process. A successful engagement can add value through:
+
+
+
+ 
+ Improved reliability, scalability, and operability
+
+ 
+
+ 
+ Better reuse of existing patterns
+
+ 
+
+ 
+ Simpler migration (if required)
+
+ 
+
+
+
+
+
+
+Self-regulating workload
+
+
+Whereas architectural partnerships should emerge somewhat organically over time, an SRE team must clearly assert Principle #3 to its partners. Doing so requires strong team leadership and clear, upfront commitment from senior management. The ability to regulate its own workload secures the SRE team’s position as an engineering team that works on the organization’s most important services, equal to its product development team peers.
+
+
+In practice, how an SRE team goes about determining its own workload depends on the teams with which SREs interface. At Google, SRE teams most commonly interact with a distinct product development team. In this case, the relationship has the following characteristics:
+
+
+
+ 
+ An SRE team chooses if and when to onboard a service (see Chapter 32 of Site Reliability Engineering).
+
+ 
+
+ 
+ In the event of operational overload, the team can reduce toil by:
+
+
+ 
+ 
+ Reducing the SLO
+
+ 
+
+ 
+ Transferring operational work to another team (e.g., a product development team)
+
+ 
+
+ 
+ 
+
+ 
+ If it becomes impossible to operate a service at SLO within agreed toil constraints, the SRE team can hand back the service to the product development team.
+
+ 
+
+ 
+ SRE engagement is not perpetual—it feeds itself by solving problems at scale and improving the reliability of services. If an SRE team has solved all such problems for a service, you need to either:
+
+
+ 
+ 
+ Intentionally consider what other reliability challenges the SRE team needs to tackle.
+
+ 
+
+ 
+ Make an intentional decision to hand back the service to the product development team.
+
+ 
+
+ 
+
+ Otherwise, your team risks attrition as SREs move on to more interesting opportunities. The slow bleed from attrition can put production at risk.
+
+ 
+
+
+
+Not all SRE teams have partner product development teams. Some SRE teams are also responsible for developing the systems they run. Some SRE teams package third-party software, hardware, or services (e.g., open source packages, network equipment, something-as-a-service), and turn those assets into internal services. In this case, you don’t have the option to transfer work back to another team. Instead, consider the following tactics:
+
+
+
+ 
+ If the service does not conform to its SLO, stop feature-related project work in favor of reliability-focused project work.
+
+ 
+
+ 
+ If it becomes impossible to operate a service at SLO within agreed toil constraints, reduce your SLOs—unless management provides more capacity (people or infrastructure) to deal with the situation.
+
+ 
+
+
+
+
+
+
+
+
+
+
+Making More SRE Teams
+
+
+Once your first SRE team is up and running, you may want to form an additional SRE team. You might do so for one of the following reasons:
+
+
+
+ Service complexity
+ As a service gains users and features, it becomes more complex and harder for a single SRE team to support effectively. You might want to split the team into subteams that specialize in parts of the service.
+
+ SRE rollout
+ If your first SRE team has been successful and made a clear difference, there may be an organizational interest in adopting this approach across more services.
+
+ Geographically split
+ You want to split the team into two halves in different time zones and move to 12-hour on-call shifts.
+
+
+
+When you’re creating a new SRE team, we recommend that you do the following:
+
+
+
+ 
+ Read any postmortems written after other teams were established. Identify and repeat what went well and fix and explore alternatives for things that didn’t go well.
+
+ 
+
+ 
+ Seed the new team with SREs from the existing team—some of your best SREs and highest-potential SREs who can rise to the challenge. In our experience, finding qualified SRE candidates is difficult, so growing a team quickly with new hires often isn’t realistic.
+
+ 
+
+ 
+ Standardize the framework for establishing teams and onboarding services (see Chapter 18).
+
+ 
+
+ 
+ Make changes to the on-call responsibilities slowly. For example:
+
+
+ 
+ 
+ To avoid a sudden loss of skilled on-call engineers, keep team members on-call for their previous team’s systems for a transitional period.
+
+ 
+
+ 
+ After the teams split, wait three to six months to split the on-call rotations.
+
+ 
+
+ 
+ 
+
+
+
+
+Service Complexity
+
+
+
+Where to split
+
+
+If a service becomes too complex for a single team to manage, there are a number of ways to split the work. Consider the following options to simplify the cognitive load on team members:
+
+
+
+ Architectural splits
+ For example, compute, storage, and network; frontend and backend; frontend and database; client and server; frontend and pipelines.
+
+ Language splits
+ SRE principles are not dependent on programming languages. However, if your SREs are deeply involved in your source code, there may be some benefit in a split along these lines.
+
+ Location splits
+ If your organization’s engineering spans multiple offices, you might want to align SRE team placement with application development.
+
+
+
+
+
+
+Pitfalls
+
+
+When a team splits, sometimes none of the new teams pick up responsibility for a component owned by the original team. To mitigate this risk, you can:
+
+
+
+ 
+ Designate one team as responsible for everything not covered in the second team’s charter.
+
+ 
+
+ 
+ Appoint a senior SRE to an overarching technical lead role across both teams.
+
+ 
+
+
+
+
+
+
+
+
+SRE Rollout
+
+
+If your initial SRE team(s) are successful, your organization may want more of them. We recommend carefully prioritizing the services that receive SRE support. Consider the following points:
+
+
+
+ 
+ Prioritize services for which reliability has a high financial or reputational impact. The higher the impact, the higher the priority.
+
+ 
+
+ 
+ Define the minimal viable set of services that need to be up in order for the product to function. Prioritize those services and make sure that other services degrade gracefully.
+
+ 
+
+ 
+ A service should not be a priority for SRE simply because it’s unreliable. SRE should be applied tactically where it is most relevant for the business. You also don’t want to allow your developers to ignore reliability until after SREs are engaged.
+
+ 
+
+
+
+
+
+
+Geographical Splits
+
+
+As described in Chapter 11 of our first book, Google commonly staffs sister SRE teams on different continents. We do this for a number of reasons:
+
+
+
+ Service reliability
+ If a major incident (e.g., natural disaster) prevents one team from operating, the other team can continue to support a service.
+
+ On-call stress
+ Splitting the pager rotation into 12-hour shifts allows proper breaks for on-call engineers.
+
+ Recruiting and retaining talent
+ An on-call shift that overlaps the normal working day broadens the base of engineers that we can recruit into SRE roles, and underlines the engineering part of our role.
+
+ Production maturity
+ Splitting service responsibility across two offices tends to lead to an improvement in maturity as the need for documentation, training, and standardization become more important.
+
+
+
+If your organization is lucky enough to already have engineering teams on multiple continents, we recommend staffing multisite SRE teams. It’s possible to have an SRE team in a different office than the development team, but in our experience, colocation provides benefits in the form of a healthy and robust interteam dialog. Otherwise, it’s harder for SREs to understand how the services evolve or how the technical infrastructure is used, and it’s harder for product developers to be optimistic about infrastructure improvements.
+
+
+
+Placement: How many time zones apart should the teams be?
+
+
+Assuming you have some choice, time zone separation is an important consideration in deciding where to locate the two teams. Unfortunately, the objectives are mutually exclusive:
+
+
+
+ 
+ Minimizing the number of hours that on-callers have to work outside of normal office hours
+
+ 
+
+ 
+ Maximizing the overlap time when both teams are online so that they can interact with each other regularly
+
+ 
+
+
+
+The situation is complicated by Daylight Saving Time.
+
+
+In our experience, staffing teams in time zones that are six to eight hours apart works well and avoids 12 a.m. to 6 a.m. on-call shifts. You can use online resources like https://www.timeanddate.com/worldclock/meeting.html to visualize time zone overlaps for various locations.
+
+
+
+
+
+People and projects: Seeding the team
+
+
+When you split a team geographically, the first SRE team in a new office will set the norms for future SRE teams. Your likelihood of success will be much higher if you can identify one or more SREs who are willing to relocate from the original site on a temporary or long-term basis to establish SRE practices and recruit and train the new team. The new team should also undertake a high-value project that fosters collaboration within the team and requires interaction with their sister team.
+
+

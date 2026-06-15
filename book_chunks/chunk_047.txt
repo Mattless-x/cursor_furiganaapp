@@ -1,0 +1,366 @@
+=== The Site Reliability Workbook ===
+=== Chunk 47/100 ===
+
+
+
+
+Hold training exercises
+
+
+Use the Wheel of Misfortune when training new engineers: a cast of engineers reenacts a previous postmortem, assuming roles laid out in the postmortem. The original Incident Commander attends to help make the experience as “real” as possible.
+
+
+
+
+
+Report incidents and outages weekly
+
+
+Create a weekly outage report containing the incidents and outages from the past seven days. Share the report with as wide an audience as possible. From the weekly outages, compile and share a periodic greatest hits report.
+
+
+
+
+
+
+
+Respond to Postmortem Culture Failures
+
+
+The breakdown of postmortem culture may not always be obvious. The following are some common failure patterns and recommended solutions.
+
+
+
+Avoiding association
+
+
+Disengaging from the postmortem process is a sign that postmortem culture at an organization is failing. For example, suppose SRE Director Parker overhears the following conversation:
+
+
+
+SWE Sam: Wow, did you hear about that huge blow-up?
+
+
+SWE Riley: Yeah, it was terrible. They’ll have to write a postmortem now.
+
+
+SWE Sam: Oh no! I’m so glad I’m not involved with that.
+
+
+SWE Riley: Yeah, I really wouldn’t want to be in the meeting where that one is discussed.
+
+
+
+Ensuring that high-visibility postmortems are reviewed for blameful prose can help prevent this kind of avoidance. In addition, sharing high-quality examples and discussing how those involved were rewarded can help reengage individuals.
+
+
+
+
+
+Failing to reinforce the culture
+
+
+Responding when a senior executive uses blameful language can be challenging. Consider the following statement made by senior leadership at a meeting about an outage:
+
+
+
+VP Ash: I know we are supposed to be blameless, but this is a safe space. Someone must have known beforehand this was a bad idea, so why didn’t you listen to that person?
+
+
+
+Mitigate the damage by moving the narrative in a more constructive direction. For example:
+
+
+
+SRE Dana: Hmmm, I’m sure everyone had the best intent, so to keep it blameless, maybe we ask generically if there were any warning signs we could have heeded, and why we might have dismissed them.
+
+
+
+Individuals act in good faith and make decisions based on the best information available. Investigating the source of misleading information is much more beneficial to the organization than assigning blame. (If you have encountered Agile principles, this should be familiar to you.)
+
+
+
+
+
+Lacking time to write postmortems
+
+
+Quality postmortems take time to write. When a team is overloaded with other tasks, the quality of postmortems suffers. Subpar postmortems with incomplete action items make a recurrence far more likely. Postmortems are letters you write to future team members: it’s very important to keep a consistent quality bar, lest you accidentally teach future teammates a bad lesson. Prioritize postmortem work, track the postmortem completion and review, and allow teams adequate time to implement the associated action plan. The tooling we discuss in the section “Tools and Templates” can help with these activities.
+
+
+
+
+
+Repeating incidents
+
+
+If teams are experiencing failures that mirror previous incidents, it’s time to dig deeper. Consider asking questions like:
+
+
+
+ 
+ Are action items taking too long to close?
+
+ 
+
+ 
+ Is feature velocity trumping reliability fixes?
+
+ 
+
+ 
+ Are the right action items being captured in the first place?
+
+ 
+
+ 
+ Is the faulty service overdue for a refactor?
+
+ 
+
+ 
+ Are people putting Band-Aids on a more serious problem?
+
+ 
+
+
+
+If you uncovered a systemic process or technical problem, it’s time to take a step back and consider the overall service health. Bring the postmortem collaborators from each similar incident together to discuss the best course of action to prevent repeats.
+
+
+
+
+
+
+
+
+
+Tools and Templates
+
+
+A set of tools and templates can bootstrap a postmortem culture by making writing postmortems and managing the associated data easier. There are a number of resources from Google and other companies that you can leverage in this space.
+
+
+
+Postmortem Templates
+
+
+Templates make it easier to write complete postmortems and share them across an organization. Using a standard format makes postmortems more accessible for readers outside the domain. You can customize the template to fit your needs. For example, it may be useful to capture team-specific metadata like hardware make/model for a datacenter team, or Android versions affected for a mobile team. You can then add customizations as the team matures and performs more sophisticated postmortems.
+
+
+
+Google’s template
+
+
+Google has shared a version of our postmortem template in Google Docs format at http://g.co/SiteReliabilityWorkbookMaterials. Internally, we primarily use Docs to write postmortems because it facilitates collaboration via shared editing rights and comments. Some of our internal tools prepopulate this template with metadata to make the postmortem easier to write. We leverage Google Apps Script to automate parts of the authoring, and capture a lot of the data into specific sections and tables to make it easier for our postmortem repository to parse out data for analysis.
+
+
+
+
+
+Other industry templates
+
+
+Several other companies and individuals have shared their postmortem templates:
+
+
+
+ 
+ Pager Duty
+
+ 
+
+ 
+ An adaptation of the original Google Site Reliability Engineering book template
+
+ 
+
+ 
+ A list of four templates hosted on GitHub
+
+ 
+
+ 
+ GitHub user Julian Dunn
+
+ 
+
+ 
+ Server Fault
+
+ 
+
+
+
+
+
+
+
+
+Postmortem Tooling
+
+
+As of this writing, Google’s postmortem management tooling is not available for external use (check our blog for the latest updates). We can, however, explain how our tools facilitate postmortem culture.
+
+
+
+Postmortem creation
+
+
+Our incident management tooling collects and stores a lot of useful data about an incident and pushes that data automatically into the postmortem. Examples of data we push includes:
+
+
+
+ 
+ Incident Commander and other roles
+
+ 
+
+ 
+ Detailed incident timeline and IRC logs
+
+ 
+
+ 
+ Services affected and root-cause services
+
+ 
+
+ 
+ Incident severity
+
+ 
+
+ 
+ Incident detection mechanisms
+
+ 
+
+
+
+
+
+
+Postmortem checklist
+
+
+To help authors ensure a postmortem is properly completed, we provide a postmortem checklist that walks the owner through key steps. Here are just a few example checks on the list:
+
+
+
+ 
+ Perform a complete assessment of incident impact.
+
+ 
+
+ 
+ Conduct sufficiently detailed root-cause analysis to drive action item planning.
+
+ 
+
+ 
+ Ensure action items are vetted and approved by the technical leads of the service.
+
+ 
+
+ 
+ Share the postmortem with the wider organization.
+
+ 
+
+
+
+The full checklist is available at http://g.co/SiteReliabilityWorkbookMaterials.
+
+
+
+
+
+Postmortem storage
+
+
+We store postmortems in a tool called Requiem so it’s easy for any Googler to find them. Our incident management tool automatically pushes all postmortems to Requiem, and anyone in the organization can post their postmortem for all to see. We have thousands of postmortems stored, dating back to 2009. Requiem parses out metadata from individual postmortems and makes it available for searching, analysis, and reporting.
+
+
+
+
+
+Postmortem follow-up
+
+
+Our postmortems are stored in Requiem’s database. Any resulting action items are filed as bugs in our centralized bug tracking system. Consequently, we can monitor the closure of action items from each postmortem. With this level of tracking, we can ensure that action items don’t slip through the cracks, leading to increasingly unstable services. Figure 10-4 shows a mockup of postmortem action item monitoring enabled by our tooling.
+
+
+
+Figure 10-4. Postmortem action item monitoring
+
+
+
+
+
+
+Postmortem analysis
+
+
+Our postmortem management tool stores its information in a database for analysis. Teams can use the data to write reports about their postmortem trends and identify their most vulnerable systems. This helps us uncover underlying sources of instability or incident management dysfunctions that may otherwise go unnoticed. For example, Figure 10-5 shows charts that were built with our analysis tooling. These charts show us trends like how many postmortems we have per month per organization, incident mean duration, time to detect, time to resolve, and blast radius.
+
+
+
+Figure 10-5. Postmortem analysis
+
+
+
+
+
+
+Other industry tools
+
+
+Here are some third-party tools that can help you create, organize, and analyze postmortems:
+
+
+
+ 
+ Pager Duty Postmortems
+
+ 
+
+ 
+ Morgue by Etsy
+
+ 
+
+ 
+ VictorOps
+
+ 
+
+
+
+Although it’s impossible to fully automate every step of writing postmortems, we’ve found that postmortem templates and tooling make the process run more smoothly. These tools free up time, allowing authors to focus on the critical aspects of the postmortem, such as root-cause analysis and action item planning.
+
+
+
+
+
+
+
+
+
+Conclusion
+
+
+Ongoing investment in cultivating a postmortem culture pays dividends in the form of fewer outages, a better overall experience for users, and more trust from the people that depend on you. Consistent application of these practices results in better system design, less downtime, and more effective and happier engineers. If the worst does happen and an incident recurs, you will suffer less damage and recover faster and have even more data to continue reinforcing production.
+
+Managing Load
+
+Chapter 11. Managing Load
+
+
+By Cooper Bethea, Gráinne Sheerin, Jennifer Mace, and Ruth King with Gary Luo and Gary O’Connor
+
+
+No service is 100% available 100% of the time: clients can be inconsiderate, demand can grow fifty-fold, a service might crash in response to a traffic spike, or an anchor might pull up a transatlantic cable. There are people who depend upon your service, and as service owners, we care about our users. When faced with these chains of outage triggers, how can we make our infrastructure as adaptive and reliable as possible?
+
+
+This chapter describes Google’s approach to traffic management with the hope that you can use these best practices to improve the efficiency, reliability, and availability of your services. Over the years, we have discovered that there’s no single solution for equalizing and stabilizing network load. Instead, we use a combination of tools, technologies, and strategies that work in harmony to help keep our services reliabl

@@ -1,0 +1,464 @@
+=== The Site Reliability Workbook ===
+=== Chunk 45/100 ===
+
+n using three MDB API calls:
+
+
+
+ 
+ Look up the rack name associated with the edge node (e.g., a12bcd34 -> <rack name>).
+
+ 
+
+ 
+ Look up the machine names associated with the rack (<rack> -> <machine 1>, <machine 2>, etc.).
+
+ 
+
+ 
+ Reassign those machines to diskerase, which indirectly triggers the decommission workflow.
+
+ 
+
+
+
+This procedure is not idempotent, due to a known behavior of the MDB API combined with a missing safety check. If a satellite node was previously successfully sent to decom, step 2 above returns an empty list, which is interpreted in step 3 as the absence of a constraint on a machine hostname.
+
+
+This dangerous behavior has been around for a while, but was hidden by the workflow that invokes the unsafe operation: the workflow step invoking the RPC is marked “run once,” meaning that the workflow engine will not reexecute the RPC once it has succeeded.
+
+
+However, “run once” semantics don’t apply across multiple instances of a workflow. When the Cluster Turnup team manually started another run of the workflow for a12bcd34, this action triggered the admin_server bug.
+
+
+Timeline/Recovery Efforts
+
+
+[The link to our Timeline log has been elided for book publication. In a real postmortem, this information would always be included.]
+
+
+Lessons Learned
+
+
+Things that went well
+
+
+
+ 
+ Evacuating the edge. GFEs in core are explicitly capacity-planned to allow this to happen, as is the production backbone (aside from peering links; see the Outage list in the next section). This edge evacuation allowed the Traffic team to mitigate promptly without fear.
+
+ 
+
+ 
+ Automatic mitigation of catastrophic satellite failure. Cover routes automatically pull traffic from failing satellites back to core clusters, and satellites drain themselves when abnormal churn is detected.
+
+ 
+
+ 
+ Satellite decom/diskerase worked very effectively and rapidly, albeit as a confused deputy.
+
+ 
+
+ 
+ The outage triggered a quick IMAG response via OMG and the tool proved useful for ongoing incident tracking. The cross-team response was excellent, and OMG further helped keep everyone talking to each other.
+
+ 
+
+
+
+Things that went poorly
+
+
+Outage
+
+
+
+ 
+ The Traffic Admin server lacked the appropriate sanity checks on the commands it sent to MDB. All commands should be idempotent, or at least fail-safe on repeat invocations.
+
+ 
+
+ 
+ MDB did not object to the missing hostname constraint in the ownership change request.
+
+ 
+
+ 
+ The decom workflow doesn’t cross-check decom requests with other data sources (e.g., planned rack decoms). As a result, there were no objections to the request to trash (many) geographically diverse machines.
+
+ 
+
+ 
+ The decom workflow is not rate-limited. Once the machines entered decom, disk erase and other decom steps proceeded at maximum speed.
+
+ 
+
+ 
+ Some peering links between Google and the world were overloaded as a result of the egress traffic shifting to different locations when satellites stopped serving, and their queries were instead served from core. This resulted in short bursts of congestion to select peers until satellites were restored, and mitigation work by NST to match.
+
+ 
+
+
+
+Recovery
+
+
+
+ 
+ Reinstalls of satellite machines were slow and unreliable. Reinstallations use TFTP to transmit data, which works poorly when transmitting to satellites at the end of high-latency links.
+
+ 
+
+ 
+ The Autoreplacer infrastructure was not able to handle the simultaneous setup of [value redacted] of GFEs at the time of the outage. Matching the velocity of automated setups required the labor of many SREs working in parallel performing manual setups. The factors below contributed to the initial slowness of the automation:
+
+
+ 
+ 
+ Overly strict SSH timeouts prevented reliable Autoreplacer operation on very remote satellites.
+
+ 
+
+ 
+ A slow kernel upgrade process was executed regardless of whether the machine already had the correct version.
+
+ 
+
+ 
+ A concurrency regression in Autoreplacer prevented running more than two machine setup tasks per worker machine.
+
+ 
+
+ 
+ Confusion about the behavior of the Autoreplacer wasted time and effort.
+
+ 
+
+ 
+ 
+
+ 
+ The monitoring configuration delta safety checks (25% change) did not trigger when 23% of the targets were removed, but did trigger when the same contents (29% of what remained) were readded. This caused a 30-minute delay in reenabling monitoring of the satellites.
+
+ 
+
+ 
+ “The installer” has limited staffing. As a result, making changes is difficult and slow.
+
+ 
+
+ 
+ Use of superuser powers to claw machines back from diskerase left a lot of zombie state, causing ongoing cleanup pain.
+
+ 
+
+
+
+Where we got lucky
+
+
+
+ 
+ GFEs in core clusters are managed very differently from satellite GFEs. As a result, they were not affected by the decom rampage.
+
+ 
+
+ 
+ Similarly, YouTube’s CDN is run as a distinct piece of infrastructure, so YouTube video serving was not affected. Had this failed, the outage would have been much more severe and prolonged.
+
+ 
+
+
+
+Action Items
+
+
+Due to the wide-reaching nature of this incident, we split action items into five themes:
+
+
+
+ 
+ Prevention/risk education
+
+ 
+
+ 
+ Emergency response
+
+ 
+
+ 
+ Monitoring/alerting
+
+ 
+
+ 
+ Satellite/edge provisioning
+
+ 
+
+ 
+ Cleanup/miscellaneous
+
+ 
+
+
+
+
+ Table 10-1. Prevention/risk education
+ 
+ 
+ Action items
+ Type
+ Priority
+ Owner
+ Tracking bug
+ 
+
+ 
+ 
+ 
+ Audit all systems capable of turning live servers into paperweights (i.e., not just repairs and diskerase workflow).
+ investigate
+ P1
+ sydneythree@
+ BUG1234
+ 
+
+ 
+ File bugs to track implementation of bad input rejection to all systems identified in BUG1234.
+ prevent
+ P1
+ sydneythree@
+ BUG1235
+ 
+
+ 
+ Disallow any single operation from affecting servers spanning namespace/class boundaries.
+ mitigate
+ P1
+ maxone@
+ BUG1236
+ 
+
+ 
+ Traffic admin server needs a safety check to not operate on more than [value redacted] number of nodes.
+ mitigate
+ P1
+ dylanfour@
+ BUG1237
+ 
+
+ 
+ Traffic admin server should ask <safety check service> to approve destructive work.
+ prevent
+ P0
+ logantwo@
+ BUG1238
+ 
+
+ 
+ MDB should reject operations that do not provide values for an expected-present constraint.
+ prevent
+ P0
+ louseven@
+ BUG1239
+ 
+
+ 
+
+
+
+ Table 10-2. Emergency response
+ 
+ 
+ Action items
+ Type
+ Priority
+ Owner
+ Tracking bug
+ 
+
+ 
+ 
+ 
+ Ensure that serving from core does not overload egress network links.
+ repair
+ P2
+ rileysix@
+ BUG1240
+ 
+
+ 
+ Ensure decom workflow problems are noted under [the link to our emergency stop doc has been redacted] and [the link to our escalations contact page has been redacted].
+ mitigate
+ P2
+ logantwo@
+ BUG1241
+ 
+
+ 
+ Add a big-red-buttona disable approach to decom workflows.
+ mitigate
+ P0
+ maxone@
+ BUG1242
+ 
+
+ 
+a A general term for a shut-down switch (e.g., an emergency power-off button) to be used in catastrophic circumstances to avert further damage.
+
+
+
+
+ Table 10-3. Monitoring/alerting
+ 
+ 
+ Action items
+ Type
+ Priority
+ Owner
+ Tracking bug
+ 
+
+ 
+ 
+ 
+ Monitoring target safety checks should not allow you to push a change that cannot be rolled back.
+ mitigate
+ P2
+ dylanfour@
+ BUG1243
+ 
+
+ 
+ Add an alert when more than [value redacted] % of our machines have been taken away from us. Machines were taken from satellites at 16:38 while the world started paging only at around 17:10.
+ detect
+ P1
+ rileysix@
+ BUG1244
+ 
+
+ 
+
+
+
+ Table 10-4. Satellite/edge provisioning
+ 
+ 
+ Action items
+ Type
+ Priority
+ Owner
+ Tracking bug
+ 
+
+ 
+ 
+ 
+ Use iPXE to use HTTPS to make reinstalls more reliable/faster.
+ mitigate
+ P2
+ dylanfour@
+ BUG1245
+ 
+
+ 
+
+
+
+ Table 10-5. Cleanup/miscellaneous
+ 
+ 
+ Action items
+ Type
+ Priority
+ Owner
+ Tracking bug
+ 
+
+ 
+ 
+ 
+ Review MDB-related code in our tools and bring the admin server backup to unwedge turnups/turndowns.
+ repair
+ P2
+ rileysix@
+ BUG1246
+ 
+
+ 
+ 
+ Schedule DiRT tests:
+
+
+ 
+ 
+ Bring back satellite after diskerase.
+
+ 
+
+ 
+ Do the same for YouTube CDN.
+
+ 
+
+ 
+ 
+ mitigate
+ P2
+ louseven@
+ BUG1247
+ 
+
+ 
+
+
+Glossary
+
+
+
+ Admin server
+ An RPC server that enables automation to execute privileged operations for frontend serving infrastructure. The automation server is most visibly involved in the implementation of PCRs and cluster turnups/turndowns.
+
+ Autoreplacer
+ A system that moves non-Borgified servers from machine to machine. It’s used to keep services running in the face of machine failures, and also to support forklifts and colo reconfigs.
+
+ Borg
+ A cluster management system designed to manage tasks and machine resources on a massive scale. Borg owns all of the machines in a Borg cell, and assigns tasks to machines that have resources available.
+
+ Decom
+ An abbreviation of decommissioning. Decom of equipment is a process that is relevant to many operational teams.
+
+ Diskerase
+ A process (and associated hardware/software systems) to securely wipe production hard drives before they leave Google datacenters. Diskerase is a step in the decom workflow.
+
+ GFE (Google Front End)
+ The server that the outside world connects to for (almost) all Google services.
+
+ IMAG (Incident Management at Google)
+ A program that establishes a standard, consistent way to handle all types of incidents—from system outages to natural disasters—and organize an effective response.
+
+ MDB (Machine Database)
+ A system that stores all sorts of information about the state of Google machine inventory.
+
+ OMG (Outage Management at Google)
+ An incident management dashboard/tool that serves as a central place for tracking and managing all ongoing incidents at Google.
+
+ Satellites
+ Small, inexpensive racks of machine that serve only nonvideo, frontend traffic from the edge of Google’s network. Almost none of the traditional production cluster infrastructure is available for satellites. Satellites are distinct from the CDN that serves YouTube video content from the edge of Google’s network, and from other places on the wider internet. YouTube CDN was not affected by this incident.
+
+
+
+Appendix
+
+
+
+ Why is ReleaseSatelliteMachines not idempotent?
+ [The response to this question has been elided.]
+
+ What happened after the Admin Server assigned all satellites to the diskerase-team?
+ [The response to this question has been elided.]
+
+ What was the true QPS loss during the outage?
+ [The response to this question has been 

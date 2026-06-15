@@ -1,0 +1,268 @@
+=== The Site Reliability Workbook ===
+=== Chunk 10/100 ===
+
+ by design, you met your SLO. But we can also gather interesting information about the distribution. Were there any days during the past four weeks when our service did not meet its SLO? Do these days correlate with actual incidents? Was there (or should there have been) some action taken on those days in response to incidents?
+
+
+If you do not have logs, metrics, or any other source of historical performance, you need to configure a data source. For example, as a low-fidelity solution for HTTP services, you can set up a remote monitoring service that performs some kind of periodic health check on the service (a ping or an HTTP GET) and reports back the number of successful requests. A number of online services can easily implement this solution.
+
+
+
+
+
+Getting Stakeholder Agreement
+
+
+In order for a proposed SLO to be useful and effective, you will need to get all stakeholders to agree to it:
+
+
+
+ 
+ The product managers have to agree that this threshold is good enough for users—performance below this value is unacceptably low and worth spending engineering time to fix.
+
+ 
+
+ 
+ The product developers need to agree that if the error budget has been exhausted, they will take some steps to reduce risk to users until the service is back in budget (as discussed in “Establishing an Error Budget Policy”).
+
+ 
+
+ 
+ The team responsible for the production environment who are tasked with defending this SLO have agreed that it is defensible without Herculean effort, excessive toil, and burnout—all of which are damaging to the long-term health of the team and service.
+
+ 
+
+
+
+Once all of these points are agreed upon, the hard part is done.6 You have started your SLO journey, and the remaining steps entail iterating from this starting point.
+
+
+To defend your SLO you will need to set up monitoring and alerting (see Chapter 5) so that engineers receive timely notifications of threats to the error budget before those threats become deficits.
+
+
+
+Establishing an Error Budget Policy
+
+
+Once you have an SLO, you can use the SLO to derive an error budget. In order to use this error budget, you need a policy outlining what to do when your service runs out of budget.
+
+
+Getting the error budget policy approved by all key stakeholders—the product manager, the development team, and the SREs—is a good test for whether the SLOs are fit for purpose:
+
+
+
+ 
+ If the SREs feel that the SLO is not defensible without undue amounts of toil, they can make a case for relaxing some of the objectives.
+
+ 
+
+ 
+ If the development team and product manager feel that the increased resources they’ll have to devote to fixing reliability will cause feature release velocity to fall below acceptable levels, then they can also argue for relaxing objectives. Remember that lowering the SLOs also lowers the number of situations to which the SREs will respond; the product manager needs to understand this tradeoff.
+
+ 
+
+ 
+ If the product manager feels that the SLO will result in a bad experience for a significant number of users before the error budget policy prompts anyone to address an issue, the SLOs are likely not tight enough.
+
+ 
+
+
+
+If all three parties do not agree to enforce the error budget policy, you need to iterate on the SLIs and SLOs until all stakeholders are happy. Decide how to move forward and what you need to make the decision: more data, more resources, or a change to the SLI or SLO?
+
+
+When we talk about enforcing an error budget, we mean that once you exhaust your error budget (or come close to exhausting it), you should do something in order to restore stability to your system.
+
+
+To make error budget enforcement decisions, you need to start with a written policy. This policy should cover the specific actions that must be taken when a service has consumed its entire error budget for a given period of time, and specify who will take them. Common owners and actions might include:
+
+
+
+ 
+ The development team gives top priority to bugs relating to reliability issues over the past four weeks.
+
+ 
+
+ 
+ The development team focuses exclusively on reliability issues until the system is within SLO. This responsibility comes with high-level approval to push back on external feature requests and mandates.
+
+ 
+
+ 
+ To reduce the risk of more outages, a production freeze halts certain changes to the system until there is sufficient error budget to resume changes.
+
+ 
+
+
+
+Sometimes a service consumes the entirety of its error budget, but not all stakeholders agree that enacting the error budget policy is appropriate. If this happens, you need to return to the error budget policy approval stage.
+
+
+
+
+
+Documenting the SLO and Error Budget Policy
+
+
+An appropriately defined SLO should be documented in a prominent location where other teams and stakeholders can review it. This documentation should include the following information:
+
+
+
+ 
+ The authors of the SLO, the reviewers (who checked it for technical accuracy), and the approvers (who made the business decision about whether it is the right SLO).
+
+ 
+
+ 
+ The date on which it was approved, and the date when it should next be reviewed.
+
+ 
+
+ 
+ A brief description of the service to give the reader context.
+
+ 
+
+ 
+ The details of the SLO: the objectives and the SLI implementations.
+
+ 
+
+ 
+ The details of how the error budget is calculated and consumed.
+
+ 
+
+ 
+ The rationale behind the numbers, and whether they were derived from experimental or observational data. Even if the SLOs are totally ad hoc, this fact should be documented so that future engineers reading the document don’t make bad decisions based upon ad hoc data.
+
+ 
+
+
+
+How often you review an SLO document depends on the maturity of your SLO culture. When starting out, you should probably review the SLO frequently—perhaps every month. Once the appropriateness of the SLO becomes more established, you can likely reduce reviews to happen quarterly or even less frequently.
+
+
+The error budget policy should also be documented, and should include the following information:
+
+
+
+ 
+ The policy authors, reviewers, and approvers
+
+ 
+
+ 
+ The date on which it was approved, and the date when it should next be reviewed
+
+ 
+
+ 
+ A brief description of the service to give the reader context
+
+ 
+
+ 
+ The actions to be taken in response to budget exhaustion
+
+ 
+
+ 
+ A clear escalation path to follow if there is disagreement on the calculation or whether the agreed-upon actions are appropriate in the circumstances
+
+ 
+
+ 
+ Depending upon the audience’s level of error budget experience and expertise, it may be beneficial to include an overview of error budgets.
+
+ 
+
+
+
+See Appendix A for an example of an SLO document and an error budget policy.
+
+
+
+
+
+Dashboards and Reports
+
+
+In addition to the published SLO and error budget policy documents, it is useful to have reports and dashboards that provide in-time snapshots of the SLO compliance of your services, for communicating with other teams and for spotting problematic areas.
+
+
+The report in Figure 2-3 shows the overall compliance of several services: whether they met all of their quarterly SLOs for the previous year (the numbers in parentheses indicate the number of objectives that were met, and the total number of objectives), and whether their SLIs were trending upward or downward in relation to the previous quarter and the same quarter last year.
+
+
+
+Figure 2-3. SLO compliance report
+
+
+
+It is also useful to have dashboards showing SLI trends. These dashboards indicate if you are consuming budget at a higher-than-usual rate, or if there are patterns or trends you need to be aware of.
+
+
+The dashboard in Figure 2-4 shows the error budget for a single quarter, midway through that quarter. Here we see that a single event consumed around 15% of the error budget over the course of two days.
+
+
+
+Figure 2-4. Error budget dashboard
+
+
+
+Error budgets can be useful for quantifying these events—for example, “this outage consumed 30% of my quarterly error budget,” or “these are the top three incidents this quarter, ordered by how much error budget they consumed.”
+
+
+
+
+
+
+
+Continuous Improvement of SLO Targets
+
+
+Every service can benefit from continuous improvement. This is one of the central service goals in ITIL, for example.
+
+
+Before you can improve your SLO targets, you need a source of information about user satisfaction with your service. There are a huge range of options:
+
+
+
+ 
+ You can count outages that were discovered manually, posts on public forums, support tickets, and calls to customer service.
+
+ 
+
+ 
+ You can attempt to measure user sentiment on social media.
+
+ 
+
+ 
+ You can add code to your system to periodically sample user happiness.
+
+ 
+
+ 
+ You can conduct face-to-face user surveys and samples.
+
+ 
+
+
+
+The possibilities are endless, and the optimal method depends on your service. We recommend starting with a measurement that’s cheap to collect and iterating from that starting point. Asking your product manager to include reliability into their existing discussions with customers about pricing and functionality is an excellent place to start.
+
+
+
+Improving the Quality of Your SLO
+
+
+Count your manually detected outages. If you have support tickets, count those too. Look at periods when you had a known outage or incident. Check that these periods correlate with steep drops in error budget. Likewise, look at times when your SLIs indicate an issue, or your service fell out of SLO. Do these time periods correlate with known outages or an increase in support tickets? If you are familiar with statistical analysis, Spearman’s rank correlation coefficient can be a useful way to quantify this relationship.
+
+
+Figure 2-5 shows a graph of the number of support tickets raised per day versus the measured loss in our error budget on that day. While not all tickets are related to reliability issues, there is a correlation between tickets and error budget loss. We see two outliers: one day with only 5 tickets, where we lost 10% of our error budget, and one day with 40 tickets, on which we lost no error budget. Both warrant closer investigation.
+
+
+
+Figure 2-5. Graph showing the number of support tickets per day versus the budget loss on that day
+

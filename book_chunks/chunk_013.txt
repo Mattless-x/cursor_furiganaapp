@@ -1,0 +1,138 @@
+=== The Site Reliability Workbook ===
+=== Chunk 13/100 ===
+
+ed by lengthy operational requirements, while the ops team became frustrated when new code introduced new issues in production. As we swung wildly between these two goals, the ops and dev teams developed a frustrated and strained relationship. We wanted to reach a happier medium that better balanced the varying needs of the teams involved.
+
+
+We attempted to address the gaps in this traditional dichotomy in various ways over the course of five-plus years. After trying out a “You wrote it, you run it” (development) model, and a “You wrote it, we run it for you” (operations) model, we moved toward an SLO-centric SRE approach.
+
+
+So what motivated Evernote to move in this direction?
+
+
+At Evernote, we view the core disciplines of operations and development as separate professional tracks in which engineers can specialize. One track is concerned with the nearly 24/7 ongoing delivery of a service to customers. The other is concerned with the extension and evolution of that service to meet customer needs in the future. These two disciplines have moved toward each other in recent years as movements like SRE and DevOps emphasize software development as applied to operations. (This convergence has been furthered by advances in datacenter automation and the growth of public clouds, both of which give us a datacenter that can be fully controlled by software.) On the other side of the spectrum, full-stack ownership and continuous deployment are increasingly applied to software development.
+
+
+We were drawn to the SRE model because it fully embraces and accepts the differences between operations and development while encouraging teams to work toward a common goal. It does not try to transform operations engineers into application developers, or vice versa. Instead, it gives both a common frame of reference. In our experience, an error budget/SLO approach has led both teams to make similar decisions when presented with the same facts, as it removes a good deal of subjectivity from the conversation.
+
+
+
+
+
+Introduction of SLOs: A Journey in Progress
+
+
+The first part of our journey was the move from physical datacenters to Google Cloud Platform.1 Once the Evernote service was up and running on GCP and stabilized, we introduced SLOs. Our objectives here were twofold:
+
+
+
+ 
+ Align teams internally around Evernote SLOs, ensuring that all teams were working within the new framework.
+
+ 
+
+ 
+ Incorporate Evernote’s SLO into how we work with the Google Cloud team, who now had responsibility for our underlying infrastructure. Since we now had a new partner within the overall model, we needed to ensure the move to GCP did not dilute or mask our commitment to our users.
+
+ 
+
+
+
+After actively using SLOs for about nine months, Evernote is already on version 3 of its SLO practice!
+
+
+Before getting into the technical details of an SLO, it is important to start the conversation from your customers’ point of view: what promises are you trying to uphold? Similar to most services, Evernote has many features and options that our users put to use in a variety of creative ways. We wanted to ensure we initially focused on the most important and common customer need: the availability of the Evernote service for users to access and sync their content across multiple clients. Our SLO journey started from that goal. We kept our first pass simple by focusing on uptime. Using this simple first approach, we could clearly articulate what we were measuring, and how.
+
+
+Our first SLOs document contained the following:
+
+
+
+ A definition of the SLOs
+ This was an uptime measure: 99.95% uptime measured over a monthly window, set for certain services and methods. We chose this number based upon discussions with our internal customer support and product teams and—more importantly—user feedback. We deliberately chose to bind our SLOs to a calendar month versus a rolling period to keep us focused and organized when running service reviews.
+
+ What to measure, and how to measure it
+ 
+ 
+ What to measure
+ We specified a service endpoint we could call to test whether the service was functioning as expected. In our case, we have a status page built into our service that exercises most of our stack and returns a 200 status code if all is well.
+
+ How to measure
+ 
+ We wanted a prober that called the status page periodically. We wanted that prober to be located completely outside of and independent from our environment so we could test all our components, including our load balancing stack. Our goal here was to make sure that we were measuring any and all failures of both the GCP service and the Evernote application. However, we did not want random internet issues to trigger false positives. We chose to use a third-party company that specializes in building and running such probers. We selected Pingdom, but there are many others in the market. We conduct our measurements as follows:
+
+
+ 
+ 
+ Frequency of probe: We poll our frontend nodes every minute.
+
+ 
+
+ 
+ Location of probers: This setting is configurable; we currently use multiple probes in North America and Europe.
+
+ 
+
+ 
+ Definition of “down”: If a prober check fails, the node is marked as Unconfirmed Down and then a second geographically separate prober performs a check. If the second check fails, the node is marked down for SLO calculation purposes. The node will continue to be marked as down as long as consecutive probe requests register errors.
+
+ 
+
+ 
+ 
+ 
+ 
+ How to calculate SLOs from monitoring data
+ Finally, we carefully documented how we calculate the SLO from the raw data we received from Pingdom. For example, we specified how to account for maintenance windows: we could not assume that all of our hundreds of millions of users knew about our published maintenance windows. Uninformed users would therefore experience these windows as generic and unexplained downtime, so our SLO calculations treated maintenance as downtime.
+
+
+
+Once we defined our SLOs, we had to do something with them. We wanted the SLOs to drive software and operations changes that would make our customers happier and keep them happy. How best to do this?
+
+
+We use the SLO/error budget concept as a method to allocate resources going forward. For example, if we missed the SLO for last month, that behavior helps us prioritize relevant fixes, improvements, and bug fixes. We keep it simple: teams from both Evernote and Google conduct a monthly review of SLO performance. At this meeting, we review the SLO performance from the previous month and perform a deep dive on any outages. Based on this analysis of the past month, we set action items for improvements that may not have been captured through the regular root-cause-analysis process.
+
+
+Throughout this process, our guiding principle has been “Perfect is the enemy of good.” Even when SLOs aren’t perfect, they’re good enough to guide improvements over time. A “perfect” SLO would be one that measures every possible user interaction with our service and accounts for all edge cases. While this is a great idea on paper, it would take many months to achieve (if achieving perfection were even possible)—time which we could use to improve the service. Instead, we selected an initial SLO that covered most, but not all, user interactions, which was a good proxy for quality of service.
+
+
+Since we began, we have revised our SLOs twice, according to signals from both our internal service reviews and in response to customer-impacting outages. Because we weren’t aiming for perfect SLOs at the outset, we were comfortable with making changes to better align with the business. In addition to our monthly Evernote/Google review of SLO performance, we’ve settled on a six-month SLO review cycle, which strikes the right balance between changing SLOs too often and letting them become stale. In revising our SLOs, we’ve also learned that it’s important to balance what you would like to measure with what’s possible to measure.
+
+
+Since introducing SLOs, the relationship between our operations and development teams has subtly but markedly improved. The teams now have a common measure of success: removing the human interpretation of quality of service (QoS) has allowed both teams to maintain the same view and standards. To provide just one example, SLOs provided a common ground when we had to facilitate multiple releases in a compressed timeline in 2017. While we chased down a complex bug, product development requested that we apportion our normal weekly release over multiple separate windows, each of which would potentially impact customers. By applying an SLO calculation to the problem and removing human subjectivity from the scenario, we were able to better quantify customer impact and reduce our release windows from five to two to minimize customer pain. 
+
+
+
+
+
+Breaking Down the SLO Wall Between Customer and Cloud Provider
+
+
+A virtual wall between customer and cloud provider concerns might seem natural or inevitable.  While Google has SLOs and SLAs (service level agreements) for the GCP platforms we run Evernote on, Evernote has its own SLOs and SLAs. It’s not always expected that two such engineering teams would be informed about each other’s SLAs.
+
+
+Evernote never wanted such a wall. Of course, we could have engineered to a dividing wall, basing our SLOs and SLAs on the underlying GCP metrics. Instead, from the beginning, we wanted Google to understand which performance characteristics were most important to us, and why. We wanted to align Google’s objectives with ours, and for both companies to view Evernote’s reliability successes and failures as shared responsibilities. To achieve this, we needed a way to:
+
+
+
+ 
+ Align objectives
+
+ 
+
+ 
+ Ensure our partner (in this case, Google) really understood what’s important to us
+
+ 
+
+ 
+ Share both successes and failures
+
+ 
+
+
+
+Most service providers manage to the published SLO/SLAs for their cloud services. Working within this context is important, but it can’t holistically represent how well our service is running within the cloud provider’s environment.
+
+
+For example, a given cloud provider probably runs hundreds of thousands of virtual machines globally, which they manage for uptime and availability. GCP promises 99.95% availability for Compute Engine (i.e., its virtual machines). Even when GCP SLO graphs are green (i.e., above 99.95%), Evernote’s view of the same SLO might be very different: because our virtual machine footprint is only

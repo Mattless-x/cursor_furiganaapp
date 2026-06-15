@@ -1,0 +1,132 @@
+=== The Site Reliability Workbook ===
+=== Chunk 64/100 ===
+
+
+
+
+Escaping Simplicity
+
+
+Thus far, we’ve discussed reducing the configuration of a system to its simplest form. However, the configuration system may need to account for power users as well. To return to our tea analogy, what if we really need to steep the tea for a particular duration?
+
+
+One strategy to accommodate power users is to find the lowest common denominator of what regular users and power users require, and settle on that level of complexity as the default. The downside is that this decision impacts everyone; even the simplest use cases now need to be considered in low-level terms.
+
+
+By thinking about configuration in terms of optional overrides of default behavior, the user configures “green tea,” and then adds “steep the tea for five minutes.” In this model, the default configuration is still high-level and close to the user’s goals, but the user can fine-tune low-level aspects. This approach is not novel. We can draw parallels to high-level programming languages like C++ or Java, which enable programmers to include machine (or VM) instructions in code otherwise written in the high-level language. In some consumer software, we see screens with advanced options that can offer more fine-grained control than the typical view.
+
+
+It’s useful to think about optimizing for the sum of hours spent configuring across the organization. Consider not only the act of configuration itself, but also the decision paralysis users might experience when presented with many options, the time it takes to correct the configuration after taking a wrong turn, the slower rate of change due to lower confidence, and more. When you are considering configuration design alternatives, the option that accomplishes a complex configuration in fewer but significantly harder steps may be preferable if it makes supporting the most common use cases significantly easier.
+
+
+If you find that more than a small subset of your users need a complex configuration, you may have incorrectly identified the common use cases. If so, revisit the initial product assumptions for your system and conduct additional user research.
+
+
+
+
+
+
+
+Mechanics of Configuration
+
+
+Our discussion up to this point has covered configuration philosophy. This section shifts focus to the mechanics of how a user interacts with the configuration.
+
+
+
+Separate Configuration and Resulting Data
+
+
+Which language to store the configuration in is an inevitable question. You could choose to have pure data like in an INI, YAML, or XML file. Alternatively, the configuration could be stored in a higher-level language that allows for much more flexible configuration.
+
+
+Fundamentally, all questions the user is asked boil down to static information. This may include obviously static answers to questions like “How many threads should be used?” But even “What function should be used for every request?” is just a static reference to a function.
+
+
+To answer the age-old question of whether configuration is code or data, our experience has shown that having both code and data, but separating the two, is optimal. The system infrastructure should operate on plain static data, which can be in formats like Protocol Buffers, YAML, or JSON. This choice does not imply that the user needs to actually interact with pure data. Users can interact with a higher-level interface that generates this data. This data format can, however, be used by APIs that allow further stacking of systems and automation.
+
+
+This high-level interface can be almost anything. It can be a high-level language like Python-based Domain-Specific Language (DSL), Lua, or purpose-built languages, such as Jsonnet (which we will discuss in more detail in Chapter 15). We can think of such an interface as a compilation, similar to how we treat C++ code.4 The high-level interface might also be no language at all, with the configuration ingested by a web UI.
+
+
+Starting with a configuration UI that’s deliberately separated from its static data representation means the system has flexibility for deployment. Various organizations may have different cultural norms or product requirements (such as using specific languages within the company or needing to externalize configuration to end users), and a system this versatile can be adapted to support diverse configuration requirements. Such a system can also effortlessly support multiple languages.5 See Figure 14-2.
+
+
+This separation can be completely invisible to the user. The user’s common path may be to edit files in the configuration language while everything else happens behind the scenes. For example, once the user submits changes to the system, the newly stored configuration is automatically compiled into raw data.6
+
+
+
+Figure 14-2. Configuration flow with a separate configuration interface and configuration data infrastructure. Note the web UI typically also displays the current configuration, making the relationship bidirectional.
+
+
+
+Once the static configuration data is obtained, it can also be used in data analysis. For instance, if the generated configuration data is in JSON format, it can be loaded into PostgreSQL and analyzed with database queries. As the infrastructure owner, you can then quickly and easily query for which configuration parameters are being used and by whom. This query is useful for identifying features you can remove or measuring the impact of a buggy option.
+
+
+When consuming the final configuration data, you will find it useful to also store metadata about how the configuration was ingested. For example, if you know the data came from a configuration file in Jsonnet or you have the full path to the original before it was compiled into data, you can track down the configuration authors.
+
+
+It is also acceptable for the configuration language to be static data. For example, both your infrastructure and interface might use plain JSON. However, avoid tight coupling between the data format you use as the interface and the data format you use internally. For example, you may use a data structure internally that contains the data structure consumed from configuration. The internal data structure might also contain completely implementation-specific data that never needs to be surfaced outside of the system.
+
+
+
+
+
+Importance of Tooling
+
+
+Tooling can make the difference between a chaotic nightmare and a sustainable and scalable system, but it is often overlooked when configuration systems are designed. This section discusses the key tools that should be available for an optimal configuration system.
+
+
+
+Semantic validation
+
+
+While most languages offer syntax validation out of the box, don’t overlook semantic validation. Even if your configuration is syntactically valid, is it likely to do useful things? Or did the user reference a nonexistent directory (due to a typo), or need a thousand times more RAM than they actually have (because units aren’t what the user expected)?
+
+
+Validating that the configuration is semantically meaningful, to the maximum extent possible, can help prevent outages and decrease operational costs. For every possible misconfiguration, we should ask ourselves if we could prevent it at the moment the user commits the configuration, rather than after changes are submitted.
+
+
+
+
+
+Configuration syntax
+
+
+While it’s key to ensure that configuration accomplishes what the user wants, it is also important to remove mechanical obstacles. From a syntax perspective, the configuration language should offer the following:
+
+
+
+ Syntax highlighting in editors (used within the company)
+ Often, you’ve already solved this by reusing an existing language. However, domain-specific languages may have additional “syntactic sugar” that can benefit from specialized highlighting.
+
+ Linter
+ Use a linter to identify common inconsistencies in language use. Pylint is one popular language example.
+
+ Automatic syntax formatter
+ Built-in standardization minimizes relatively unimportant discussions about formatting and decreases cognitive load as contributors switch projects. Standard formatting may also allow for easier automatic editing, which is helpful in systems used broadly within a large organization. Examples of autoformatters in existing languages include clang-format7 and autopep8.
+
+
+
+These tools enable users to write and edit configuration with confidence that their syntax is correct.8 Incorrect indentation in whitespace-oriented configs can have potentially great consequences—some of which standard formatting can prevent.
+
+
+
+
+
+
+
+Ownership and Change Tracking
+
+
+Because configuration can potentially impact critical systems of companies and institutions, it’s important to ensure good user isolation, and to understand what changes happened in the system. As mentioned in Chapter 10, an effective postmortem culture avoids blaming individuals. However, it’s helpful both during an incident and while you’re conducting a postmortem to know who changed a configuration, and to understand how the configuration change impacted the system. This holds true whether the incident is due to an accident or a malicious actor.
+
+
+Each configuration snippet for the system should have a clear owner. For example, if you use configuration files, their directories might be owned by a single production group. If files in a directory can only have one owner, it’s much easier to track who makes changes.
+
+
+Versioning configuration, regardless of how it is performed, allows you to go back in time to see what the configuration looked like at any given point in time.  Checking configuration files into a versioning system, such as Subversion or Git, is a common practice nowadays, but this practice is equally important for configuration ingested by web UI or remote APIs. You may also wish to have tighter coupling between the configuration and the software being configured. By doing so, you can avoid inadvertently configuring features that are either not yet available or no longer supported in the software.
+
+
+On a related note, it is useful (and sometimes required) to log both changes to the configuration and the resulting application to the system. The simple act of committing a new version of a configuration does not always mean that the configuration is directly applied (more on that later). When a system configuration change is suspected as the culprit during an incident response, it is useful to be able to quickly determine the full set of configuration edit

@@ -1,0 +1,209 @@
+=== The Site Reliability Workbook ===
+=== Chunk 52/100 ===
+
+, and that the data is recent. Therefore, when iterating on the design, we will consider our requirements in terms of SLOs (see Chapter 2 for more details):
+
+
+
+ 
+ 99.9% of dashboard queries complete in < 1 second.
+
+ 
+
+ 
+ 99.9% of the time, the CTR data displayed is less than 5 minutes old.
+
+ 
+
+
+
+These SLOs provide a reasonable goal that we should be able to consistently meet. They also provide an error budget (see Chapter 4 in Site Reliability Engineering), which we will compare our solution against in each iteration of the design.
+
+
+We aim to create a system that can meet our SLOs and also support millions of advertisers who want to see their CTRs on a dashboard. For transaction rates, let’s assume 500,000 search queries per second and 10,000 ad clicks per second.
+
+
+
+
+
+One Machine
+
+
+The simplest starting point is to consider running our entire application on a single computer.
+
+
+For every web search query, we log:
+
+
+
+ time
+ The time the query occurred
+
+ query_id
+ A unique query identifier (query ID)
+
+ search_term
+ The query content
+
+ ad_id
+ The ad IDs of all the AdWords advertisements shown for the search
+
+
+
+Together, this information forms the query log. Every time a user clicks an ad, we log the time of the click, the query ID, and the ad ID in the click log.
+
+
+You may be wondering why we don’t simply add the search_term to the click log to reduce complexity. In the arbitrarily reduced scope of our example, this could be feasible. However, in practice, CTR is actually only one of many insights calculated from these logs. Click logs are derived from URLs, which have inherent size limitations, making the separate query log a more scalable solution. Instead of proving this point by adding extra CTR-like requirements to the exercise, we will simply acknowledge this assumption and move forward.
+
+
+Displaying a dashboard requires the data from both logs. We need to be able to show that we can achieve our SLO of displaying fresh data on the dashboard in under a second. Achieving this SLO requires that the speed of calculating a CTR remains constant as the system handles large amounts of clicks and queries.
+
+
+To meet our SLO of displaying our dashboard in under one second, we need quick lookups of the number of clicked and shown query_ids per search_term for a given ad_id. We can extract the breakdown of shown query_ids per search_term and ad_id from the query log. A CTR dashboard needs all records from both the query log and the click log for the ad_ids.
+
+
+If we have more than a few advertisers, scanning through the query log and the click log to generate the dashboard will be very inefficient. Therefore, our design calls for our one machine to create an appropriate data structure to allow fast CTR calculations as it receives the logs. On a single machine, using an SQL database with indexes on query_id and search_term should be able to provide answers in under a second. By joining these logs on query_id and grouping by search_term, we can report the CTR for each search.
+
+
+
+Calculations
+
+
+We need to calculate how many resources we need to parse all these logs. To determine our scaling limits, we need to make some assumptions, starting with the size of the query log:
+
+
+
+ time
+ 64-bit integer, 8 bytes
+
+ query_id
+ 64-bit integer, 8 bytes
+
+ ad_id
+ Three 64-bit integers, 8 bytes
+
+ search_term
+ A long string, up to 500 bytes
+
+ Other metadata
+ 500–1,000 bytes of information, such as which machine served the ads, which language the search was in, and how many results the search term returned
+
+
+
+To make sure we don’t prematurely hit a limit, we aggressively round up to treat each query log entry as 2 KB. Click log volume should be considerably smaller than query log volume: because the average CTR is 2% (10,000 clicks / 500,000 queries), the click log will have 2% as many records as the query log. Remember that we chose big numbers to illustrate that these principles scale to arbitrarily large implementations. These estimations seem large because they’re supposed to be.
+
+
+Finally, we can use scientific notation to limit errors caused by arithmetic on inconsistent units. The volume of query logs generated in a 24-hour period will be:
+
+
+
+ 
+ (5 × 105 queries/sec) × (8.64 × 104 seconds/day) × (2 × 103 bytes) = 86.4 TB/day
+
+ 
+
+
+
+Because we receive 2% as many clicks as queries, and we know that our database indexes will add some reasonable amount of overhead, we can round our 86.4 TB/day up to 100 TB of space required to store one day’s worth of log data.
+
+
+With an aggregate storage requirement of ~100 TB, we have some new assumptions to make. Does this design still work with a single machine? While it is possible to attach 100 TB of disks to a single machine, we’ll likely be limited by the machine’s ability to read from and write to disk.
+
+
+For example, a common 4 TB HDD might be able to sustain 200 input/output operations per second (IOPS). If every log entry can be stored and indexed in an average of one disk write per log entry, we see that IOPS is a limiting factor for our query logs:
+
+
+
+ 
+ (5 × 105 queries/sec) / (200 IOPS/disk) = 2.5 × 103 disks or 2,500 disks
+
+ 
+
+
+
+Even if we can batch our queries in a 10:1 ratio to limit the operations, in a best-case scenario we’d need several hundred HDDs. Considering that query log writes are only one component of the design’s IO requirements, we need to use a solution that handles high IOPS better than traditional HDDs.
+
+
+For simplicity’s sake, we’ll move straight to evaluating RAM and skip the evaluation of other storage media, such as solid state disk (SSD). A single machine can’t handle a 100 TB footprint entirely in RAM: assuming we have a standard machine footprint of 16 cores, 64 GB RAM, and 1 Gbps network throughput available, we’ll need:
+
+
+
+ 
+ (100 TB) / (64 GB RAM/machine) = 1,563 machines
+
+ 
+
+
+
+
+
+
+Evaluation
+
+
+Ignoring our calculations for a moment and imagining we could fit this design in a single machine, would we actually want to? If we test our design by asking what happens when this component fails, we identify a long list of single points of failure (e.g., CPU, memory, storage, power, network, cooling). Can we reasonably support our SLOs if one of these components fails? Almost certainly not—even a simple power cycle would significantly impact our users.
+
+
+Returning to our calculations, our one-machine design once again looks unfeasible, but this step hasn’t been a waste of time. We’ve discovered valuable information about how to reason about the constraints of the system and its initial requirements. We need to evolve our design to use more than one machine.
+
+
+
+
+
+
+
+Distributed System
+
+
+The search_terms we need are in the query log, and the ad_ids are in the click log.  Now that we know we’ll need multiple machines, what’s the best design to join them?
+
+
+
+MapReduce
+
+
+We can process and join the logs with a MapReduce. We can periodically grab the accumulated query logs and click logs, and the MapReduce will produce a data set organized by ad_id that displays the number of clicks each search_term received.
+
+
+MapReduce works as a batch processor: its inputs are a large data set, and it can use many machines to process that data via workers and produce a result. Once all machines have processed their data, their output can be combined—the MapReduce can directly create summaries of every CTR for every AdWords ad and search term. We can use this data to create the dashboards we need.
+
+
+
+Evaluation
+
+
+MapReduce is a widely used model of computation that we are confident will scale horizontally. No matter how big our query log and click log inputs are, adding more machines will always allow the process to complete successfully without running out of disk space or RAM.
+
+
+Unfortunately, this type of batch process can’t meet our SLO of joined log availability within 5 minutes of logs being received. To serve results within 5 minutes, we’d need to run MapReduce jobs in small batches—just a few minutes of logs at a time.
+
+
+The arbitrary and nonoverlapping nature of the batches makes small batches impractical. If a logged query is in batch 1, and its click is in batch 2, the click and query will never be joined. While MapReduce handles self-contained batches well, it’s not optimized for this kind of problem. At this point, we could try to figure out potential workarounds using MapReduce. For simplicity’s sake, however, we’ll move on to examine another solution.
+
+
+
+
+
+
+
+LogJoiner
+
+
+The number of ads that users click is significantly smaller than the number of ads served. Intuitively, we need to focus on scaling the larger of the two: query logs. We do this by introducing a new distributed system component.
+
+
+Rather than looking for the query_id in small batches, as in our MapReduce design, what if we created a store of all queries that we can look up by query_id on demand? We’ll call it the QueryStore. It holds the full content of the query logs, keyed by query_id. To avoid repetition, we’ll assume that our calculations from the one-machine design will apply to the QueryStore and we’ll limit the review of QueryStore to what we’ve already covered. For a deeper discussion on how a component like this might work, we recommend reading about Bigtable.1
+
+
+Because click logs also have the query_id, the scale of our processing loop is now much smaller: it only needs to loop over the click logs and pull in the specific queries referenced. We’ll call this component the LogJoiner.
+
+
+LogJoiner takes a continuous stream of data from the click logs, joins it with the data in QueryStore, and then stores that information, organized by ad_id. Once the queries that were clicked on are stored and indexed by ad_id, we have half the data required to generate the CTR dashboard. We will call this the ClickMap, because it maps from ad_id to the clicks.
+
+
+If we don’t find a query for a click (there may be a slowdown in receiving the query logs), we put it aside for some time and retry, up to a time limit. If we can’t find a query for it by that time limit, we discard that click.
+
+
+The CTR dashboard needs two components for each ad_id and search_term pair: the number of impressions, and the number of ads clicked on. ClickMap needs a partner to hold the queries, organized by ad_id. We’ll call this QueryMap. QueryMap is directly fed all the data from the query log, and also indexes entries by ad_id.
+
+

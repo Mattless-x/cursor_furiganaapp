@@ -1,0 +1,252 @@
+=== The Site Reliability Workbook ===
+=== Chunk 53/100 ===
+
+Figure 12-1 depicts how data flows through the system.
+
+
+The LogJoiner design introduces several new components: LogJoiner, QueryStore, ClickMap, and QueryMap. We need to make sure these components can scale.
+
+
+
+Figure 12-1. Basic LogJoiner design; the click data is processed and stored so the dashboard can retrieve it
+
+
+
+
+Calculations
+
+
+From the calculations we performed in previous iterations, we know the QueryStore will be around 100 TB of data for a day of logs.  We can delete data that’s too old to be of value.
+
+
+The LogJoiner should process clicks as they come in and retrieve the corresponding query logs from the QueryStore.
+
+
+The amount of network throughput LogJoiner needs to process the logs is based on how many clicks per second we have in our logs, multiplied by the 2 KB record size:
+
+
+
+ 
+ (104 clicks/sec) × (2 × 103 bytes) = 2 × 107 = 20 MB/sec = 160 Mbps
+
+ 
+
+
+
+The QueryStore lookups incur additional network usage. For each click log record, we look up the query_id and return a full log record:
+
+
+
+ 
+ (104 clicks/sec) × (8 bytes) = 8 × 104 = 80 KB/sec = 640 Kbps
+
+ 
+
+ 
+ (104 clicks/sec) * (2 × 103 bytes) = 2 × 107 = 20 MB/sec = 160 Mbps
+
+ 
+
+
+
+LogJoiner will also send results to ClickMap. We need to store the query_id, ad_id, and time. search_term. time and query_id are both 64-bit integers, so that data will be less than 1 KB:
+
+
+
+ 
+ (104 clicks/sec) × (103 bytes) = 107 = 10 MB/sec = 80 Mbps
+
+ 
+
+
+
+An aggregate of ~400 Mbps is a manageable rate of data transfer for our machines.
+
+
+The ClickMap has to store the time and the query_id for each click, but does not need any additional metadata. We’ll ignore ad_id and search_term because they are a small linear factor (e.g., number of advertisers × number of ads × 8 bytes). Even 10 million advertisers with 10 ads each is only ~800 MB. A day’s worth of ClickMap is:
+
+
+
+ 
+ (104 clicks/sec) × (8.64 × 104 seconds/day) × (8 bytes + 8 bytes) = 1.4 × 1010 = 14 GB/day for ClickMap
+
+ 
+
+
+
+We’ll round ClickMap up to 20 GB/day to account for any overhead and our ad_ids.
+
+
+As we fill out the QueryMap, we need to store the query_id for each ad that is shown. Our storage need increases because there are potentially three ad_ids that could be clicked on for each search query, so we’ll need to record the query_id in up to three entries:
+
+
+
+ 
+ 3 × (5 × 105 queries/sec) × (8.64 × 104 seconds/day) × (8 bytes + 8 bytes) = 2 × 1012 = 2 TB/day for QueryMap
+
+ 
+
+
+
+2 TB is small enough to be hosted on a single machine using HDDs, but we know from our one-machine iteration that the individual small writes are too frequent to store on a hard drive. While we could calculate the impact of using higher IOPS drives (e.g., SSD), our exercise is focused on demonstrating that the system can scale to an arbitrarily large size. In this case, we need to design around a single machine’s IO limitations. Therefore, the next step in scaling the design is to shard the inputs and outputs: to divide the incoming query logs and click logs into multiple streams.
+
+
+
+
+
+
+
+Sharded LogJoiner
+
+
+Our goal in this iteration is to run multiple LogJoiner instances, each on a different shard of the data.2 To this end, we need to think about several factors:
+
+
+
+ Data management
+ To join the query logs and click logs, we must match each click log record with its corresponding query log record on the query_id. The design should prevent network and disk throughput from constraining our design as we scale.
+
+ Reliability
+ We know a machine can fail at any time. When a machine running LogJoiner fails, how do we make sure we don’t lose the work that was in progress?
+
+ Efficiency
+ Can we scale up without being wasteful? We need to use the minimum resources that meet our data management and reliability concerns.
+
+
+
+Our LogJoiner design showed that we can join our query logs and click logs, but the resulting volume of data is very large. If we divide the work into shards based on query_id, we can run multiple LogJoiners in parallel.
+
+
+Provided a reasonable number of LogJoiner instances, if we distribute the logs evenly, each instance receives only a trickle of information over the network. As the flow of clicks increases, we scale horizontally by adding more LogJoiner instances, instead of scaling vertically by using more CPU and RAM.
+
+
+As shown in Figure 12-2, so that the LogJoiners receive the right messages, we introduce a component called a log sharder, which will direct each log entry to the correct destination. For every record, our click log sharders do the following:
+
+
+
+ 
+ Hash the record’s query_id.
+
+ 
+
+ 
+ Modulo the result with N (the number of shards) and add 1 to arrive at a number between 1 and N.
+
+ 
+
+ 
+ Send the record to the shard number in step 2.
+
+ 
+
+
+
+
+Figure 12-2. How should sharding work?
+
+
+
+Now each LogJoiner will get a consistent subset of the incoming logs broken up by query_id, instead of the full click log.
+
+
+The QueryMap needs to be sharded as well. We know that it will take many hard drives to sustain the IOPS required of QueryMap, and that the size of one day’s QueryMap (2 TB) is too large for our 64 GB machines to store in RAM. However, instead of sharding by query_id like the LogJoiner, we will shard on ad_id. The ad_id is known before any read or write, so using the same hashing approach as the LogJoiner and CTR dashboard will provide a consistent view of the data.
+
+
+To keep implementations consistent, we can reuse the same log sharder design for the ClickMap as the QueryMap, since the ClickMap is smaller than the QueryMap.
+
+
+Now that we know our system will scale, we can move on to address the system’s reliability. Our design must be resilient to LogJoiner failures. If a LogJoiner fails after receiving log messages but before joining them, all its work must be redone. This delays the arrival of accurate data to the dashboard, which will affect our SLO.
+
+
+If our log sharder process sends duplicate log entries to two shards, the system can continue to perform at full speed and process accurate results even when a LogJoiner fails (likely because the machine it is on fails).
+
+
+By replicating the work in this way, we reduce (but do not eliminate) the chance of losing those joined logs. Two shards might break at the same time and lose the joined logs. By distributing the workload to ensure no duplicate shards land on the same machine, we can mitigate much of that risk. If two machines fail concurrently and we lose both copies of the shard, the system’s error budget (see Chapter 4 from the first SRE book) can cover the remaining risk. When a disaster does occur, we can reprocess the logs. The dashboard will show only data that’s a bit older than 5 minutes for a brief window of time.
+
+
+Figure 12-3 shows our design for a shard and its replica, where the LogJoiner, ClickMap, and QueryMap are built on both shards.
+
+
+From the joined logs, we can construct a ClickMap on each of the LogJoiner machines. To display our user dashboards, all ClickMaps need to be combined and queried.
+
+
+
+Evaluation
+
+
+Hosting the sharded components in one datacenter creates a single point of failure: if either the right unlucky pair of machines or the datacenter is disconnected, we lose all the ClickMap work, and user dashboards stop working entirely! We need to evolve our design to use more than one datacenter.
+
+
+
+
+
+Figure 12-3. Sharding of logs with same query_id to duplicate shards
+
+
+
+
+
+
+Multidatacenter
+
+
+Duplicating data across datacenters in different geographic locations allows our serving infrastructure to withstand catastrophic failures. If one datacenter is down (e.g., because of a multiday power or network outage), we can fail over to another datacenter. For failover to work, ClickMap data must be available in all datacenters where the system is deployed.
+
+
+Is such a ClickMap even possible? We don’t want to multiply our compute requirements by the number of datacenters, but how can we efficiently synchronize work between sites to ensure sufficient replication without creating unnecessary duplication?
+
+
+We’ve just described an example of the well-known consensus problem in distributed systems engineering. There are a number of complex algorithms for solving this problem, but the basic idea is:
+
+
+
+ 
+ Make three or five replicas of the service you want to share (like ClickMap).
+
+ 
+
+ 
+ Have the replicas use a consensus algorithm such as Paxos to ensure that we can reliably store the state of the calculations if a datacenter-sized failure occurs.
+
+ 
+
+ 
+ Implement at least one network round-trip time between the participating nodes to accept a write operation. This requirement places a limit on the sequential throughput for the system. We can still parallelize some of the writes to the distributed consensus-based map.
+
+ 
+
+
+
+Following the steps just listed, the multidatacenter design now seems workable in principle. Will it also work in practice? What types of resources do we need, and how many of them do we need?
+
+
+
+Calculations
+
+
+The latency of executing the Paxos algorithm with fault-isolated datacenters means that each operation needs roughly 25 milliseconds to complete. This latency assumption is based upon datacenters at least a few hundred kilometers apart. Therefore, in terms of sequential processes, we can only perform one operation per 25 milliseconds or 40 operations per second. If we need to perform sequential processes 104 times per second (click logs), we need at least 250 processes per datacenter, sharded by ad_id, for the Paxos operations. In practice, we’d want to add more processes to increase parallelism—to handle accumulated backlog after any downtime or traffic spikes.
+
+
+Building on our previous calculations for ClickMap and QueryMap, and using the estimate of 40 sequential operations per second, how many new machines do we need for our multidatacenter design?
+
+
+Because our sharded LogJoiner design introduces a replica for each log record, we’ve doubled the number of transactions per second to create the ClickMap and QueryMap: 20,000 clicks/second and 1,000,000 queries/second.
+
+
+We can calculate the minimum number of processes, or tasks, required by dividing the total queries per second by our maximum operations per second:
+
+
+
+ 
+ (1.02 × 106 queries/sec) / (40 operations/sec) = 25,500 tasks
+
+ 
+
+
+
+The amount of memory for each task (two copies of 2 TB QueryMap):
+
+
+
+ 
+ 

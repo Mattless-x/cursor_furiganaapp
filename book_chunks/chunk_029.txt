@@ -1,0 +1,183 @@
+=== The Site Reliability Workbook ===
+=== Chunk 29/100 ===
+
+gy.
+6 A line card is a modular component that usually provides multiple interfaces to the network. It is seated in the backplane of a chassis along with other line cards and components. Modular network switches consist of a chassis that includes a backplane, power entry modules, control card module, and one or more line cards. Each line card supports network connections either to machines or other line cards (in other switches). As with a USB network interface adapter, you can replace any line card without powering down the whole switch, provided the line card has been “drained,” meaning that the other interfaces have been told to stop sending traffic to it.
+7 Bit error rate test: check for unhealthy links before restoring service.
+8 Check for miscabled ports.
+9 Piper is Google’s internal version control system. For more information, see Rachel Potvin and Josh Levenberg, “Why Google Stores Billions of Lines of Code in a Single Repository,” Communications of the ACM 59, no. 7 (2016): 78–87, http://bit.ly/2J4jgMi.
+10 Google also has scalable self-service Git hosting for code that doesn’t live in Piper.
+11 Beyond Corp is an initiative to move from a traditional perimeter-based security model to a cryptographic identity-based model. When a Google laptop connects to an internal Google service, the service verifies trust through a combination of a cryptographic certificate identifying the laptop, a second factor owned by the user (such as a USB security key), the client device config/state, and the user’s credentials.
+12 x20 is an internal globally shared, highly available filesystem with POSIX-like filesystem semantics.
+
+Simplicity
+
+Chapter 7. Simplicity
+
+
+By John Lunney, Robert van Gent, and Scott Ritchie
+ with Diane Bates and Niall Richard Murphy
+
+
+
+A complex system that works is invariably found to have evolved from a simple system that worked.
+
+
+Gall’s Law
+
+
+
+Simplicity is an important goal for SREs, as it strongly correlates with reliability: simple software breaks less often and is easier and faster to fix when it does break. Simple systems are easier to understand, easier to maintain, and easier to test.
+
+
+For SREs, simplicity is an end-to-end goal: it should extend beyond the code itself to the system architecture and the tools and processes used to manage the software lifecycle. This chapter explores some examples that demonstrate how SREs can measure, think about, and encourage simplicity.
+
+
+
+Measuring Complexity
+
+
+Measuring the complexity of software systems is not an absolute science. There are a number of ways to measure software code complexity, most of which are quite objective.1 Perhaps the best-known and most widely available standard is cyclomatic code complexity, which measures the number of distinct code paths through a specific set of statements. For example, a block of code with no loops or conditionals has a cyclomatic complexity number (CCN) of 1. The software community is actually quite good at measuring code complexity, and there are measurement tools for a number of integrated development environments (including Visual Studio, Eclipse, and IntelliJ). We’re less adept at understanding whether the resulting measured complexity is necessary or accidental, how the complexity of one method might influence a larger system, and which approaches are best for refactoring.
+
+
+On the other hand, formal methodologies for measuring system complexity are rare.2 You might be tempted to try a CCN-type approach of counting the number of distinct entities (e.g., microservices) and possible communication paths between them. However, for most sizable systems, that number can grow hopelessly large very quickly.
+
+
+Some more practical proxies for systems-level complexity include:
+
+
+
+ Training time
+ How long does it take a new team member to go on-call? Poor or missing documentation can be a significant source of subjective complexity.
+
+ Explanation time
+ How long does it take to explain a comprehensive high-level view of the service to a new team member (e.g., diagram the system architecture on a whiteboard and explain the functionality and dependencies of each component)?
+
+ Administrative diversity
+ How many ways are there to configure similar settings in different parts of the system? Is configuration stored in a centralized place, or in multiple locations?
+
+ Diversity of deployed configurations
+ How many unique configurations are deployed in production (including binaries, binary versions, flags, and environments)?
+
+ Age
+ How old is the system? Hyrum’s Law states that over time, the users of an API depend on every aspect of its implementation, resulting in fragile and unpredictable behaviors.
+
+
+
+While measuring complexity is occasionally worthwhile, it’s difficult. However, there seems to be no serious opposition to the observations that:
+
+
+
+ 
+ In general, complexity will increase in living software systems unless there is a countervailing effort.
+
+ 
+
+ 
+ Providing that effort is a worthwhile thing to do.
+
+ 
+
+
+
+
+
+
+Simplicity Is End-to-End, and SREs Are Good for That
+
+
+Generally, production systems are not designed in a holistic fashion; rather, they grow organically. They accumulate components and connections over time as teams add new features and launch new products. While a single change might be relatively simple, every change impacts the components around it. Therefore, overall complexity can quickly become overwhelming. For example, adding retries in one component might overload a database and destabilize the whole system, or make it harder to reason about the path a given query follows through the system.
+
+
+Frequently, the cost of complexity does not directly affect the individual, team, or role that introduces it—in economic terms, complexity is an externality. Instead, complexity impacts those who continue to work in and around it. Thus, it is important to have a champion for end-to-end system simplicity.
+
+
+SREs are a natural fit for this role because their work requires them to treat the system as a whole.3 In addition to supporting their own services, SREs must also have insight into the systems their service interacts with. Google’s product development teams often don’t have visibility on production-wide issues, so they find it valuable to consult SREs for advice on the design and operation of their systems.
+
+
+Note
+Reader action: Before an engineer goes on-call for the first time, encourage them to draw (and redraw) system diagrams. Keep a canonical set of diagrams in your documentation: they’re useful to new engineers and help more experienced engineers keep up with changes.
+
+
+
+
+In our experience, product developers usually end up working in a narrow subsystem or component. As a result, they don’t have a mental model for the overall system, and their teams don’t create system-level architecture diagrams. These diagrams are useful because they help team members visualize system interactions and articulate issues using a common vocabulary. More often than not, we find the SRE team for the service draws the system-level architecture diagrams.
+
+
+Note
+Reader action: Ensure that an SRE reviews all major design docs, and that the team documents show how the new design affects the system architecture. If a design adds complexity, the SRE might be able to suggest alternatives that simplify the system.
+
+
+
+
+
+Case Study 1: End-to-End API Simplicity
+
+
+
+Background
+
+
+In a previous role, one of the chapter authors worked at a startup that used a key/value bag data structure in its core libraries. RPCs (remote procedure calls) took a bag and returned a bag; actual parameters were stored as key/value pairs inside the bag. The core libraries supported common operations on bags, such as serialization, encryption, and logging. All of the core libraries and APIs were extremely simple and flexible—success, right?
+
+
+Sadly, no: the clients of the libraries ended up paying a penalty for the abstract nature of the core APIs. The set of keys and values (and value types) needed to be carefully documented for each service, but usually weren’t. In addition, maintaining backward/forward compatibility became difficult as parameters were added, removed, or changed over time.
+
+
+
+
+
+Lessons learned
+
+
+Structured data types like Google’s Protocol Buffers or Apache Thrift might seem more complex than their abstract general-purpose alternatives, but they result in simpler end-to-end solutions because they force upfront design decisions and documentation. 
+
+
+
+
+
+
+
+Case Study 2: Project Lifecycle Complexity
+
+
+When you review the tangled spaghetti of your existing system, it might be tempting to replace it wholesale with a new, clean, simple system that solves the same problem. Unfortunately, the cost of creating a new system while maintaining the current one might not be worthwhile.
+
+
+
+Background
+
+
+Borg is Google’s internal container management system. It runs huge numbers of Linux containers and has a wide variety of usage patterns: batch versus production, pipelines versus servers, and more. Over the years, Borg and its surrounding ecosystem grew as hardware changed, features were added, and its scale increased.
+
+
+Omega was intended to be a more principled, cleaner version of Borg that supported the same use cases. However, the planned switch from Borg to Omega had a few serious problems:
+
+
+
+ 
+ Borg continued to evolve as Omega was developed, so Omega was always chasing a moving target.
+
+ 
+
+ 
+ Early estimates of the difficulty of improving Borg proved overly pessimistic, while the expectations for Omega proved overly optimistic (in practice, the grass isn’t always greener).
+
+ 
+
+ 
+ We didn’t fully appreciate how difficult it would be to migrate from Borg to Omega. Millions of lines of configuration code across thousands of services and many SRE teams meant that the migration would be extremely costly in terms of engineering and calendar time. During the migration period, which would likely take years, we’d have to support and maintain both systems.
+
+ 
+
+
+
+
+
+
+What we decided to do
+
+
+Eventually, we fed some of the ideas that emerged while designing Omega back into Borg. We also used many of Omega’s concepts to jump-start Kubernetes, an open source container management system.
+
+

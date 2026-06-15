@@ -1,0 +1,335 @@
+=== The Site Reliability Workbook ===
+=== Chunk 9/100 ===
+
+roportion of jobs that processed above some target amount of data.
+
+ For streaming processing, the proportion of incoming records that were successfully processed within some time window.
+ 
+
+ 
+ Storage
+ Durability
+ The proportion of records written that can be successfully read. Take particular care with durability SLIs: the data that the user wants may be only a small portion of the data that is stored. For example, if you have 1 billion records for the previous 10 years, but the user wants only the records from today (which are unavailable), then they will be unhappy even though almost all of their data is readable.
+ 
+
+ 
+
+
+
+Moving from SLI Specification to SLI Implementation
+
+
+Now that we know our SLI specifications, we need to start thinking about how to implement them.
+
+
+For your first SLIs, choose something that requires a minimum of engineering work. If your web server logs are already available, but setting up probes would take weeks and instrumenting your JavaScript would take months, use the logs.
+
+
+You need enough information to measure the SLI: for availability, you need the success/failure status; for slow requests, you need the time taken to serve the request. You may need to reconfigure your web server to record this information. If you’re using a cloud-based service, some of this information may already be available in a monitoring dashboard.
+
+
+There are various options for SLI implementations for our example architecture, each with its own pros and cons. The following sections detail SLIs for the three types of components in our system.
+
+
+
+API and HTTP server availability and latency
+
+
+For all of the considered SLI implementations, we base the response success on the HTTP status code. 5XX responses count against SLO, while all other requests are considered successful. Our availability SLI is the proportion of successful requests, and our latency SLIs are the proportion of requests that are faster than defined thresholds.
+
+
+Your SLIs should be specific and measurable. To summarize the list of potential candidates provided in “What to Measure: Using SLIs”, your SLIs can use one or more of the following sources:
+
+
+
+ 
+ Application server logs
+
+ 
+
+ 
+ Load balancer monitoring
+
+ 
+
+ 
+ Black-box monitoring
+
+ 
+
+ 
+ Client-side instrumentation
+
+ 
+
+
+
+Our example uses the load balancer monitoring, as the metrics are already available and provide SLIs that are closer to the user’s experience than those from the application server’s logs.
+
+
+
+
+
+Pipeline freshness, coverage, and correctness
+
+
+When our pipeline updates the league table, it records a watermark containing the timestamp of when the data was updated. Some example SLI implementations:
+
+
+
+ 
+ Run a periodic query across the league table, counting the total number of fresh records and the total number of records. This will treat each stale record as equally important, regardless of how many users saw the data.
+
+ 
+
+ 
+ Make all clients of the league table check the watermark when they request fresh data and increment a metric counter saying that data was requested. Increment another counter if the data was fresher than a predefined threshold.
+
+ 
+
+
+
+From these two options, our example uses the client-side implementation, as it gives SLIs that are much more closely correlated with user experience and are straightforward to add.
+
+
+To calculate our coverage SLI, our pipeline exports the number of records that it should have processed and the number of records that it successfully processed. This metric may miss records that our pipeline did not know about due to misconfiguration.
+
+
+We have a couple potential approaches to measure correctness:
+
+
+
+ 
+ Inject data with known outputs into the system, and count the proportion of times that the output matches our expectations.
+
+ 
+
+ 
+ Use a method to calculate correct output based on input that is distinct from our pipeline itself (and likely more expensive, and therefore not suitable for our pipeline). Use this to sample input/output pairs, and count the proportion of correct output records. This methodology assumes that creating such a system is both possible and practical.
+
+ 
+
+
+
+Our example bases its correctness SLI on some manually curated data in the game state database, with known good outputs that are tested every time the pipeline runs. Our SLI is the proportion of correct entries for our test data. In order for this SLI to be representative of the actual user experience, we need to make sure that our manually curated data is representative of real-world data.
+
+
+
+
+
+
+
+Measuring the SLIs
+
+
+Figure 2-2 shows how our white-box monitoring system collects metrics from the various components of the example application.
+
+
+
+Figure 2-2. How our monitoring system collects SLI metrics
+
+
+
+Let’s walk through an example of using metrics from our monitoring system to calculate our starter SLOs. While our example uses availability and latency metrics, the same principles apply to all other potential SLOs. For a full list of the metrics that our system uses, see Appendix A. All of our examples use Prometheus notation.
+
+
+
+Load balancer metrics
+
+
+Total requests by backend ("api" or "web") and response code:
+
+
+
+http_requests_total{host="api", status="500"}
+
+
+Total latency, as a cumulative histogram; each bucket counts the number of requests that took less than or equal to that time:
+
+
+
+http_request_duration_seconds{host="api", le="0.1"}
+http_request_duration_seconds{host="api", le="0.2"}
+http_request_duration_seconds{host="api", le="0.4"}
+
+
+Generally speaking, it is better to count the slow requests than to approximate them with a histogram. But, because that information isn’t available, we use the histogram provided by our monitoring system. Another approach would be to base explicit slow request counts on the various slowness thresholds in the load balancer’s configuration (e.g., for thresholds of 100 ms and 500 ms). This strategy would provide more accurate numbers but require more configuration, which makes changing the thresholds retroactively harder.
+
+
+
+http_request_duration_seconds{host="api", le="0.1"}
+http_request_duration_seconds{host="api", le="0.5"}
+
+
+
+
+
+Calculating the SLIs
+
+
+Using the preceding metrics, we can calculate our current SLIs over the previous seven days, as shown in Table 2-2.
+
+
+
+ Table 2-2. Calculations for SLIs over the previous seven days
+ 
+ 
+  
+  
+ 
+
+ 
+ 
+ 
+ Availability
+ 
+ 
+sum(rate(http_requests_total{host="api", status!~"5.."}[7d]))
+/
+sum(rate(http_requests_total{host="api"}[7d])
+
+ 
+ 
+
+ 
+ Latency
+ 
+ 
+histogram_quantile(0.9, rate(http_request_duration_seconds_bucket[7d]))
+histogram_quantile(0.99, rate(http_request_duration_seconds_bucket[7d]))
+
+ 
+ 
+
+ 
+
+
+
+
+
+
+
+Using the SLIs to Calculate Starter SLOs
+
+
+We can round down these SLIs to manageable numbers (e.g., two significant figures of availability, or up to 50 ms5 of latency) to obtain our starting SLOs.
+
+
+For example, over four weeks, the API metrics show:
+
+
+
+ 
+ Total requests: 3,663,253
+
+ 
+
+ 
+ Total successful requests: 3,557,865 (97.123%)
+
+ 
+
+ 
+ 90th percentile latency: 432 ms
+
+ 
+
+ 
+ 99th percentile latency: 891 ms
+
+ 
+
+
+
+We repeat this process for the other SLIs, and create a proposed SLO for the API, shown in Table 2-3.
+
+
+
+ Table 2-3. Proposed SLOs for the API
+ 
+ 
+ SLO type
+ Objective
+ 
+
+ 
+ 
+ 
+ Availability
+ 97%
+ 
+
+ 
+ Latency
+ 90% of requests < 450 ms
+ 
+
+ 
+ Latency
+ 99% of requests < 900 ms
+ 
+
+ 
+
+
+Appendix A provides a full example of an SLO document. This document includes SLI implementations, which we omitted here for brevity.
+
+
+Based upon this proposed SLI, we can calculate our error budget over those four weeks, as shown in Table 2-4.
+
+
+
+ Table 2-4. Error budget over four weeks
+ 
+ 
+ SLO
+ Allowed failures
+ 
+
+ 
+ 
+ 
+ 97% availability
+ 109,897
+ 
+
+ 
+ 90% of requests faster than 450 ms
+ 366,325
+ 
+
+ 
+ 99% of requests faster than 900 ms
+ 36,632
+ 
+
+ 
+
+
+
+
+
+
+
+Choosing an Appropriate Time Window
+
+
+SLOs can be defined over various time intervals, and can use either a rolling window or a calendar-aligned window (e.g., a month). There are several factors you need to account for when choosing the window.
+
+
+Rolling windows are more closely aligned with user experience: if you have a large outage on the final day of a month, your user doesn’t suddenly forget about it on the first day of the following month. We recommend defining this period as an integral number of weeks so it always contains the same number of weekends. For example, if you use a 30-day window, some periods might include four weekends while others include five weekends. If weekend traffic differs significantly from weekday traffic, your SLIs may vary for uninteresting reasons.
+
+
+Calendar windows are more closely aligned with business planning and project work. For example, you might evaluate your SLOs every quarter to determine where to focus the next quarter’s project headcount. Calendar windows also introduce some element of uncertainty: in the middle of the quarter, it is impossible to know how many requests you will receive for the rest of the quarter. Therefore, decisions made mid-quarter must speculate as to how much error budget you’ll spend in the remainder of the quarter.
+
+
+Shorter time windows allow you to make decisions more quickly: if you missed your SLO for the previous week, then small course corrections—prioritizing relevant bugs, for example—can help avoid SLO violations in future weeks.
+
+
+Longer time periods are better for more strategic decisions: for example, if you could choose only one of three large projects, would you be better off moving to a high-availability distributed database, automating your rollout and rollback procedure, or deploying a duplicate stack in another zone? You need more than a week’s worth of data to evaluate large multiquarter projects; the amount of data required is roughly commensurate with the amount of engineering work being proposed to fix it.
+
+
+We have found a four-week rolling window to be a good general-purpose interval. We complement this time frame with weekly summaries for task prioritization and quarterly summarized reports for project planning.
+
+
+If the data source allows, you can then use this proposed SLO to calculate your actual SLO performance over that interval: if you set your initial SLO based on actual measurements,

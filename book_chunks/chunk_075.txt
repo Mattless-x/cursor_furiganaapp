@@ -1,0 +1,221 @@
+=== The Site Reliability Workbook ===
+=== Chunk 75/100 ===
+
+e then started assuming we couldn’t depend on other people to get their work done, which eroded feelings of trust and dependability within the team. As a result, we did not feel safe about interpersonal risk taking, an important factor in psychological safety (see Chapter 11 in Site Reliability Engineering). Team members didn’t feel accepted and respected by other team members, so they didn’t freely collaborate with each other. As psychological safety diminished on the team, collaboration stopped, slowing down information sharing and causing further inefficiencies.
+
+
+Team surveys also revealed a loss of psychological safety—team members said they didn’t feel like they belonged on the team. They no longer cared about their own career development, and the promotion rate on the team dropped to an all-time low.
+
+
+We finally hit a breaking point when upper management assigned us new mandatory company-wide projects. At this point, we renewed our conversations with management about overload with renewed vigor. A series of discussions revealed that our unhappy situation wasn’t just a result of too much work—our perceptions of team safety led us to stop trusting and collaborating with each other.
+
+
+
+
+
+What We Decided to Do
+
+
+Upper management assigned our team a new manager who wasn’t shared among three teams. The new manager used a participatory management style to improve psychological safety on the team so that we could once again collaborate. This method empowers team members to actively participate in solving team problems. The entire team, including our direct manager, engaged in a set of simple team-building exercises to improve the effectiveness of our team (some of which were as simple as drinking tea together).4 As a result, we were able to draft a set of goals:
+
+
+
+ Short term
+ Relieve stress and improve psychological safety to establish a healthy work atmosphere.
+
+ Medium term
+ 
+ Build confidence of individual team members through training.
+
+
+ Find the root cause of the issues that are causing overload.
+
+ 
+ Long term
+ Resolve ongoing problems that contributed to the cascade.
+
+
+
+In order to set these goals, we had to first achieve some kind of baseline psychological safety within the team. As morale improved, we began to share knowledge and build on each other’s ideas to figure out ways to get our workload under control.
+
+
+
+
+
+Implementation
+
+
+
+Short-term actions
+
+
+Long-term stress, whether caused by overwork or perceptions of team safety, decreases productivity and impacts people’s health. Therefore, our most important short-term action was to provide stress relief and improve trust and psychological safety. Once relieved of some stress, team members could think more clearly and participate in driving the whole team forward. Within a month of identifying the overload, we implemented the following:
+
+
+
+ 
+ Started a semiregular round table to discuss issues. The team released frustration and brainstormed possible causes of the overload.
+
+ 
+
+ 
+ Found a better metric for measuring load. We decided to improve upon our original metric of number of pages. We auto-assigned tickets to on-callers, and the on-caller was responsible for these tickets even after their shift ended. Our new metric measured how much time an on-caller needed to resolve a ticket after their shift.
+
+ 
+
+ 
+ Audited and removed spamming alerts. We reviewed alerts and removed the ones that didn’t represent user-facing problems.
+
+ 
+
+ 
+ Silenced alerts generously. The team deliberately didn’t try to find the source for every single alert, but focused on relieving the stress from being paged and ticketed continuously for issues we already knew about. We used the following strategy:
+
+
+ 
+ 
+ Alerts that surfaced were silenced until they were fixed.
+
+ 
+
+ 
+ Alerts could be silenced only for a limited period of time (typically a day, sometimes up to a week). Otherwise, they might mask outages.
+
+ 
+
+ 
+ Alerts that couldn’t be fixed within a few minutes were assigned to a tracking ticket.
+
+ 
+
+ 
+ 
+
+ 
+ Added a direct manager dedicated to a single team. Making a well-respected team member the new manager reestablished trust in management. Rather than managing three teams, the new manager could focus more time on the individual team and its members.
+
+ 
+
+ 
+ Rebalanced the team. We introduced a new perspective and on-call relief by adding technically experienced SREs that didn’t have preconceptions about the team or organization. Finding appropriate people was by no means an easy task, but was well worth the effort.
+
+ 
+
+ 
+ Instituted team events like lunches and board game sessions. Talking about non-work-related topics and laughing together eased tension on the team and improved psychological safety.
+
+ 
+
+
+
+
+
+
+Mid-term actions
+
+
+Short-term solutions alone wouldn’t sustain a healthy atmosphere—for example, one of our short-term tactics was to silence alerts without actually fixing the cause. Within three months, we also took the following actions:
+
+
+
+ 
+ Limited operational work to on-call time as much as possible (see Chapter 29 in Site Reliability Engineering) so the team could concentrate on permanent fixes and project work.
+
+ 
+
+ 
+ Returned responsibility for one service back to its development team.
+
+ 
+
+ 
+ Trained each other (and new team members). While training requires an investment of time and energy, disseminating knowledge meant that all team members (and future hires) could troubleshoot and fix issues more quickly in the future. Training coworkers improved our confidence, because we came to realize that we actually knew quite a bit about the services. As they gained knowledge, team members started to find new ways to manage services, improving their reliability and reducing overload.
+
+ 
+
+ 
+ Brought in SREs from the remote team to staff some of our on-call shifts and participate in training. They noticed the strain on the team and provided some valuable new perspective.
+
+ 
+
+ 
+ Backfilled the two open roles on the team.
+
+ 
+
+ 
+ Tackled each alert as the silences expired. We discussed repetitive pages and pages that resulted in no action at length in the weekly production meeting, which led us to tune alerts and/or fix the underlying problems. While these were important (and obvious) actions, we only had the space to analyze and take action once the alert was silenced and not creating constant noise.
+
+ 
+
+ 
+ Organized listening events. Management (including the skip-level manager and team leads) made a conscious effort to listen to the team’s pain points and to find a team-driven solution.
+
+ 
+
+ 
+ Added perspective. Hope is not a strategy, but it certainly helps team morale. With the promise of new members joining the on-call rotation, a shift to clearer priorities, and an end to noise-generating projects, the team’s mood improved.
+
+ 
+
+
+
+
+
+
+Long-term actions
+
+
+To help maintain our newfound stability, we are currently aligning our SLOs with the SLOs of their service backends, and working toward making the services more uniform. Uniformity has a double benefit: it decreases cognitive load for SREs and makes it easier to write automation that can be used across services. We’re also reviewing services that have been around for a long time and updating them to current production standards. For example, some services are operating poorly under load that’s increased significantly over the years. Some services need to be updated per changes to their backend services’ policies. Other services simply haven’t been updated for several years.
+
+
+
+
+
+
+
+Effects
+
+
+A few months after our first brainstorming meeting, results began to surface: on-call shifts became quieter, and our team managed to quickly and efficiently deal with a difficult incident collaboratively as a group. A bit later, new team members arrived. When we discussed psychological safety during a round-table session, the new members said they couldn’t imagine that the team ever had such problems. In fact, they saw our team as a warm and safe place to work. About one year after the original escalation, little of the original overload remained and an anonymous survey showed that team members now felt the team was effective and safe.
+
+
+
+
+
+Lessons Learned
+
+
+Workplace changes can have a psychological impact on the people on the team—after all, your teammates are not machines. You need to attend to the team’s stress levels so that people start trusting each other enough to work together; otherwise, the team can enter a vicious cycle of overload that causes stress, which in turn prevents you from tackling overload.
+
+
+Perceived overload is, in fact, overload, and has as much impact to a team as work overload caused by other factors. In our case, our sister team in Sydney didn’t experience the same issues, and the number of pages we fielded didn’t actually change very much compared to previous years. Instead, the loss of two team members, increased cognitive load, increased ticket noise, and a new three-day SLO on tickets led the team to perceive overload. In the end, the difference between objective and perceived overload didn’t matter: the perceived overload of a few team members can very quickly lead to overload for the whole team.
+
+
+
+
+
+
+
+Strategies for Mitigating Overload
+
+
+An outside perspective can sometimes quite easily identify when a team is overloaded. Similarly, it’s easy to comment on what actions should have been taken in retrospect. But how do you identify overload when you’re in the middle of experiencing it? The path toward a healthy, friendly, and happy work atmosphere can be hard to visualize when you’re mired in overload. This section describes practices for both identifying and mitigating overload on your team.
+
+
+
+Recognizing the Symptoms of Overload
+
+
+It’s pretty easy to identify an overloaded team if you know the symptoms of overload:
+
+
+
+ Decreased team morale
+ 
+ Overload might manifest as rants and complaints. Surveys on relevant topics (job conditions, work satisfaction, projects, peers, and managers) usually reflect team morale and yield more negative results when a team is overloaded. Regular active listening sessions with team leaders can surface issues that you weren’t aware of. An essential element of active listening is to listen without judgment.
+
+ 
+ Team members working long hours, and/or working when sick
+ 
+ Working overtime without compensation can be a psychosocial stressor. Lea

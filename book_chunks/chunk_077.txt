@@ -1,0 +1,200 @@
+=== The Site Reliability Workbook ===
+=== Chunk 77/100 ===
+
+ entails much more than the services themselves—it focuses on understanding the aims of developer and product teams and finding the right way to support them.
+
+
+Most of this discussion is applicable regardless of your organization’s scale. While we use the word team frequently, a team could theoretically start off as a single person (although that person would be quite busy). Regardless of your team’s size, it’s important to proactively define the role of SRE and manage communication and collaboration with product development.
+
+
+
+The Service Lifecycle
+
+
+As described in the preface to the first SRE book, an SRE team’s contributions to service reliability happen throughout all phases of the service lifecycle. Their application of production knowledge and experience can substantially improve the reliability of a service well before any SRE picks up the pager for the service.
+
+
+Figure 18-1 shows the ideal levels of SRE engagement over the course of a service’s life. However, an SRE team might begin their engagement with a service at any stage in the lifecycle. For example, if the development team begins planning a replacement service for an SRE-supported service, SRE might be involved in the new service very early on. Alternatively, an SRE team might formally engage with a service once it has been generally available for months or years and is now facing reliability or scaling challenges. This section provides guidance on how SRE teams can effectively contribute at each phase.
+
+
+
+Figure 18-1. Level of SRE engagement during the service lifecycle
+
+
+
+
+Phase 1: Architecture and Design
+
+
+SRE can influence the architecture and design of a software system in different ways:
+
+
+
+ 
+ Creating best practices, such as resilience to various single points of failure, that a developer team can employ when building a new product
+
+ 
+
+ 
+ Documenting the dos and don’ts of particular infrastructure systems (based upon prior experience) so developers can choose their building blocks wisely, use them correctly, and avoid known pitfalls
+
+ 
+
+ 
+ Providing early engagement consulting to discuss specific architectures and design choices in detail, and to help validate assumptions with the help of targeted prototypes
+
+ 
+
+ 
+ Joining the developer team and participating in development work
+
+ 
+
+ 
+ Codesigning part of the service
+
+ 
+
+
+
+Fixing architectural mistakes becomes more difficult later in the development cycle. Early SRE engagement can help avoid costly redesigns that become necessary when systems interact with real-world users and need to scale in response to service growth.
+
+
+
+
+
+Phase 2: Active Development
+
+
+As the product takes shape during active development, SREs can start productionizing the service—getting it in shape to be released into production. Productionalization typically includes capacity planning, setting up extra resources for redundancy, planning for spike and overload handling, implementing load balancing, and putting in place sustainable operational practices like monitoring, alerting, and performance tuning.
+
+
+
+
+
+Phase 3: Limited Availability
+
+
+As a service progresses toward Beta, the number of users, variety of use cases, intensity of usage, and availability and performance demands increase. At this stage, SRE can help measure and evaluate reliability. We strongly recommend defining SLOs before general availability (GA) so that the service teams have an objective measure of how reliable the service is. The product team still has the option to withdraw a product that can’t meet its target reliability.
+
+
+During this phase, the SRE team can also help scale the system by building a capacity model, acquiring resources for upcoming launch phases, and automating turnups and in-place service resizing. SRE can ensure proper monitoring coverage and help create alerts that ideally match the upcoming service SLOs.
+
+
+While service usage is still changing, the SRE team can expect an increased amount of work during incident response and operational duties because the teams are still learning how the service works and how to manage its failure modes. We recommend sharing this work between the developer and SRE teams. That way, the developer team gains operational experience with the service and the SREs gain experience with the service in general. Operational work and incident management will inform the system changes and updates the service owners need to make before GA.
+
+
+
+
+
+Phase 4: General Availability
+
+
+In this phase, the service has passed the Production Readiness Review (see Chapter 32 in Site Reliability Engineering for more details) and is accepting all users. While SRE typically performs the majority of operational work, the developer team should continue to field a small part of all operational and incident response work so they don’t lose perspective on these aspects of the service. They might permanently include one developer in the on-call rotation to help the developers keep track of operational load.
+
+
+In the early phase of GA, as the developer team focuses on maturing the service and launching the first batches of new features, it also needs to stay in the loop to understand system properties under real load. In the later stages of GA, the developer team provides small incremental features and fixes, some of which are informed by operational needs and any production incidents that occur.
+
+
+
+
+
+Phase 5: Deprecation
+
+
+No system runs forever. If and when a better replacement system is available, the existing system is closed for new users and all engineering focuses on transitioning users from the existing system to the new one. SRE operates the existing system mostly without involvement from the developer team, and supports the transition with development and operational work.
+
+
+While SRE effort required for the existing system is reduced, SRE is effectively supporting two full systems. Headcount and staffing should be adjusted accordingly.
+
+
+
+
+
+Phase 6: Abandoned
+
+
+Once a service is abandoned, the developer team typically resumes operational support. SRE supports service incidents on a best-effort basis. For a service with internal users, SRE hands over service management to any remaining users. This chapter provides two case studies of how SRE can hand back a service to developer teams.
+
+
+
+
+
+Phase 7: Unsupported
+
+
+There are no more users, and the service has been shut down. SRE helps to delete references to the service in production configurations and in documentation.
+
+
+
+
+
+
+
+Setting Up the Relationship
+
+
+A service does not exist in a vacuum: the SRE team engages with the developer team that builds the service and the product team that determines how it should evolve. This section recommends some strategies and tactics for building and maintaining good working relationships with those teams.
+
+
+
+Communicating Business and Production Priorities
+
+
+Before you can help someone, you need to understand their needs. To that end, SREs need to understand what the product developers expect the SRE engagement to achieve. When engaging with a developer team, SREs should build a deep understanding of the product and business goals. SREs should be able to articulate their role and how SRE engagement can enable developers to execute toward these goals.
+
+
+Teams need to regularly talk with each other about business and production priorities. The SRE and developer leadership teams should ideally work as a unit, meeting regularly and exchanging views about technical and prioritization challenges. Sometimes SRE leads join the product development leadership team.
+
+
+
+
+
+Identifying Risks
+
+
+Because an SRE team is focused on system reliability, they are well positioned to identify potential risks. Gauging the likelihood and potential impact of those risks as accurately as possible is important, as the cost of disrupting regular development and feature flow is significant to the product and to engineers.
+
+
+
+
+
+Aligning Goals
+
+
+The developer and SRE teams both care about reliability, availability, performance, scalability, efficiency, and feature and launch velocity. However, SRE operates under different incentives, mainly favoring service long-term viability over new feature launches.
+
+
+In our experience, developer and SRE teams can strike the right balance here by maintaining their individual foci but also explicitly supporting the goals of the other group. SREs can have an explicit goal to support the developer team’s release velocity and ensure the success of all approved launches. For example, SRE might state, “We will support you in releasing as quickly as is safe,” where “safe” generally implies staying within error budget. Developers should then commit to dedicating a reasonable percentage of engineering time to fixing and preventing the things that are breaking reliability: resolving ongoing service issues at the design and implementation level, paying down technical debt, and including SREs in new feature development early so that they can participate in design conversations.
+
+
+
+Shared Goals: SRE Engagements at the New York Times
+
+
+by Surya Prashanth Sanagavarapu (New York Times)
+
+
+In our organization, SRE resources are in high demand when it comes to cloud migrations, production ramp-ups, and applications moving toward containers. In addition, SRE teams have their own backlogs to tackle. In the face of limited resources, these competing priorities define success for the SRE team. While hiring SREs is one obvious way to address the demand for SRE time, not every team has the luxury, experience, or time to do so.
+
+
+The core mission of the SRE function at the New York Times is to empower product development teams with tools and processes to maximize reliability and resilience in applications that support our newsroom, thus enabling distribution of high-quality journalism to readers. We adopted a shared goals model to achieve a balance between reducing the automation backlog and engaging with other teams.
+
+
+Before engaging with teams, we review our overall backlog for the current quarter/year and clearly define its work items and categories. For instance, our backlog items might include:
+
+
+
+ 
+ Add automation to set up baseline monitoring and alerting by hitting service status endpoints for applications.
+
+ 
+
+ 
+ Implement more reliable and/or faster build pipelines.
+
+ 
+
+
+
+When teams approach SREs for help, one of the factors we consider wh

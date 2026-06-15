@@ -1,0 +1,169 @@
+=== The Site Reliability Workbook ===
+=== Chunk 12/100 ===
+
+
+
+
+Modeling Dependencies
+
+
+Large systems have many components. A single system may have a presentation layer, an application layer, a business logic layer, and a data persistence layer. Each of these layers may consist of many services or microservices.
+
+
+While your prime concern is implementing a user-centric SLO that covers the entire stack, SLOs can also be a useful way to coordinate and implement reliability requirements between different components in the stack.
+
+
+For example, if a single component is a critical dependency9 for a particularly high-value interaction, its reliability guarantee should be at least as high as the reliability guarantee of the dependent action. The team that runs that particular component needs to own and manage its service’s SLO in the same way as the overarching product SLO.
+
+
+If a particular component has inherent reliability limitations, the SLO can communicate that limitation. If the user journey that depends upon it needs a higher level of availability than that component can reasonably provide, you need to engineer around that condition. You can either use a different component or add sufficient defenses (caching, offline store-and-forward processing, graceful degradation, etc.) to handle failures in that component.
+
+
+It can be tempting to try to math your way out of these problems. If you have a service that offers 99.9% availability in a single zone, and you need 99.95% availability, simply deploying the service in two zones should solve that requirement. The probability that both services will experience an outage at the same time is so low that two zones should provide 99.9999% availability. However, this reasoning assumes that both services are wholly independent, which is almost never the case. The two instances of your app will have common dependencies, common failure domains, shared fate, and global control planes—all of which can cause an outage in both systems, no matter how carefully it is designed and managed. Unless each of these dependencies and failure patterns is carefully enumerated and accounted for, any such calculations will be deceptive.
+
+
+There are two schools of thought regarding how an error budget policy should address a missed SLO when the failure is caused by a dependency that’s handled by another team:
+
+
+
+ 
+ Your team should not halt releases or devote more time to reliability, as your system didn’t cause the issue.
+
+ 
+
+ 
+ You should enact a change freeze in order to minimize the chances of future outages, regardless of the cause of that outage.
+
+ 
+
+
+
+The second approach will make your users happier. You have some flexibility in how you apply this principle. Depending on the nature of the outage and dependency, freezing changes may not be practical. Decide what is most appropriate for your service and its dependencies, and record that decision for posterity in your documented error budget. For an example of how this might work in practice, see the example error budget policy in Appendix B.
+
+
+
+
+
+Experimenting with Relaxing Your SLOs
+
+
+You may want to experiment with the reliability of your application and measure which changes in reliability (e.g., adding latency into page load times) have a measurably adverse impact on user behavior (e.g., percentage of users completing a purchase). We recommend performing this sort of analysis only if you are confident that you have error budget to burn. There are many subtle interactions between latency, availability, customers, business domains, and competition (or lack thereof). To make a choice to deliberately lower the perceived customer experience is a Rubicon to be crossed extremely thoughtfully, if at all.
+
+
+While this exercise might seem scary (nobody wants to lose sales!), the knowledge you can gain by performing such experiments will allow you to improve your service in ways that could lead to even better performance (and higher sales!) in the future. This process may allow you to mathematically identify a relationship between a key business metric (e.g., sales) and a measurable technical metric (e.g., latency). If it does, you have gained a very valuable piece of data you can use to make important engineering decisions for your service going forward.
+
+
+This exercise should not be a one-time activity. As your service evolves, so will your customers’ expectations. Make sure you regularly review the ongoing validity of the relationship.
+
+
+This sort of analysis is also risky because you can misinterpret the data you get. For example, if you artificially slow your pages down by 50 ms and notice that no corresponding loss in conversions occurs, you might conclude that your latency SLO is too strict. However, your users might be unhappy, but simply lacking an alternative to your service at the moment. As soon as a competitor comes along, your users will leave. Be sure you are measuring the correct indicators, and take appropriate precautions.
+
+
+
+
+
+
+
+Conclusion
+
+
+Every topic covered in this book can be tied back to SLOs. Now that you’ve read this chapter, we hope you’ll agree that even partly formalized SLOs (which clearly state your promises to users) offer a framework to discuss system behavior with greater clarity, and can help with pinpointing actionable remedies when services fail to meet expectations.
+
+
+To summarize:
+
+
+
+ 
+ SLOs are the tool by which you measure your service’s reliability.
+
+ 
+
+ 
+ Error budgets are a tool for balancing reliability with other engineering work, and a great way to decide which projects will have the most impact.
+
+ 
+
+ 
+ You should start using SLOs and error budgets today.
+
+ 
+
+
+
+For an example SLO document and an example error budget policy, see Appendixes A and B.
+
+
+
+1 A note on terminology: throughout this chapter, we use the word reliability to talk about how a service is performing with regard to all of its SLIs. This could be indicative of many things, such as availability or latency.
+2 This is distinct from a service level agreement (SLA), which is a business contract that comes into effect when your users are so unhappy you have to compensate them in some fashion.
+3 For more details about factoring dependencies into your service’s reliability, see Ben Treynor, Mike Dahlin, Vivek Rau, and Betsy Beyer, “The Calculus of Service Availability,” ACM Queue 15, no. 2 (2017), https://queue.acm.org/detail.cfm?id=3096459.
+4 If you measure your SLO over a calendar period, such as a quarter-year, then you may not know how big your budget will be at the end of the quarter if it’s based upon unpredictable metrics such as traffic. See “Choosing an Appropriate Time Window” for more discussion about reporting periods.
+5 50 ms because users are unlikely to perceive a 50 ms change in latency, but the appropriate window obviously depends on the service and the users. A reporting service will be different from a real-time game.
+6 Disclaimer: there may be more difficult tasks in your future.
+7 Recall is the proportion of significantly user-impacting events that the SLI captures. Precision is the proportion of events captured by the SLI that were significantly user-impacting.
+8 It is worth reiterating here that an error budget is an approximation of user satisfaction. A four-hour outage every 30 days would probably result in fewer unhappy users than four separate one-hour outages every 30 days, which in turn would cause fewer unhappy users than a constant error rate of 0.5%, but our error budget treats them the same. These thresholds will vary between services.
+9 A dependency is critical if its unavailability means that your service is also unavailable.
+
+SLO Engineering Case Studies
+
+Chapter 3. SLO Engineering Case Studies
+
+
+By Ben McCormack (Evernote) and
+
+William Bonnell (The Home Depot)
+
+with Garrett Plasky (Evernote), Alex Hidalgo,
+
+Betsy Beyer, and Dave Rensin
+
+
+While many tenets of SRE were shaped within the walls of Google, its principles have long lived outside our gates. Many standard Google SRE practices have been discovered in parallel or otherwise been adopted by many other organizations across the industry.
+
+
+SLOs are fundamental to the SRE model. Since we launched the Customer Reliability Engineering (CRE) team—a group of experienced SREs who help Google Cloud Platform (GCP) customers build more reliable services—almost every customer interaction starts and ends with SLOs.
+
+
+Here we present two stories, told by two very different companies, that outline their journeys toward adopting an SLO and error budget–based approach while working with the Google CRE team. For a more general discussion about SLOs and error budgets, see Chapter 2 in this book, and Chapter 3 in our first book.
+
+
+
+Evernote’s SLO Story
+
+
+by Ben McCormack, Evernote
+
+
+Evernote is a cross-platform app that helps individuals and teams create, assemble, and share information. With more than 220 million users worldwide, we store over 12 billion pieces of information—a mix of text-based notes, files, and attachments/images—within the platform. Behind the scenes, the Evernote service is supported by 750+ MySQL instances.
+
+
+We introduced the concept of SLOs to Evernote as part of a much wider technology revamp aimed at increasing engineering velocity while maintaining quality of service. Our goals included:
+
+
+
+ 
+ Move engineering focus away from undifferentiated heavy lifting in datacenters and toward product engineering work that customers actually cared about. To that end, we stopped running our physical datacenters and moved to a public cloud.
+
+ 
+
+ 
+ Revise the working model of operations and software engineers to support an increase in feature velocity while maintaining overall quality of service.
+
+ 
+
+ 
+ Revamp how we look at SLAs to ensure that we increase focus on how failures impact our large global customer base.
+
+ 
+
+
+
+These goals may look familiar to organizations across many industries. While no single approach to making these types of changes will work across the board, we hope that sharing our experience will provide valuable insights for others facing similar challenges.
+
+
+
+Why Did Evernote Adopt the SRE Model?
+
+
+At the outset of this transition, Evernote was characterized by a traditional ops/dev split: an operations team protected the sanctity of the production environment, while a development team was tasked with developing new product features for customers. These objectives were usually in conflict: the dev team felt constrain

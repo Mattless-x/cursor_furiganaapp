@@ -1,0 +1,163 @@
+=== The Site Reliability Workbook ===
+=== Chunk 99/100 ===
+
+R
+recall (SLO alerts), Alerting Considerations
+recovery efforts (in postmortems), Key details omitted
+region-level outages in data processing pipeline, Region-level outage
+regional groups of instances (RMiGs), autoscalers balancing instances across, Avoiding Traffic Imbalance
+relationships, sustaining between SRE and other teams, Sustaining an Effective Ongoing Relationship-Understand differences in communication
+release candidate version, Our Example Setup
+release engineering, Canarying Releasesand canarying, Release Engineering and Canarying
+principles, Release Engineering Principles-Balancing Release Velocity and Reliability
+
+releasesbenefits of frequent, smaller releases, Identification delay
+canarying (see canarying releases)
+shepherding, Release Shepherding
+
+reliabilityas a partnership if you run a platform, If You Run a Platform, Then Reliability Is a Partnership
+as most important feature, Reliability Is the Most Important Feature
+balancing release velocity and, Balancing Release Velocity and Reliability
+configuration and, Configuration and Reliability
+considering work on as specialized role, Consider Reliability Work as a Specialized Role
+decided by users, not monitoring, Your Users, Not Your Monitoring, Decide Your Reliability
+experimenting with relaxing SLOs, Experimenting with Relaxing Your SLOs
+improvements in, resulting from postmortems, Highlight improved reliability
+reliability hackathon for products at risk, Reassessing When Ground Rules Start to Slip
+reliability targets and error budgets, Reliability Targets and Error Budgets
+
+rename-and-shame, Conclusion
+repeating incidents, finding causes of, Repeating incidents
+replication toil, Configuration-Induced Toilautomating for configuration, Reducing Configuration-Induced Toil
+
+reports on SLO compliance, Dashboards and Reports
+reproducible builds, Release Engineering Principles
+request-driven components, Types of components
+requestsgrouping request types into buckets of similar availability requirements, Alerting at Scale
+specific mix of, bugs manifesting with, New bugs
+
+Requiem (postmortem storage tool), Postmortem storage
+reset time (SLO alerts), Alerting Considerations
+resourcesmetrics about resource consumption, Calculations
+monitoring resource usage, Saturation
+resource planning for data processing pipelines, Implement Autoscaling and Resource Planning
+unexpected growth in data processing pipeline, causing failures, Unexpected resource growth
+
+response times to pages, Anatomy of Pager Load
+reusing code in data processing pipelines, Reusing code
+revenue coverage, Be Thoughtful and Disciplined
+reviews, designing in SRE with customers, Step 4: Design Reviews and Risk Analysis
+revision control system, storing monitoring system configuration in, Treat Your Configuration as Code
+risk analysis in SRE with customers, Step 4: Design Reviews and Risk Analysis
+risks and mitigations for first SRE team, Risks and mitigations
+risks, identifying by SRE team to developer team, Identifying Risks
+roadmaps, Planning and Executing
+roll forward deployment vs. simple canary deployment, A Roll Forward Deployment Versus a Simple Canary Deployment-Canary Implementation
+rollback strategy for releases, New bugsconfiguration changes, Safe Configuration Change Application
+promptly removing bugs from production, Mitigation delay
+
+rolling update strategy, Safe Configuration Change Application
+root causes and trigger (in postmortems), Key details omitted, Blamelessness
+routinganycast methodology, Anycast
+
+RPCs (remote procedure calls)managing load with, Lessons learned
+monitoring system metrics on, Dependencies
+
+S
+satellites, Case Study
+scaling, Autoscaling(see also autoscaling)
+calculations for AdWords NALSD example, Calculations
+calculations for LogJoiner, QueryStore, ClickMap,, and QueryMap in AdWords example, Calculations
+during limited availability phase of service lifecycle, Phase 3: Limited Availability
+of SRE to larger environments, Scaling SRE to Larger Environments-Running Cohesive Distributed SRE Teams
+scalability of data processing pipeline, Pipeline maturity matrix
+Waze case study, Background-Lessons Learned
+
+scheduling on-call engineers, On-Call Flexibility-Plan for part-time work schedulesscenario, a change in personal circumstances, Scenario: A change in personal circumstances-Plan for part-time work schedulesautomating on-call scheduling, Automate on-call scheduling
+planning for long-term breaks, Plan for long-term breaks
+planning for part-time work schedules, Plan for part-time work schedules
+planning for short-term swaps, Plan for short-term swaps
+
+scripting languages, general-purpose, using for configuration system, Pitfall 5: Using an Existing General-Purpose Scripting Language Like Python, Ruby, or Lua
+security policies for data processing pipeline, adhering to, Adhere to Access Control and Security Policies
+self-healing, New bugs
+self-regulating workload (SRE team), Self-regulating workload
+self-service methods for users, Provide Self-Service Methods, Build self-service interfaces
+semantic validation (configuration), Semantic validation
+service complexity and forming more SRE teams, Where to splitpitfalls of team splits, Pitfalls
+where to split the work, Where to split
+
+service level agreements (SLAs)and dependency failures in data processing pipelines, Plan for Dependency Failure
+Google and Evernote, Breaking Down the SLO Wall Between Customer and Cloud Provider
+
+service level indicators (SLIs), Implementing SLOsabstracting your system into types of components, Types of components
+architecture for example mobile phone game, A Worked Example-Moving from SLI Specification to SLI Implementation
+automation of collection of data at Home Depot, The SLO Culture Project
+canary metrics and, Metrics Should Indicate Problems
+changing SLI implementation, Improving the Quality of Your SLO
+dashboards showing SLI trends, Dashboards and Reports
+explaining to customers, Step 1: SLOs and SLIs Are How You Speak
+for example game service SLOs, SLIs and SLOs
+implementation, What to Measure: Using SLIs
+measurements with, What to Measure: Using SLIs
+measuring, Measuring the SLIs-Using the SLIs to Calculate Starter SLOscalculating SLIs over previous week, Calculating the SLIs
+
+moving from specification to implementation, Moving from SLI Specification to SLI ImplementationAPI and HTTP server availability and latency, API and HTTP server availability and latency
+pipeline freshness, coverage, and correctness, Pipeline freshness, coverage, and correctness
+
+specifications, What to Measure: Using SLIs
+using to calculate starter SLOs, Using the SLIs to Calculate Starter SLOs
+
+service level objectives (SLOs), Implementing SLOs-Conclusionadjusting priorities according to, Adjusting Priorities According to Your SLOs and Error Budget
+alerting on, Alerting on SLOs-Conclusionconsiderations in, Alerting Considerations
+low-traffic services and error budget alerting, Low-Traffic Services and Error Budget Alerting-Extreme Availability Goals
+making sure alerting is scalable, Alerting at Scale
+pager alerts, Alerting
+services with extreme availability goals, Extreme Availability Goals
+significant events, Ways to Alert on Significant Events-Low-Traffic Services and Error Budget Alerting
+
+by SRE and development teams for a service, Setting Ground Rules
+continuous improvement of SLO targets, Continuous Improvement of SLO Targets-Decision Making Using SLOs and Error Budgetsimproving quality of SLOs, Improving the Quality of Your SLO
+
+decision making using SLOs and error budgets, Decision Making Using SLOs and Error Budgets-Advanced Topics
+defining and measuring for data processing pipelines, Define and Measure Service Level Objectivesdata correctness, Data correctness
+data freshness, Data freshness
+data isolation/load balancing, Data isolation/load balancing
+end-to-end measurement, End-to-end measurement
+
+defining before general availability phase of service lifecycle, Phase 3: Limited Availability
+design and implementation by your first SRE, Bootstrapping Your First SRE
+Evernote case study, Evernote’s SLO Story-Current Statebreaking down SLO wall between customer and cloud provider, Breaking Down the SLO Wall Between Customer and Cloud Provider
+current state of SLOs, Current State
+introduction of SLOs, Introduction of SLOs: A Journey in Progress-Introduction of SLOs: A Journey in Progress
+why Evernote adopted SRE model, Why Did Evernote Adopt the SRE Model?
+
+example document for game service, Example SLO Document-Clarifications and Caveats
+for Spotify event delivery system operation, Event Delivery System Operationskewness SLO, Skewness
+timeliness SLO, Timeliness
+
+fundamental importance in SRE, SLO Engineering Case Studies
+getting started with, Getting Started-Types of componentsmeasurements using SLIs, What to Measure: Using SLIs-Types of components
+reliability targets and error budgets, Reliability Targets and Error Budgets
+
+Home Depot case study, The Home Depot’s SLO Story-Future Aspirationsapplying VALET to batch applications, Applying VALET to Batch Applications
+automating VALET data collection, Automating VALET Data Collection
+evangelizing SLOs, Evangelizing SLOs
+first set of SLOs, Our First Set of SLOs-VALET
+future aspirations, Future Aspirations
+proliferation of SLOs, The Proliferation of SLOs
+SLO culture project, The SLO Culture Project
+using VALET in testing, Using VALET in Testing
+
+implementing, worked example, A Worked Example-Dashboards and Reportschoosing appropriate time window, Choosing an Appropriate Time Window
+dashboards and reports, Dashboards and Reports
+documenting SLOs and error budget policy, Documenting the SLO and Error Budget Policy
+establishing error budget policy, Establishing an Error Budget Policy
+getting stakeholder agreement, Getting Stakeholder Agreement
+measuring the SLIs, Measuring the SLIs-Using the SLIs to Calculate Starter SLOs
+moving from SLI specification to implementation, Moving from SLI Specification to SLI Implementation
+using SLIs to calculate starter SLOs, Using the SLIs to Calculate Starter SLOs
+
+in SRE with customers, Step 1: SLOs and SLIs Are How You Speakauditing monitoring and building shared dashboards, Step 2: Audit the Monitoring and Build Shared Dashboards
+measuring and renegotiating, Step 3: Measure and Renegotiate
+

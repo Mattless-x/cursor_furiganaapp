@@ -1,0 +1,175 @@
+=== The Site Reliability Workbook ===
+=== Chunk 42/100 ===
+
+e on-call engineers. Once validation was complete, the IC shut off the conference call and Slack channel and declared the incident complete. Given the wide impact of the NTP service, a postmortem was warranted. Before closing out the incident, the IC assigned the postmortem analysis to the SRE team on-call for the service.
+
+ 
+
+
+
+
+
+
+Tools used for incident response
+
+
+Our Incident Response processes leverage three main tools:
+
+
+
+ PagerDuty
+ We store all of our on-call information, service ownership, postmortems, incident metadata, and the like, in PagerDuty. This allows us to rapidly assemble the right team when something goes wrong.
+
+ Slack
+ We maintain a dedicated channel (#incident-war-room) as a gathering place for all subject-matter experts and Incident Commanders. The channel is used mostly as an information ledger for the scribe, who captures actions, owners, and timestamps.
+
+ Conference calls
+ When asked to join any incident response, on-call engineers are required to dial in to a static conference call number. We prefer that all coordination decisions are made in the conference call, and that decision outcomes are recorded in Slack. We found this was the fastest way to make decisions. We also record every call to make sure that we can recreate any timeline in case the scribe misses important details.
+
+
+
+While Slack and conference calls are our communication channels of choice, you should use the communication method that works best for your company and its engineers.
+
+
+At PagerDuty, how we handle incident response relates directly to the success of the company. Rather than facing such events unprepared, we purposefully prepare for incidents by conducting simulation exercises, reviewing previous incidents, and choosing the right tools to help us be resilient to any major incident that may come our way.
+
+
+
+
+
+
+
+
+
+Putting Best Practices into Practice
+
+
+We’ve seen examples of incidents that were handled well, and some that were not. By the time a pager alerts you to a problem, it’s too late to think about how to manage the incident. The time to start thinking about an incident management process is before an incident occurs. So how do you prepare and put theory into practice before disaster strikes? This section provides some recommendations.
+
+
+
+Incident Response Training
+
+
+We highly recommend training responders to organize an incident so they have a pattern to follow in a real emergency. Knowing how to organize an incident, having a common language to use throughout the incident, and sharing the same expectations reduce the chance of miscommunication.
+
+
+The full Incident Command System approach may be more than you need, but you can develop a framework for handling incidents by selecting the parts of the incident management process that are important to your organization. For example:
+
+
+
+ 
+ Let on-calls know they can delegate and escalate during an incident.
+
+ 
+
+ 
+ Encourage a mitigation-first response.
+
+ 
+
+ 
+ Define Incident Commander, Communications Lead, and Operations Lead roles.
+
+ 
+
+
+
+You can adapt and summarize your incident response framework, and create a slide deck to present to new team members. We’ve learned that people are more receptive to incident response training when they can connect the theory of incident response to actual scenarios and concrete actions. Therefore, be sure to include hands-on exercises and share what happened in past incidents, analyzing what went well and what didn’t go so well. You might also consider using external agencies that specialize in incident response classes and training.
+
+
+
+
+
+Prepare Beforehand
+
+
+In addition to incident response training, it helps to prepare for an incident beforehand. Use the following tips and strategies to be better prepared.
+
+
+
+Decide on a communication channel
+
+
+Decide and agree on a communication channel (Slack, a phone bridge, IRC, HipChat, etc.) beforehand—no Incident Commander wants to make this decision during an incident. Practice using it so there are no surprises. If possible, pick a communications channel the team is already familiar with so that everyone on the team feels comfortable using it.
+
+
+
+
+
+Keep your audience informed
+
+
+Unless you acknowledge that an incident is happening and actively being addressed, people will automatically assume nothing is being done to resolve the issue. Similarly, if you forget to call off the response once the issue has been mitigated or resolved, people will assume the incident is ongoing. You can preempt this dynamic by keeping your audience informed throughout the incident with regular status updates. Having a prepared list of contacts (see the next tip) saves valuable time and ensures you don’t miss anyone.
+
+
+Think ahead about how you’ll draft, review, approve, and release public blog posts or press releases. At Google, teams seek guidance from the PR team. Also, prepare two or three ready-to-use templates for sharing information, making sure the on-call knows how to send them. No one wants to write these announcements under extreme stress with no guidelines. The templates make sharing information with the public easy and minimally stressful.
+
+
+
+
+
+Prepare a list of contacts
+
+
+Having a list of people to email or page prepared beforehand saves critical time and effort. In “Case Study 2: Service Fault—Cache Me If You Can”, the Comms Lead made an “all hands on deck” call by sending an email to several GKE lists that were prepared beforehand.
+
+
+
+
+
+Establish criteria for an incident
+
+
+Sometimes it’s clear that a paging issue is truly an incident. Other times, it’s not so clear. It’s helpful to have an established list of criteria for determining if an issue is indeed an incident. A team can come up with a solid list of criteria by looking at past outages, taking known high-risk areas into consideration.
+
+
+In summary, it’s important to establish common ground for coordination and communication when responding to incidents. Decide on ways to communicate the incident, who your audience is, and who is responsible for what during an incident. These guidelines are easy to set up and have high impact on shortening the resolution time of an incident.
+
+
+
+
+
+
+
+Drills
+
+
+The final step in the incident management process is practicing your incident management skills. By practicing during less critical situations, your team develops good habits and patterns of behavior for when lightning strikes—figuratively and literally. After introducing the theory of incident response through training, practice ensures that your incident response skills stay fresh.
+
+
+There are  several ways to conduct incident management drills. Google runs company-wide resilience testing (called Disaster Recovery Testing, or DiRT; see Kripa Krishnan’s article “Weathering the Unexpected”2), in which we create a controlled emergency that doesn’t actually impact customers. Teams respond to the controlled emergency as if it were a real emergency. Afterward, the teams review the emergency response procedures and discuss what happened. Accepting failure as a means of learning, finding value in gaps identified, and getting our leadership on board were key to successfully establishing the DiRT program at Google. On a smaller scale, we practice responding to specific incidents using exercises like Wheel of Misfortune (see “Disaster Role Playing” in Site Reliability Engineering).
+
+
+You can also practice incident response by intentionally treating minor problems as major ones requiring a large-scale response. This lets your team practice with the procedures and tools in a real-world situation with lower stakes.
+
+
+Drills are a friendly way of trying out new incident response skills. Anyone on your team who could get swept into incident response—SREs, developers, and even customer support and marketing partners—should feel comfortable with these tactics.
+
+
+To stage a drill, you can invent an outage and allow your team to respond to the incident. You can also create outages from postmortems, which contain plenty of ideas for incident management drills. Use real tools as much as possible to manage the incident. Consider breaking your test environment so the team can perform real troubleshooting using existing tools.
+
+
+All these drills are far more useful if they’re run periodically. You can make drills impactful by following up each exercise with a report detailing what went well, what didn’t go well, and how things could have been handled better. The most valuable part of running a drill is examining their outcomes, which can reveal a lot about any gaps in incident management. Once you know what they are, you can work toward closing them.
+
+
+
+
+
+
+
+Conclusion
+
+
+Be prepared for when disaster strikes. If your team practices and refreshes your incident response procedures regularly, you won’t panic when the inevitable outage occurs.
+
+
+The circle of people you need to collaborate with during an incident expands with the size of the incident. When you’re working with people you don’t know, procedures help create the structure you need to quickly move toward a resolution. We strongly recommend establishing these procedures ahead of time when the world is not on fire. Regularly review and iterate on your incident management plans and playbooks.
+
+
+The Incident Command System is a simple concept that is easily understood. It scales up or down according to the size of the company and the incident. Although it’s simple to understand, it isn’t easy to implement, especially in the middle of an incident when panic suddenly overtakes you. Staying calm and following the response structure during an emergency takes practice, and practice builds “muscle memory.” This gives you the confidence you’ll need for a real emergency.
+
+
+We strongly recommend carving out some time in your team’s busy schedule to practice incident management on a regular basis. Secure support from leadership for dedicated practice time, and make sure they understand how incident response works in case you need to involve them in a real incident. Disaster preparedness can shave off valuable minutes or hours from response time and gives you a competitive edge. No company gets it right all the time—learn from your mistakes, move on, and do better the next time.
+
+

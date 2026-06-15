@@ -1,0 +1,158 @@
+=== The Site Reliability Workbook ===
+=== Chunk 70/100 ===
+
+ior of an underlying component, changes in the behavior of a dependency (such as an API), or a change in configuration like DNS.
+
+
+Despite the risk inherent in making changes to software, these changes—bug fixes, security patches, and new features—are necessary for the business to succeed. Instead of advocating against change, you can use the concept of SLOs and error budgets to measure the impact of releases on your reliability. Your goal should be to ship software as quickly as possible while meeting the reliability targets your users expect. The following section discusses how you can use a canary process to achieve these goals.
+
+
+
+Separating Components That Change at Different Rates
+
+
+Your services are composed of multiple components with different rates of change: binaries or code, environments such as JVM, kernel/OS, libraries, service config or flags, feature/experiment config, and user config. If you have only one way to deploy changes, actually allowing these components to change independently may be difficult.
+
+
+Feature flag or experiment frameworks like Gertrude, Feature, and PlanOut allow you to separate feature launches from binary releases. If a binary release includes multiple features, you can enable them one at a time by changing the experiment configuration. That way, you don’t have to batch all of these changes into one big change or perform an individual release for each feature. More importantly, if only some of the new features don’t behave as expected, you can selectively disable those features until the next build/release cycle can deploy a new binary.
+
+
+You can apply the principles of feature flags/experiments to any type of change to your service, not just software releases.
+
+
+
+
+
+
+
+What Is Canarying?
+
+
+The term canarying refers to the practice of bringing canaries into coal mines to determine if the mine is safe for humans. Because the birds are smaller and breathe faster than humans, they are intoxicated by dangerous gases faster than their human handlers.
+
+
+Even if your release pipeline is fully automated, you won’t be able to detect all release-related defects until real traffic is hitting the service. By the time a release is ready to be deployed to production, your testing strategy should instill reasonable confidence that the release is safe and works as intended. However, your test environments aren’t 100% identical to production, and your tests probably don’t cover 100% of possible scenarios. Some defects will reach production. If a release deploys instantly everywhere, any defects will deploy in the same way.
+
+
+This scenario might be acceptable if you can detect and resolve the defects quickly. However, you have a safer alternative: initially expose just some of your production traffic to the new release using a canary. Canarying allows the deployment pipeline to detect defects as quickly as possible with as little impact to your service as possible.
+
+
+
+
+
+Release Engineering and Canarying
+
+
+When deploying a new version of a system or its key components (such as configuration or data), we bundle changes—changes that typically have not been exposed to real-world inputs, such as user-facing traffic or batch processing of user-supplied data. Changes bring new features and capabilities, but they also bring risk that is exposed at the time of deployment. Our goal is to mitigate this risk by testing each change on a small portion of traffic to gain confidence that it has no ill effects. We will discuss evaluation processes later in this chapter.
+
+
+The canary process also lets us gain confidence in our change as we expose it to larger and larger amounts of traffic. Introducing the change to actual production traffic also enables us to identify problems that might not be visible in testing frameworks like unit testing or load testing, which are often more artificial.
+
+
+We will examine the process of canarying and its evaluation using a worked example, while steering clear of a deep dive into statistics. Instead, we focus on the process as a whole and typical practical considerations. We use a simple application on App Engine to illustrate various aspects of the rollout.
+
+
+
+Requirements of a Canary Process
+
+
+Canarying for a given service requires specific capabilities:
+
+
+
+ 
+ A method to deploy the canary change to a subset of the population of the service.2
+
+ 
+
+ 
+ An evaluation process to evaluate if the canaried change is “good” or “bad.”
+
+ 
+
+ 
+ Integration of the canary evaluations into the release process.
+
+ 
+
+
+
+Ultimately, the canary process demonstrates value when canaries detect bad release candidates with high confidence, and identify good releases without false positives.
+
+
+
+
+
+Our Example Setup
+
+
+We’ll use a simple frontend web service application to illustrate some canarying concepts. The application offers an HTTP-based API that consumers can use to manipulate various data (simple information like the price of a product). The example application has some tunable parameters that we can use to simulate various production symptoms, to be evaluated by the canary process. For example, we can make the application return errors for 20% of requests, or we can stipulate that 5% of requests take at least two seconds.
+
+
+We illustrate the canary process using an application deployed on Google App Engine, but the principles apply to any environment. While the example application is fairly contrived, in real-world scenarios, similar applications share common signals with our example that can be used in a canary process.
+
+
+Our example service has two potential versions: live and release candidate. The live version is the version currently deployed in production, and the release candidate is a newly built version. We use these versions to illustrate various rollout concepts and how to implement canaries to make the rollout process safer.
+
+
+
+
+
+
+
+A Roll Forward Deployment Versus a Simple Canary Deployment
+
+
+Let’s first look at a deployment with no canary process, so we can later compare it to a canaried deployment in terms of error budget savings and general impact when a breakage occurs. Our deployment process features a development environment. Once we feel the code is working in the development environment, we deploy that version in the production environment.
+
+
+Shortly after our deployment, our monitoring starts reporting a high rate of errors (see Figure 16-2, where we intentionally configured our sample application to fail 20% of requests to simulate a defect in the example service). For the sake of this example, let’s say that our deployment process doesn’t provide us the option to roll back to a previously known good configuration. Our best option to fix the errors is to find defects in the production version, patch them, and deploy a new version during the outage. This course of action will almost certainly prolong the user impact of the bug.
+
+
+
+Figure 16-2. High rate of errors after deployment
+
+
+
+To improve upon this initial deployment process, we can utilize canaries in our rollout strategy to reduce the impact of a bad code push. Instead of deploying to production all at once, we need a way to create a small segment of production that runs our release candidate. Then we can send a small portion of the traffic to that segment of production (the canary) and compare it against the other segment (the control). Using this method, we can spot defects in the release candidate before all of production is affected.
+
+
+The simple canary deployment in our App Engine example splits traffic between specific labeled versions of our application. You can split traffic using App Engine, or any number of other methods, such as backend weights on a load balancer, proxy configurations, or round-robin DNS records.
+
+
+Figure 16-3 shows that the impact of the change is greatly reduced when we use a canary; in fact, the errors are barely visible! This raises an interesting issue: the canary evaluation is difficult to see and track compared to the overall traffic trend.
+
+
+
+Figure 16-3. Error rate of canary deployment; because the canary population is a small subset of production, the overall error rate is reduced
+
+
+
+To get a clearer picture of the errors we need to track at a reasonable scale, we can look at our key metric (HTTP response codes) by App Engine application version, as shown in Figure 16-4. When we look at per-version breakdown, we can plainly see the errors the new version introduces. We can also observe from Figure 16-4 that the live version is serving very few errors.
+
+
+We can now tune our deployment to automatically react based on the HTTP error rate by App Engine version. If the error rate of the canary metric is too far from the control error rate, this signals the canary deployment is “bad.” In response, we should pause and roll back the deployment, or perhaps contact a human to help troubleshoot the issue. If the error ratios are similar, we can proceed with the deployment as normal. In the case of Figure 16-4, our canary deployment is clearly bad and we should roll it back.
+
+
+
+Figure 16-4. HTTP response codes by App Engine version; the release candidate serves the vast majority of the errors, while the live version produces a low number of errors at a steady state (note: the graph uses a base-10 log scale)
+
+
+
+
+
+
+Canary Implementation
+
+
+Now that we’ve seen a fairly trivial canary deployment implementation, let’s dig deeper into the parameters that we need to understand for a successful canary process.
+
+
+
+Minimizing Risk to SLOs and the Error Budget
+
+
+Chapter 2 discusses how SLOs reflect business requirements around service availability. These requirements also apply to canary implementations. The canary process risks only a small fragment of our error budget, which is limited by time and the size of the canary population.
+
+
+Global deployment can place the SLO at risk fairly quickly. If we deploy the candidate from our trivial example, we would risk failing 20% of requests. If we instead use a canary population of 5%, we serve 20% errors for 5% of traffic, resulting in a 1% overall error rate (as seen earlier in Figure 16-3). This strategy allows us to conserve our error budget—impact on the budget is directly proportional to the amount of traffic exposed to defects. We can assume that detection and rollback take about the same time for both the naive deployment and the canary deployment, but when we integrate a c

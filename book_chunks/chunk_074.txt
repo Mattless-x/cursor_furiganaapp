@@ -1,0 +1,188 @@
+=== The Site Reliability Workbook ===
+=== Chunk 74/100 ===
+
+ overload, the urgency of tickets and alerts might cause team members to work until they resolve the problem, even if doing so means continuous long hours. When a team faces perceived overload, reprioritizing can help decrease the amount of urgent work, creating space for them to tackle the sources of overload through project work.
+
+
+When analyzing your specific situation, you shouldn’t necessarily assume that the workload itself needs to change. Instead, we recommend first quantifying the work your team faces, and how it has (or hasn’t) changed over time. For example, you might measure workload by the number of tickets and pages the team handles. If your workload hasn’t actually changed over time, the team might feel overloaded simply because they perceive the work as overwhelming. To get a more holistic view of the team’s current workload, you can collect a one-time snapshot by asking every member to list all the work tasks they face. Then take a look at psychological stress factors your team faces, such as organizational changes or reprioritization. Once you’ve done your research, you have a stable basis for making decisions about changing the workload.
+
+
+“Strategies for Mitigating Overload” talks more about how to identify overload, both real and perceived. First, we present two case studies of teams that recognized that they were in overload and took steps to alleviate it.
+
+
+
+
+
+Case Study 1: Work Overload When Half a Team Leaves
+
+
+
+Background
+
+
+One of Google’s internal storage SRE teams was in charge of backends for multiple services, including Gmail, Google Drive, and Google Groups, and many other internal or user-facing services. We experienced a crisis in mid-2016 when two-thirds of the team—including the most senior engineer (the manager)—transferred to other opportunities within a relatively short window, for genuinely entirely unrelated reasons. This event obviously led to a huge workload management problem: fewer SREs available to cover the same operational and project work quickly resulted in overload. Our work was also bottlenecked because each team member’s expertise was siloed to a different area of production. While the addition of new team members and three interns would improve our workload in the long term, ramping up those engineers would take a serious investment of time and energy.
+
+
+
+
+
+Problem Statement
+
+
+The preceding factors significantly decreased team productivity. We started to fall behind on project work, and tickets related to the many services we managed began to pile up. We didn’t have the bandwidth to address this backlog, as all of our work was consumed by higher-priority tasks. It wouldn’t be long before we weren’t able to undertake all of the critical and urgent work we needed to. Meanwhile, our team was slated to receive more high-priority work soon.
+
+
+If we didn’t move some work off our plate, it was only a matter of time before we accidentally began to drop important work. However, as soon as we started offloading work, we hit some psychological barriers:
+
+
+
+ 
+ Dropping any work that was in progress felt like we had just wasted our efforts. Most of the backlog seemed to be either critical or worth the effort to us, so it just didn’t feel right to cancel or delay projects indefinitely. We didn’t realize we were in the grip of a sunk cost fallacy.
+
+ 
+
+ 
+ Putting effort into automating processes or fixing the root cause of the workload was not as critical as immediately dealing with high-priority interrupts. When this work was added to the top of an already huge pile, all of the work felt overwhelming.
+
+ 
+
+
+
+
+
+
+What We Decided to Do
+
+
+We gathered the team in a room and listed all the team’s responsibilities, including project backlog, operational work, and tickets. Then we triaged every list item. Viewing every single one of our work tasks (even though the list barely fit on the whiteboard) helped us identify and redefine our actual priorities. We were then able to find ways to minimize, hand off, or eliminate lower-priority work items.
+
+
+
+
+
+Implementation
+
+
+We identified low-effort automation that, while not critical, would significantly reduce operational load once deployed.
+
+
+We also identified common problems that we could document that would enable self-service. Writing the procedures our customers needed didn’t take long, and removed some repetitive work from our queue.
+
+
+We closed as many of our backlogged tickets as we reasonably could. Most of these tickets turned out to be obsolete, redundant, or not as urgent as they claimed. Some tickets were monitoring artifacts that were nonactionable, so we fixed the relevant monitoring. In some cases, we were actively addressing issues that weren’t critical. We set these issues aside to work on more urgent tickets, but first documented our progress so we wouldn’t lose context before we were able to work on them again.
+
+
+When in doubt, we dropped a task, but marked it for a second phase of triage. Once our plates were (almost) empty, we revisited this tentative list to decide what tasks to resume. It turned out that almost none of these tasks were impactful or important enough to resume.
+
+
+In two days—one day of intensive triage plus one day of documenting processes and implementing automation—our much smaller team addressed a backlog of several months of interrupts. We could then deal with the few remaining interrupts, which were related to active issues in production.
+
+
+
+
+
+Lessons Learned
+
+
+Our team learned that identifying and scoping overload is the first step toward fixing it. We needed to get everyone in a room and reevaluate the backlog before we could help our team get back to a healthy state.
+
+
+In order to avoid a new pile-up of interrupts, we started triaging interrupts once every two weeks. Our technical lead periodically checks the task queue and evaluates whether the team is at risk of becoming overloaded. We decided that each team member should have 10 or fewer open tickets to avoid overload. If the team lead notices that team members have more than 10 tickets, they can do one or some combination of the following:
+
+
+
+ 
+ Remind the team to close out stale tickets.
+
+ 
+
+ 
+ Sync with overloaded team members and offload tickets from them.
+
+ 
+
+ 
+ Prompt individual team members to address their ticket queue.
+
+ 
+
+ 
+ Organize a team-wide one-day ticket fix-it.
+
+ 
+
+ 
+ Assign work to fix the sources of tickets, or operational work to reduce future tickets.
+
+ 
+
+
+
+
+
+
+
+
+Case Study 2: Perceived Overload After Organizational and Workload Changes
+
+
+
+Background
+
+
+The Google SRE team in this case study was split between two locations, with six or seven on-call engineers at each site (for more discussion on team size, see Chapter 11 of Site Reliability Engineering. While the Sydney team was operationally healthy, the Zürich team was overloaded.
+
+
+Before the Zürich team went into overload, we were stable and content. The number of services we managed was relatively stable, and each was varied and high maintenance. While the SLOs of the services we supported were mismatched with the SLOs of their external dependencies, this mismatch hadn’t caused any issues. We were working on a number of projects to improve the services we managed (for example, improving load balancing).
+
+
+Simultaneous triggers sent the Zürich team into overload: we started onboarding new services that were noisier and less integrated into Google’s general infrastructure, and the technical lead manager and another team member left our team, leaving it two people short. The combination of the additional workload and knowledge drain triggered more problems:
+
+
+
+ 
+ Untuned monitoring for the new services and the migration-related monitoring resulted in more pages per shift. This buildup was gradual, so we didn’t notice the uptick as it occurred.
+
+ 
+
+ 
+ SREs felt relatively helpless with the new services. We didn’t know enough about them to react appropriately, and often needed to ask the development team questions. While the overload perhaps warranted handing a service back to developers, our team had never handed back a service, so we didn’t really consider this a viable option.
+
+ 
+
+ 
+ A smaller on-call rotation of five people cut into the hours we normally spent on operational work.
+
+ 
+
+ 
+ New ticket alerts were surfacing problems that existed before the recent team changes. While we had simply ignored these problems in the past, we were now required to move ignored email alerts to tickets. Project planning hadn’t taken this new source of technical debt into account.
+
+ 
+
+ 
+ A new ticket SLO required us to handle tickets within three days, meaning that on-callers had to resolve tickets created during their on-call shift much sooner.3 The SLO aimed to reduce the number of tickets being added to our (mostly ignored) backlog, but created a side effect that was perhaps even worse. Now SREs felt that they couldn’t get the rest they needed after a shift because they had to immediately tackle follow-up work. The higher priority placed on these tickets also meant that SREs didn’t have enough time for other operational work.
+
+ 
+
+
+
+During this time, our team was assigned to a new manager who also managed two other teams. The new manager was not part of the on-call rotation and therefore didn’t directly feel the stress team members were experiencing. When the team explained the situation to the manager, nothing changed. Team members felt that they weren’t being heard, which left them feeling distant from the management team.
+
+
+The overload from tickets continued for months, making team members grumpy, until a cascade of unhappiness spread across the team.
+
+
+
+
+
+Problem Statement
+
+
+After losing two people and receiving additional and varied work, our team felt overloaded. When we tried to communicate this feeling to our direct manager, the manager disagreed. As the long hours continued, exhaustion set in. Productivity was declining and tasks started accruing faster than the team could resolve them. The perceived overload now became objective overload, making the situation worse.
+
+
+The emotional stress caused by overload was lowering morale and causing some team members to burn out. As individuals dealt with the physical effects from overwork (illness and lower productivity), other people on the team had to pick up more work. The work assigned in weekly team meetings wasn’t getting done.
+
+
+W

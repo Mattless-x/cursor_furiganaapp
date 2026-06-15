@@ -1,0 +1,159 @@
+=== The Site Reliability Workbook ===
+=== Chunk 76/100 ===
+
+ders should set a good example: work contractual hours and stay home when sick.
+
+ 
+ More frequent illness5
+ 
+ Overworked team members tend to get run down and sick more often.
+
+ 
+ An unhealthy tasks queue
+ 
+ We recommend regularly reviewing your team’s tasks queue to see how many tickets are backlogged, who is dealing with which issues, and what tasks can be delayed or dropped. If the team is missing deadlines, or if urgent matters prevent you from performing this review regularly, the team is very likely accumulating interrupts faster than it can attend to them.
+
+ 
+ Imbalanced metrics
+ 
+ A few key metrics might indicate that your team is overloaded:
+
+
+ 
+ 
+ Long time periods to close a single issue
+
+ 
+
+ 
+ High proportion of time spent on toil
+
+ 
+
+ 
+ Large number of days to close issues originating from an on-call session
+
+ 
+
+ 
+ 
+
+
+The team should work together to decide what measures to use. There is no one-size-fits-all approach; every team’s overload is reflected in different ways. As a manager, don’t impose a measure on the team without getting an idea of each individual’s workload and work habits. Team members might feel that you don’t understand the work if you insist on using a specific measure. For example, if you’re evaluating load by the number of days it takes to fix an issue, one person might work a full day fixing an issue, while another person might distribute the work across several days, along with other work.
+
+
+
+
+
+Reducing Overload and Restoring Team Health
+
+
+After reading through the criteria, you might think your team is already overloaded. Don’t despair! This section provides a list of ideas to get your team back to a healthy state.
+
+
+In general, giving team members more control and power reduces perceived overload.6 While managers might be tempted to resort to micro-management in stressful situations, it’s important to keep the team in the loop and work on prioritization together in order to increase the level of performance and job satisfaction.7 This model assumes a baseline of a functional team, where you have (at minimum) a somewhat healthy relationship between management and team members, and between team members.
+
+
+
+Identify and alleviate psychosocial stressors
+
+
+When it comes to fixing a dysfunctional team, first and foremost, individual team members need to regain their sense of psychological safety. A team can function only as well as its individual members.
+
+
+You can start by identifying and alleviating psychosocial stressors8 for each individual and the team as a whole. Which of these factors do you actually have control over? You can’t control whether or not a team member has a major illness, but you can control the size of your team’s backlog (as seen in Case Study 1) or silence pages (as in Case Study 2).
+
+
+Communicate with your partner product developer teams, and let them know your team is overloaded. They might be able to give a helping hand, provide compassion, or even take over entire projects.
+
+
+When your team members rely on each other and achieve a certain level of psychological safety (such that they’re able to take interpersonal risks), you can give more responsibility to individual team members. Uncovering areas of expertise and assigning point people and technical leads to specific technologies increases their self-confidence and therefore enables them to take risks.
+
+
+Decision making should be transparent and, if possible, democratic. Each team member should have a feeling of control over the situation. For example, the brainstorming session in Case Study 2 helped the team identify and discuss issues.
+
+
+
+
+
+Prioritize and triage within one quarter
+
+
+A healthy team can prioritize and triage issues. Case Study 1 provides a good example of this exercise: the team sat together in a room and reviewed their backlog. The review helped them realize they were overloaded. They reprioritized their work, and worked on the tasks that would quickly reduce some of the overload. The team in Case Study 2 now meets at the end of each quarter to plan and prioritize existing and future work together.
+
+
+If possible, we recommend that SREs schedule interrupt-free time (no on-call) on their calendars, so that they have time to work on qualitatively difficult tasks like developing automation and investigating the root causes of interrupts. In Case Study 2, when the remote team gave the on-call some relief, team members then had precious time to focus on their projects.
+
+
+If absolutely necessary, drop work: in Case Study 2, the team dropped on-call support for one of their services by returning this responsibility to the development team.
+
+
+
+
+
+Protect yourself in the future
+
+
+We strongly recommend establishing metrics to evaluate the team’s workload. Regularly review the metrics to make sure they are measuring the right things.
+
+
+Once your team emerges from overload, you can prevent future overload by taking steps to monitor or resolve the underlying problems. For example, the team in Case Study 1 now maintains a lightweight triage process to detect a growing backlog of tasks. The team in Case Study 2 is currently working on a long-term plan to align backend and service SLOs.
+
+
+When your team is in overload, prioritize project work that pays down repetitive toil even more than you would if you weren’t overloaded. You will profit in the future.
+
+
+Finally, everyone on the team should feel responsible for the early warning signs (see “Recognizing the Symptoms of Overload”) that indicate a possible overload situation. Managers should sit down and talk with team members if they feel that the team is moving toward overload.
+
+
+
+
+
+
+
+
+
+Conclusion
+
+
+In a perfect world, SRE teams would always be able to manage interrupts with the tactics described in our first book. But we’re only human, and sometimes our teams don’t reach that ideal. This chapter examined some of the ways that overload can consume a team and discussed how to detect and respond when it does.
+
+
+Particularly when it comes to operational work, excessive interrupts can very easily cause a team to slip from a normal workload to overload. Frequent interrupts can lead to overload, and overload negatively affects health and productivity. Overload creates psychosocial stressors for team members, which impacts work even further, causing a self-enforcing cycle.
+
+
+Perceived overload is a special form of overload that can’t be measured by the amount of toil or operational work. It is hard to pinpoint and to eliminate.
+
+
+In order to keep a team’s workload in balance, it’s important to constantly monitor (perceived or nonperceived) overload. To better serve your users and do good work, you need to first show respect to yourself and your team. Maintaining a healthy balance in your daily work goes a long way in helping you and your team accomplish that goal.
+
+
+
+1 Kara A. Latorella, Investigating Interruptions: Implications for Flightdeck Performance (Hampton, VA: Langley Research Center, 1999), https://go.nasa.gov/2Jc50Nh; NTSB, Aircraft Accident Report: NWA DC-9-82 N312RC, Detroit Metro, 16 August 1987 (No. NTSB/AAR-88/05) (Washington, DC: National Transportation Safety Board, 1988), http://libraryonline.erau.edu/online-full-text/ntsb/aircraft-accident-reports/AAR88-05.pdf.
+2 Emmanuelle Brun and Malgorzata Milczarek, Expert Forecast on Emerging Psychosocial Risks Related to Occupational Safety and Health (Bilbao, Spain: European Agency for Safety and Health at Work, 2007), https://osha.europa.eu/en/tools-and-publications/publications/reports/7807118; M. Melchior, I. Niedhammer, L. F. Berkman, and M. Goldberg, “Do Psychosocial Work Factors and Social Relations Exert Independent Effects on Sickness Absence? A Six-Year Prospective Study of the GAZEL Cohort,” Journal of Epidemiology and Community Health 57, no. 4 (2003): 285–93, http://jech.bmj.com/content/jech/57/4/285.full.pdf.
+3 For context, according to estimates, an SRE needed at least one additional day of ticket follow-up per shift.
+4 We used the Google program based on Project Aristotle: http://bit.ly/2LPemR2.
+5 Kurt G. I. Wahlstedt and Christer Edling, “Organizational Changes at a Postal Sorting Terminal—Their Effects Upon Work Satisfaction, Psychosomatic Complaints and Sick Leave,” Work and Stress 11, no. 3 (1997): 279–91.
+6 Robert A. Karasek Jr., “Job Demands, Job Decision Latitude, and Mental Strain—Implications for Job Redesign,” Administrative Science Quarterly 24, no. 2 (1979): 285–308.
+7 Frank W. Bond and David Bunce, “Job Control Mediates Change in a Work Reorganization Intervention for Stress Reduction,” Journal of Occupational Health Psychology 6, no. 4 (2001): 290–302; Toby D. Wall, Paul R. Jackson, and Keith Davids, “Operator Work Design and Robotics System Performance: A Serendipitous Field Study,” Journal of Applied Psychology 77, no. 3 (1992): 353–62.
+8 Brun and Malgorzata, Expert Forecast.
+
+SRE Engagement Model
+
+Chapter 18. SRE Engagement Model
+
+
+By Michael Wildpaner, Gráinne Sheerin, Daniel Rogers,
+
+and Surya Prashanth Sanagavarapu (New York Times)
+
+with Adrian Hilton and Shylaja Nukala
+
+
+Chapter 32 in our first SRE book describes technical and procedural approaches that an SRE team can take to analyze and improve the reliability of a service. These strategies include Production Readiness Reviews (PRRs), early engagement, and continuous improvement.
+
+
+Simply put, SRE principles aim to maximize the engineering velocity of developer teams while keeping products reliable. This two-fold goal is good for the product users and good for the company. But there’s a limit to how much even the best SRE team can accomplish, and the SRE model is less effective when the domain is too large and overly complex. The current microservices movement makes this dynamic even more acute—a small company can easily have more microservices than a single SRE team can handle. Given a large production landscape, and with the knowledge that they can’t cover every service, an SRE team must decide where to focus their attention to achieve the best results. Product development and SRE teams can collaborate to identify the correct point of focus.
+
+
+This chapter adopts the perspective of an SRE team that’s intending to provide support for a new service. We look at how to engage most effectively with the service, and with the developer and product teams who own it. Although SRE engagement often builds around one or more services, the engagement

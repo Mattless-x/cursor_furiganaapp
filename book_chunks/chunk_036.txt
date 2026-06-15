@@ -1,0 +1,239 @@
+=== The Site Reliability Workbook ===
+=== Chunk 36/100 ===
+
+action because the system “fixed itself” or the bug inexplicably “went away,” invites the bug to happen again and cause another page, which causes trouble for the next on-call engineer.
+
+
+Simply fixing the immediate bug (or making a “point” fix) misses a golden opportunity to prevent similar alerts in the future. Use the paging alert as an chance to surface engineering work that improves the system and obviates an entire class of possible future bugs. Do this by filing a project bug in your team’s production component, and advocate to prioritize its implementation by gathering data about how many individual bugs and pages this project would remove. If your proposal will take 3 working weeks or 120 working hours to implement, and a page costs on average 4 working hours to properly handle, there’s a clear break-even point after 30 pages.
+
+
+For example, imagine a situation where there are too many servers on the same failure domain, such as a switch in a datacenter, causing regular multiple simultaneous failures:
+
+
+
+ Point fix
+ Rebalance your current footprint across more failure domains and stop there.
+
+ Systemic fix
+ Use automation to ensure that this type of server, and all other similar servers, are always spread across sufficient failure domains, and that they rebalance automatically when necessary.
+
+ Monitoring (or prevention) fix
+ Alert preemptively when the failure domain diversity is below the expected level, but not yet service-impacting. Ideally, the alert would be a ticket alert, not a page, since it doesn’t require an immediate response. The system is still serving happily, albeit at a lower level of redundancy.
+
+
+
+To make sure you’re thorough in your follow-up to paging alerts, consider the following questions:
+
+
+
+ 
+ How can I prevent this specific bug from happening again?
+
+ 
+
+ 
+ How can I prevent bugs like this from happening again, both for this system and other systems I’m responsible for?
+
+ 
+
+ 
+ What tests could have prevented this bug from being released to production?
+
+ 
+
+ 
+ What ticket alerts could have triggered action to prevent the bug from becoming critical before it paged?
+
+ 
+
+ 
+ What informational alerts could have surfaced the bug on a console before it became critical?
+
+ 
+
+ 
+ Have I maximized the impact of the fixes I’m making?
+
+ 
+
+
+
+Of course, it’s not enough for an on-call engineer to just file bugs related to the pages that occur on their shift. It’s incredibly important that bugs identified by the SRE team are dealt with swiftly, to reduce the possibility of them recurring. Make sure resource planning for both the SRE and developer teams consider the effort required to respond to bugs.
+
+
+We recommend reserving a fraction of SRE and developer team time for responding to production bugs as they arise. For example, a Google on-caller typically doesn’t work on projects during their on-call shift. Instead, they work on bugs that improve the health of the system. Make sure that your team routinely prioritizes production bugs above other project work. SRE managers and tech leads should make sure that production bugs are promptly dealt with, and escalate to the developer team decision makers when necessary.
+
+
+When a paging event is serious enough to warrant a postmortem, it’s even more important to follow this methodology to catalog and track follow-up action items. (See Chapter 10 for more details.)
+
+
+
+
+
+Data quality
+
+
+Once you identify bugs in your system that caused pages, a number of questions naturally arise:
+
+
+
+ 
+ How do you know which bug to fix first?
+
+ 
+
+ 
+ How do you know which component in your system caused most of your pages?
+
+ 
+
+ 
+ How do you determine what repetitive, manual action on-call engineers are taking to resolve the pages?
+
+ 
+
+ 
+ How do you tell how many alerts with unidentified root causes remain?
+
+ 
+
+ 
+ How do you tell which bugs are truly, not just anecdotally, the worst?
+
+ 
+
+
+
+The answer is simple: collect data!
+
+
+When building up your data collection processes, you might track and monitor the patterns in on-call load, but this effort doesn’t scale. It’s far more sustainable to file a placeholder bug for each paging alert in your bug tracking system (e.g., Jira, IssueTracker), and for the on-call engineer to create a link between the paging alerts from your monitoring system and the relevant bug in the bug tracking system, as and when they realize that each alert is symptomatic of a preexisting issue. You will end up with a list of as-yet-not-understood bugs in one column, and a list of all of the pages that each bug is believed to have caused in the next.
+
+
+Once you have structured data about the causes of the pages, you can begin to analyze that data and produce reports. Those reports can answer questions such as:
+
+
+
+ 
+ Which bugs cause the most pages? Ideally we’d roll back and fix bugs immediately, but sometimes, finding the root cause and deploying the fix takes a long time, and sometimes silencing key alerts isn’t a reasonable option. For example, the aforementioned Connection SRE Team might experience ongoing network congestion that isn’t immediately resolvable but still needs to be tracked. Collecting data on which production issues are causing the most pages and stress to the team supports data-driven conversations about prioritizing your engineering effort systematically.
+
+ 
+
+ 
+ Which component of the system is the cause of most pages (payments gateway, authentication microservice, etc.)?
+
+ 
+
+ 
+ When correlated with your other monitoring data, do particular pages correspond to other signals (peaks in request rate, number of concurrent customer sessions, number of signups, number of withdrawals, etc.)?
+
+ 
+
+
+
+Tying structured data to bugs and the root causes of your pages has other benefits:
+
+
+
+ 
+ You can automatically populate a list of existing bugs (that is, known issues), which may be useful for your support team.
+
+ 
+
+ 
+ You can automatically prioritize fixing bugs based on the number of pages each bug causes.
+
+ 
+
+
+
+The quality of the data you collect will determine the quality of the decisions either humans or automata can make. To ensure high-quality data, consider the following techniques:
+
+
+
+ 
+ Define and document your team’s policy and expectations on data collection for pages.
+
+ 
+
+ 
+ Set up nonpaging alerts from the monitoring system to highlight where pages were not handled according to those expectations. Managers and tech leads should make sure that the expectations are met.
+
+ 
+
+ 
+ Teammates should follow up with each other when handoffs don’t adhere to expectations. Positive comments such as, “Maybe this could be related to bug 123,” “I’ve filed a bug with your findings so we can follow up in more detail,” or “This looks a lot like what happened on my shift last Wednesday: <link to page, bug>” powerfully reinforce the expected behaviors and ensure that you maximize opportunities for improvement. No one wants to be paged for the same issue that paged their teammate in the previous shift.
+
+ 
+
+
+
+
+
+
+Vigilance
+
+
+All too often, teams fall into operational overload by a thousand cuts. To avoid boiling the frog, it is important to pay attention to the health of on-call engineers over time, and ensure that production health is consistently and continuously prioritized by both SRE and developer teams.
+
+
+The following techniques can help a team keep a watchful eye on pager load:
+
+
+
+ 
+ At production meetings (see the section “Communications: Production Meetings” in Site Reliability Engineering, Chapter 31), regularly talk about trends in pager load based on the structured data collected. We’ve found a 21-day trailing average to be useful.
+
+ 
+
+ 
+ Set up ticket alerts, possibly targeted at tech leads or managers, for when pager load crosses a “warning” threshold that your team agrees on beforehand.
+
+ 
+
+ 
+ Hold regular meetings between the SRE team and developer team to discuss the current state of production and the outstanding production bugs that are paging SRE.
+
+ 
+
+
+
+
+
+
+
+
+
+
+On-Call Flexibility
+
+
+
+Shift Length
+
+
+An on-call rotation that has to handle one or more pages per day must be structured in a sustainable way: we recommend limiting shift lengths to 12 hours. Shorter shifts are better for the mental health of your engineers. Team members run the risk of exhaustion when shifts run long, and when people are tired, they make mistakes. Most humans simply can’t produce high-quality work if they’re on-call continuously. Many countries have laws about maximum working hours, breaks, and working conditions.
+
+
+While spreading on-call shifts across a team’s daylight hours is ideal, a 12-hour shift system doesn’t necessitate a globally distributed team. Being on-call overnight for 12 hours is preferable to being on-call for 24 hours or more. You can make 12-hour shifts work even in a single location. For example, instead of asking a single engineer to be on-call for 24 hours a day across an entire week-long shift, it would be better for two engineers to split a week of on-call, with one person on-call during the day and one on-call overnight.
+
+
+In our experience, 24 hours of on-call duty without reprieve isn’t a sustainable setup. While not ideal, occasional overnight 12-hour shifts at least ensure breaks for your engineers. Another option is to shorten shifts to last less than a week—something like 3 days on, 4 days off.
+
+
+
+
+
+Scenario: A change in personal circumstances
+
+
+Imagine you are a member of an on-call team for a large service that has a 24/7 follow-the-sun model split across two sites. The arrangement works well for you. While you’re not thrilled about the possibility of a 6 a.m. page, you are happy with the work you and the team are doing to keep the operational load manageable while improving the reliability of the service.
+
+
+All is well…until one day you realize that the on-call schedule and the demands of your personal life are starting to clash. There are many potential reasons why—for example, becoming a parent, needing to travel on short notice and take a leave from work, or illness.
+
+
+You need your on-call duties to coexist with your new personal schedule.
+
+
+Many teams and organizations face this challenge as they mature. People’s needs change over time, and maintaining a healthy balance of diverse teammate backgrounds leads to an on-call rotation characterized by diverse needs. The key to keeping a healthy, fair, 

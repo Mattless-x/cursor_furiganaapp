@@ -1,0 +1,251 @@
+=== The Site Reliability Workbook ===
+=== Chunk 82/100 ===
+
+ror budgets—and especially how you practice them in your teams. Then help them describe the critical applications they’ve built on your platform in those terms.
+
+
+
+
+
+Step 2: Audit the Monitoring and Build Shared Dashboards
+
+
+Once your customers have picked some basic SLOs for their application, the next question is if they are measuring the right things to determine whether or not they’re meeting those goals. You should help them figure out if the measurements they’re using are appropriate.
+
+
+In our experience, up to half of the things your customer is measuring (and alerting on) have zero impact on their SLOs. Your life will be better when you point this out to them and they turn off the offending alerting. It will mean fewer pages for them, and for you!
+
+
+The remaining measurements are useful candidate SLIs. Help your customer assemble those measurements to calculate their SLOs.
+
+
+Once you begin this exercise, you’ll quickly find that parts of the SLOs are uncovered—there aren’t relevant measurements in place to say anything useful about these dimensions. You should help your customer cover these parts of their SLOs, too.
+
+
+Now, your customers can start to say something about their application’s SLO performance on your platform.
+
+
+Finally, build a set of shared SLO dashboards with your customer. You should be able to see their application SLOs, and you should share any information you have that’s relevant to how they’re experiencing your system performance. Your goal is that whenever your customer contacts you because their SLO seems threatened, you shouldn’t have to swap much additional information. All of that information should be in the shared monitoring.
+
+
+
+
+
+Step 3: Measure and Renegotiate
+
+
+Once you sort the measurements out, you should collect data for a month or two. Be prepared for the likelihood that your customer is in for a rude awakening. The application they thought was operating at “five 9s” (99.999%; everybody thinks they’re getting five 9s) is probably achieving only 99.5%–99.9% when measured against their shiny new SLOs. 
+
+
+After the initial shock wears off, this is a great time to point out that their users aren’t yelling all the time, so they probably never needed the five 9s they haven’t really been getting.
+
+
+The key question is, how satisfied are their users with the application’s performance? If their users are happy, and there’s no evidence that improving performance or availability will increase user adoption/retention/usage, then you’re done. You should periodically ask yourself this question to make sure that your budgets and priorities are still correct. (See Chapter 2 for a more in-depth treatment of this topic.)
+
+
+If the customer thinks they still need to make things a little better, move on to the next step.
+
+
+
+
+
+Step 4: Design Reviews and Risk Analysis
+
+
+Sit down with your customer and really understand how their application is designed and operated. Do they have any hidden single point of failures (SPOFs)? Are their rollouts and rollbacks manual? Basically, conduct the same exercise you conduct for your own internal applications.
+
+
+Next, rank the issues you find by how much of their error budget each item consumes. (Read more about how to do that on the Google Cloud Platform Blog.) Pay attention to which items your customer chooses to fix in order to “earn back the 9s” they want (e.g., to move from 99.5% to 99.9%).
+
+
+What you learn from these reviews will tell you:
+
+
+
+ 
+ How your customers consume your platform
+
+ 
+
+ 
+ What reliability mistakes they make when doing so
+
+ 
+
+ 
+ Which tradeoffs they choose when trying to improve
+
+ 
+
+
+
+This exercise will also help your customer set realistic expectations around the reliability they should experience with their current application. Their expectations will affect their perceptions, so setting them appropriately can only be helpful in earning and keeping their trust.
+
+
+
+
+
+Step 5: Practice, Practice, Practice
+
+
+The final step is to create some operational rigor with your customer. Practice simulated problems (Wheel of Misfortune exercises, disaster and recovery testing, paper game days, etc.).
+
+
+Develop a healthy muscle memory between the teams for effective ways to communicate during a crisis. It’s a great way to build trust, lower the MTTR, and learn about weird operational edge cases that you can integrate as enhancements into your platform features.
+
+
+When an incident does occur, don’t just share your postmortems with your customer. Actually conduct some joint postmortems. Doing so will also build trust and teach you some invaluable lessons.
+
+
+
+
+
+Be Thoughtful and Disciplined
+
+
+It will quickly become impossible to carry out these steps with more than a small percentage of your customers. Please don’t try extending this model to everyone. Instead, make some principled decisions about how you will make selections. Here are some common approaches:
+
+
+
+ Revenue coverage
+ Select the minimum number of customers to account for XX% of your revenue. If your revenue is heavily weighted to a few large customers, then this might be the right choice for you.
+
+ Feature coverage
+ Select the minimum number of customers to cover more than XX% of your platform features. If you run a highly diverse platform with a long tail of customers doing a lot of different things, then this approach will help you avoid surprises.
+
+ Workload coverage
+ Your platform’s usage may be dominated by a few distinct use cases or customer types. Perhaps no individual customer in those types is dominant, but you can easily group them into cohorts. In that case, sampling one or two customers from each cohort is a good way to get platform coverage and discover operational differences between the use cases.
+
+
+
+Whatever approach you choose, stick to it. Mixing and matching will confuse your stakeholders and quickly overwhelm your team.
+
+
+
+
+
+
+
+Conclusion
+
+
+Over the last few years, the SRE profession and role has spread widely outside the walls of Google. Although we never expected this, we are nonetheless thrilled by it. We might be able to say something credible about how we think the discipline will evolve inside Google, but in the wild—well, that’s an “uncomfortably exciting” proposition.
+
+
+One thing we feel pretty sure about is that as you adopt SRE principles into your organization, you will cross many of the same inflection points we did (and some we have not!)—including the need to blur the lines more between where your customers end and where you start.
+
+
+Engaging with individual customers at this level of operational depth is a rewarding new frontier for us, and we’re still very much on the path. (You can follow along online at the Google Cloud Platform Blog.) The further we go, however, the more certain we are that this is a journey that you, too, will need to take.
+
+SRE Team Lifecycles
+
+Chapter 20. SRE Team Lifecycles
+
+
+By David Ferguson and Prashant Labhane
+
+with Shylaja Nukala
+
+
+The Preface to this book set a goal to “dispel the idea that SRE is implementable only at ‘Google scale’ or in ‘Google culture.’” This chapter lays out a roadmap for maturing an SRE organization from unstaffed but aspirational, through various stages of maturity, to a robust and (potentially) globally distributed set of SRE teams. Regardless of where you are in your journey as an SRE organization, this chapter will help you identify strategies for evolving your SRE organization.
+
+
+We discuss the SRE principles that need to be in place at each stage of this journey. While your own journey will vary depending on the size, nature, and geographic distribution of your organization, the path we describe to successfully apply SRE principles and implement SRE practices should be generalizable to many different types of organizations.
+
+
+
+SRE Practices Without SREs
+
+
+Even if you don’t have SREs, you can adopt SRE practices by using SLOs. As discussed in Chapter 2, SLO are the foundations for SRE practices. As such, they inform our first principle of SRE:
+
+
+
+ Principle #1
+
+ 
+ SRE needs SLOs with consequences.
+
+ 
+
+
+
+The performance of your service relative to SLOs should guide your business decisions.
+
+
+We believe that the following practices—which you can achieve without even having a single SRE—are the crucial steps toward implementing SRE practices:
+
+
+
+ 
+ Acknowledge that you don’t want 100% reliability.
+
+ 
+
+ 
+ Set a reasonable SLO target. This SLO should measure the reliability that is most important to your users.
+
+ 
+
+ 
+ Agree on an error budget policy that will help defend your user experience. Use the error budget to help guide:
+
+
+ 
+ 
+ Tactical actions to mitigate outages or to manage changes that return your system to a reliable state
+
+ 
+
+ 
+ Longer-term prioritization of work to make the system more reliable and use less of the error budget
+
+ 
+
+ 
+ 
+
+ 
+ Measure the SLO and commit to following the error budget policy. This commitment requires agreement from company leadership.
+
+ 
+
+
+
+Even if an organization doesn’t have SRE staff, we believe that it is worthwhile to set SLOs for critical customer applications and to implement an error budget policy, if only because an implicit 100% SLO means a team can only ever be reactive. This SRE principle allows you to make data-informed decisions about how to ensure the reliability of your application.
+
+
+
+
+
+Starting an SRE Role
+
+
+
+Finding Your First SRE
+
+
+It’s possible that your first SRE employees won’t have explicit experience as an SRE. We’ve found the following areas to be relevant to the SRE role, and therefore appropriate to cover in interviews:
+
+
+
+ Operations
+ Running applications in production gives invaluable insights that cannot be easily gained otherwise.
+
+ Software engineering
+ SREs need to understand the software they are supporting, and be empowered to improve it.
+
+ Monitoring systems
+ SRE principles require SLOs that can be measured and accounted for.
+
+ Production automation
+ Scaling operations requires automation.
+
+ System architecture
+ Scaling the application requires good architecture.
+
+
+
+Your first SRE will likely occupy a difficult and ambiguous position between velocity and reliability goals. They will need to be resilient and flexible in order to provide the right balance between enabling product development and defending the customer experience.
+
+

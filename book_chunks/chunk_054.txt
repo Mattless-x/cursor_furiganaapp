@@ -1,0 +1,246 @@
+=== The Site Reliability Workbook ===
+=== Chunk 54/100 ===
+
+(4 × 1012 bytes) / (25,500 tasks) = 157 MB/task
+
+ 
+
+
+
+Tasks per machine:
+
+
+
+ 
+ (6.4 × 1010 bytes) / (1.57 × 108 bytes) = 408 tasks/machine
+
+ 
+
+
+
+We know we can fit many tasks on a single machine, but we need to ensure that we won’t be bottlenecked by IO. The total network throughput for ClickMap and QueryMap (using a high estimate of 2 KB per entry):
+
+
+
+ 
+ (1.02 × 106 queries/sec) × (2 × 103 bytes) = 2.04 GB/sec = 16 Gbps
+
+ 
+
+
+
+Throughput per task:
+
+
+
+ 
+ 16 Gbps / 25,500 tasks = 80 KB/sec = 640 Kbps/task
+
+ 
+
+
+
+Throughput per machine:
+
+
+
+ 
+ 408 tasks × 640 Kbps/task = 256 Mbps
+
+ 
+
+
+
+Our combination of 157 MB memory and 640 Kbps per task is manageable. We need approximately 4 TB of RAM in each datacenter to host the sharded ClickMap and QueryMap. If we have 64 GB of RAM per machine, we can serve the data from just 64 machines, and will use only 25% of each machine’s network bandwidth.
+
+
+
+
+
+Evaluation
+
+
+Now that we’ve designed a multidatacenter system, let’s review if the dataflow makes sense.
+
+
+Figure 12-4 shows the entire system design. You can see how each search query and ad click is communicated to the servers, and how the logs are collected and pushed into each component.
+
+
+We can check this system against our requirements:
+
+
+
+ 10,000 ad clicks per second
+ 
+ The LogJoiner can scale horizontally to process all log clicks, and store the result in the ClickMap.
+
+ 
+ 500,000 search queries per second
+ 
+ The QueryStore and QueryMap have been designed to handle storing a full day of data at this rate.
+
+ 
+ 99.9% of dashboard queries complete in < 1 second
+ 
+ The CTR dashboard fetches data from QueryMap and ClickMap, which are keyed by ad_id, making this transaction fast and simple.
+
+ 
+ 99.9% of the time, the CTR data displayed is less than 5 minutes old
+ 
+ Each component is designed to scale horizontally, meaning that if the pipeline is too slow, adding more machines will decrease the end-to-end pipeline latency.
+
+ 
+
+
+We believe this system architecture scales to meet our requirements for throughput, performance, and reliability.
+
+
+
+Figure 12-4. Multidatacenter design
+
+
+
+
+
+
+
+
+
+
+
+
+Conclusion
+
+
+NALSD describes the iterative process of system design that Google uses for production systems. By breaking down software into logical components and placing these components into a production ecosystem with reliable infrastructure, we arrive at systems that provide reasonable and appropriate targets for data consistency, system availability, and resource efficiency. The practice of NALSD allows us to improve our design without starting anew for each iteration. While various design iterations presented in this chapter satisfied our original problem statement, each iteration revealed new requirements, which we could meet by extending our previous work.
+
+
+Throughout this process, we separated software components based on how we expected the system to grow. This strategy allowed us to scale different parts of the system independently and removed dependencies on single pieces of hardware or single instances of software, thereby producing a more reliable system.
+
+
+Throughout the design process, we continued to improve upon each iteration by asking the four key NALSD questions:
+
+
+
+ Is it possible?
+ 
+ Can we build it without “magic”?
+
+ 
+ Can we do better?
+ 
+ Is it as simple as we can reasonably make it?
+
+ 
+ Is it feasible?
+ 
+ Does it fit within our practical constraints (budget, time, etc.)?
+
+ 
+ Is it resilient?
+ 
+ Will it survive occasional but inevitable disruptions?
+
+ 
+
+
+NALSD is a learned skill. As with any skill, you need to practice it regularly to maintain your proficiency. Google’s experience has shown that the ability to reason from an abstract requirement to a concrete approximation of resources is critical to building healthy and long-lived systems.
+
+
+
+1 Fay Chang et al., “Bigtable: A Distributed Storage System for Structured Data,” ACM Transactions on Computer Systems (TOCS) 26, no. 2 (2008), http://bit.ly/2J22BZv.
+2 This section is based on Rajagopal Ananthanarayanan et al., “Photon: Fault-tolerant and Scalable Joining of Continuous Data Streams,” in SIGMOD ’13: Proceedings of the 2013 ACM SIGMOD International Conference on Management of Data (New York: ACM, 2013), http://bit.ly/2Jse3Ns.
+
+Data Processing Pipelines
+
+Chapter 13. Data Processing Pipelines
+
+
+By Rita Sodt and Igor Maravić (Spotify)
+
+with Gary Luo, Gary O’Connor, and Kate Ward
+
+
+Data processing is a complex field that’s constantly evolving to meet the demands of larger data sets, intensive data transformations, and a desire for fast, reliable, and inexpensive results. The current landscape features data sets that are generated and collected from a variety of sources—from mobile usage statistics to integrated sensor networks to web application logs, and more. Data processing pipelines can turn these often unbounded, unordered, global-scale data sets into structured, indexed storage that can help inform crucial business decisions or unlock new product features. In addition to providing insight into system and user behavior, data processing is often business-critical. Delayed or incorrect data in your pipeline can manifest in user-facing issues that are expensive, labor-intensive, and time-consuming to fix.
+
+
+This chapter starts by using product examples to examine some common types of applications of big data processing pipelines. We then explore how to identify pipeline requirements and design patterns, and enumerate some best practices of managing data processing pipelines throughout the development lifecycle. We cover tradeoffs you can make to optimize your pipeline and techniques for measuring the important signals of pipeline health. For a service to remain healthy and reliable once it’s deployed, SREs (as well as developers) should be able to navigate all of these tasks. Ideally, SREs should be involved in this work from its early stages: Google’s SRE teams regularly consult with teams developing a data processing pipeline to ensure that the pipeline can be easily released, modified, and run without causing issues for customers.
+
+
+Finally, the Spotify case study provides an overview of their event delivery processing pipeline, which uses a combination of in-house, Google Cloud, and other third-party solutions to manage a complex, business-critical data processing pipeline. Whether you own a pipeline directly, or own another service that depends on the data that a pipeline produces, we hope you can use the information in this chapter to help make your pipelines (and services) more reliable.
+
+
+For a comprehensive discussion of Google’s philosophies on data processing pipelines, see Chapter 25 of our first SRE book.
+
+
+
+Pipeline Applications
+
+
+There is a wide variety of pipeline applications, each with its own strengths and use cases. A pipeline can involve multiple stages; each stage is a separate process with dependencies on other stages. One pipeline might contain multiple stages, which are abstracted away with a high-level specification. An example of this is in Cloud Dataflow: a user writes the business logic with a relatively high-level API, and the pipeline technology itself translates this data into a series of steps or stages where one’s output is the input of another. To give you an idea of the breadth of pipeline applications, next we describe several pipeline applications and their recommended uses. We use two example companies with different pipeline and implementation requirements to demonstrate different ways of meeting their respective data needs. These examples illustrate how your specific use case defines your project goals, and how you can use these goals to make an informed decision on what data pipeline works best for you.
+
+
+
+Event Processing/Data Transformation to Order or Structure Data
+
+
+The Extract Transform Load (ETL) model is a common paradigm in data processing: data is extracted from a source, transformed, and possibly denormalized, and then “reloaded” into a specialized format. In more modern applications, this might look like a cognitive process: data acquisition from some kind of sensor (live or playback) and a selection and marshalling phase, followed by “training” of a specialized data structure (like a machine learning network).
+
+
+ETL pipelines work in a similar way. Data is extracted from a single (or multiple) sources, transformed, and then loaded (or written) into another data source. The transformation phase can serve a variety of use cases, such as:
+
+
+
+ 
+ Making changes to the data format to add or remove a field
+
+ 
+
+ 
+ Aggregating computing functions across data sources
+
+ 
+
+ 
+ Applying an index to the data so it has better characteristics for serving jobs that consume the data
+
+ 
+
+
+
+Typically, an ETL pipeline prepares your data for further analysis or serving. When used correctly, ETL pipelines can perform complex data manipulations and ultimately increase the efficiency of your system. Some examples of ETL pipelines include:
+
+
+
+ 
+ Preprocessing steps for machine learning or business intelligence use cases
+
+ 
+
+ 
+ Computations, such as counting how many times a given event type occurs within a specific time interval
+
+ 
+
+ 
+ Calculating and preparing billing reports
+
+ 
+
+ 
+ Indexing pipelines like the ones that power Google’s web search
+
+ 
+
+
+
+
+
+
+Data Analytics
+
+
+Business intelligence refers to technologies, tools, and practices for collecting, integrating, analyzing, and presenting large volumes of information to enable better decision making.1 Whether you have a retail product, a mobile game, or Internet of Things–connected sensors, aggregating data across multiple users or devices can help you identify where things are broken or working well.
+
+
+To illustrate the data analytics use case, let’s examine a fictional company and their recently launched mobile and web game, Shave the Yak. The owners want to know how their users interact with the game, both on their mobile devices and on the web. As a first step, they produce a data analytics report of the game that processes data about player events. The company’s business leaders have requested monthly reports on the most used features of the game so they can plan new feature development and perform market analysis. The mobile and web analytics for the game are stored in Google Cloud BigQuery tables that are updated three times a day by Go

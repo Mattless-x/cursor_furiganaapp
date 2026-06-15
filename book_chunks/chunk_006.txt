@@ -1,0 +1,144 @@
+=== The Site Reliability Workbook ===
+=== Chunk 6/100 ===
+
+ms in order to offset unhelpful, adrenaline-laden reactions.
+
+ 
+
+ 
+ Ultimately, implementing DevOps or SRE is a holistic act; both hope to make the whole of the team (or unit, or organization) better, as a function of working together in a highly specific way. For both DevOps and SRE, better velocity should be the outcome.15
+
+ 
+
+
+
+As you can see, there are many areas of commonality between DevOps and SRE.
+
+
+Yet there are significant differences as well. DevOps is in some sense a wider philosophy and culture. Because it effects wider change than does SRE, DevOps is more context-sensitive. DevOps is relatively silent on how to run operations at a detailed level. For example, it is not prescriptive around the precise management of services. It chooses instead to concentrate on breaking down barriers in the wider organization. This has much value.
+
+
+SRE, on the other hand, has relatively narrowly defined responsibilities and its remit is generally service-oriented (and end-user-oriented) rather than whole-business-oriented. As a result, it brings an opinionated intellectual framework (including concepts like error budgets) to the problem of how to run systems effectively. Although SRE is, as a profession, highly aware of incentives and their effects, it in turn is relatively silent on topics like siloization and information barriers. It would support CI and CD not necessarily because of the business case, but because of the improved operational practices involved. Or, to put it another way, SRE believes in the same things as DevOps but for slightly different reasons.
+
+
+
+
+
+Organizational Context and Fostering Successful Adoption
+
+
+DevOps and SRE have a very large conceptual overlap in how they operate. As you might expect, they also have a similar set of conditions that have to be true within the organization in order for them to a) be implementable in the first place, and b) obtain the maximum benefit from that implementation. As Tolstoy almost but never quite said, effective operations approaches are all alike, whereas broken approaches are all broken in their own way. Incentives can in part explain why that is.
+
+
+If an organization’s culture values the benefits of a DevOps approach and is willing to bear those costs—typically expressed as difficulties in hiring, the energy required to maintain fluidity in teams and responsibilities, and increased financial resources dedicated to compensating a skill set that is necessarily more rare—then that organization must also make sure the incentives are correct in order to achieve the full benefit of this approach.
+
+
+Specifically, the following should hold true in the context of both DevOps and SRE.
+
+
+
+Narrow, Rigid Incentives Narrow Your Success
+
+
+Many companies accidentally define formal incentives that undermine collective performance. To avoid this mistake, don’t structure incentives to be narrowly tied to launch-related or reliability-related outcomes. As any economist can tell you, if there is a numeric measure, people will find a way to game it to bad effect, sometimes even in a completely well-intentioned way.16 Instead, you should allow your people the freedom to find the right tradeoffs. As discussed earlier, DevOps or SRE can act as an accelerant for your product team in general, allowing the rest of the software org to ship features to customers in a continuous and reliable fashion. Such a dynamic also fixes one persistent problem with the traditional and divergent systems/software group approach: the lack of a feedback loop between design and production. A system with early SRE engagement (ideally, at design time) typically works better in production after deployment, regardless of who is responsible for managing the service. (Nothing slows down feature development like losing user data.)
+
+
+
+
+
+It’s Better to Fix It Yourself; Don’t Blame Someone Else
+
+
+Furthermore, avoid any incentives to pass off the blame for production incidents or system failures onto other groups. In many ways, the dynamics of passing off blame is the core problem with the traditional model for engineering operations, as separating operations and software teams allows separate incentives to emerge. Instead, consider adopting the following practices to combat blame passing at an organizational level:
+
+
+
+ 
+ Don’t just allow, but actively encourage, engineers to change code and configuration when required for the product. Also allow these teams the authority to be radical within the limits of their mission, thereby eliminating incentives to proceed more slowly.
+
+ 
+
+ 
+ Support blameless postmortems.17 Doing so eliminates incentives to downplay or cover up a problem. This step is crucial in fully understanding the product and actually optimizing its performance and functionality, and relies on the wisdom of production mentioned previously.
+
+ 
+
+
+
+Allow support to move away from products that are irredeemably operationally difficult. The threat of support withdrawal motivates product development to fix issues both in the run-up to support and once the product is itself supported, saving everyone time. What it means to be “irredeemably operationally difficult” may differ depending on your context—the dynamic here should be one of mutually understood responsibilities. Pushback to other orgs might be a softer, “We think there are higher-value uses of the time of people with this skill set,” or framed within the limit of, “These people will quit if they’re tasked with too much operational work and aren’t given the opportunity to use their engineering skill set.” At Google, the practice of outright withdrawing support from such products has become institutional.
+
+
+
+
+
+Consider Reliability Work as a Specialized Role
+
+
+At Google, SRE and product development are separate organizations. Each group has its own focus, priorities, and management, and does not have to do the bidding of the other. However, the product development teams effectively fund the growth of SRE with new hires when a product is successful. In this way, product development has a stake in the success of SRE teams, just as SREs have a stake in the success of the product development teams. SRE is also fortunate to receive high-level support from management, which ensures that engineering teams’ objections to supporting services “the SRE way” are generally short-lived. You don’t need to have an org chart to do things differently, though—you just need a different community of practice to emerge.
+
+
+Regardless of whether you fork your organizational chart or use more informal mechanisms, it’s important to recognize that specialization creates challenges. Practitioners of DevOps and SRE benefit from having a community of peers for support and career development, and job ladders that reward them18 for the unique skills and perspectives they bring to the table.
+
+
+It’s important to note that the organizational structure employed by Google, as well as some of the aforementioned incentives, is somewhat reliant on a sizeable organization. For example, if your 20-person startup has only one (comparatively small) product, there’s not much sense in allowing withdrawal of operational support. It’s still possible to take a DevOps-style approach,19 but the ability to improve an operationally poor product is undermined if literally all you can do is help it grow. Usually, though, people have more choice than they imagine about how to fulfill those growth needs versus the rate at which technical debt accumulates.20
+
+
+
+
+
+When Can Substitute for Whether
+
+
+However, when your organization or product grows beyond a certain size, you can exercise more latitude in what products to support, or how to prioritize that support. If it’s clear that support for system X is going to happen much sooner than support for system Y, the implicit conditionality can play much the same role as the choice to not support services in the SRE world.  
+
+
+At Google, SRE’s strong partnership with product development has proven to be critically important: if such a relationship exists at your organization, then the decision to withdraw (or supply) support can be based on objective data about comparative operational characteristics, thereby avoiding otherwise nonproductive conversations.
+
+
+A productive relationship between SRE and product development also helps in avoiding the organizational anti-pattern in which a product development team has to ship a product or feature before it’s quite ready. Instead, SRE can work with a development team to improve the product before the burden of maintenance shifts away from the people with the most expertise to fix it.
+
+
+
+
+
+Strive for Parity of Esteem: Career and Financial
+
+
+Finally, make sure that the career incentives to do the right thing are in place: we want our DevOps/SRE organization to be held in the same esteem as their product development counterparts.  Therefore, members of each team should be rated by roughly the same methods and have the same financial incentives.
+
+
+
+
+
+
+
+Conclusion
+
+
+In many ways, DevOps and SRE sit, in both practice and philosophy, very close to each other in the overall landscape of IT operations.
+
+
+Both DevOps and SRE require discussion, management support, and buy-in from the people actually doing the work to make serious progress. Implementing either of them is a journey and not a quick fix: the practice of rename-and-shame21 is a hollow one, unlikely to yield benefit. Given that it is a more opinionated implementation of how to perform operations, SRE has more concrete suggestions on how to change your work practices earlier on in that journey, albeit requiring specific adaptation. DevOps, having a wider focus, is somewhat more difficult to reason about and translate into concrete steps, but precisely because of that wider focus, is likely to meet with weaker initial resistance.
+
+
+But practitioners of each use many of the same tools, the same approaches to change management, and the same data-based decision-making mindset. At the end of the day, we all face the same persistent problem: production, and making it better—no matter what we’re called.
+
+
+For those interested in further reading, the following suggestions should help you develop a wider understanding of the cultural, business, and technical underpinnings of the operations revolution taking place right now:
+
+
+
+ 
+ Site Reliability Engineering
+
+ 
+
+ 
+ Effective DevOps
+
+ 
+
+ 
+ The Phoenix Project
+
+ 

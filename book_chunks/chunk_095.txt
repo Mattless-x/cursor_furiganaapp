@@ -1,0 +1,176 @@
+=== The Site Reliability Workbook ===
+=== Chunk 95/100 ===
+
+data-only languages (configuration), Pitfall 1: Failing to Recognize Configuration as a Programming Language Problem
+datacentersmultidatacenter in AdWords example, Multidatacenter
+using automation to reduce toil, case study, Case Study 1: Reducing Toil in the Datacenter with Automation-Think holistically
+
+debugging, Encourage Consistencyfor data processing pipeline, Pipeline maturity matrix
+in App Engine errors, Problem
+metrics for, Implementing Purposeful Metrics
+
+delayed data (in data processing pipeline), Delayed data
+Deming Cycle, The Deming Cycle
+dependenciescanarying releases and, Dependencies and Isolation
+circular dependency, pDNS, Background
+effects on availability, Troubleshooting for Opaque Architectures
+external dependencies and incident response, Incident
+in data processing pipeline, causing failures, Pipeline dependencies
+modeling, Modeling Dependencies
+monitoring system metrics from, Dependencies
+planning for failure in data processing pipelines, Plan for Dependency Failure
+
+deploymentsautomated, Release Engineering Principles
+blue/green, Blue/Green Deployment
+continuous, Change Should Be Gradual(see also continuous integration and continuous delivery)
+
+deploying data processing pipeline to production, Deploying to production
+partial, performing for data processing pipelines, Performing a partial deployment
+roll forward deployment vs. simple canary deployment, A Roll Forward Deployment Versus a Simple Canary Deployment-Canary Implementation
+small, Release Engineering Principles
+
+deprecation phase (service lifecycle), SRE engagement in, Phase 5: Deprecation
+depth in postmortems, Depth
+design phase (service lifecycle), SRE engagement in, Phase 1: Architecture and Design
+design process (NALSD), Design Process
+destructive testing or fuzzing, Preexisting bugs
+detection time (SLO alerts), Alerting Considerations
+developmentdevelopment process in Spotify case study, Development process
+mapping data processing pipeline development lifecycle, Map Your Development Lifecycle-Deploying to production
+partnership with SRE, critical importance of, When Can Substitute for Whether
+placing your first SRE in development team, Placing Your First SRE
+setting up relationship between SRE and development team, Setting Up the Relationship-Planning and Executingaligning goals, Aligning Goals-Aligning Goals
+communicating business and production priorities, Communicating Business and Production Priorities
+identifying risks, Identifying Risks
+planning and executing, Planning and Executing
+setting ground rules, Setting Ground Rules
+
+SRE teams having responsibility for, Self-regulating workload
+SRE-to-developer ratio and support of multiple services by single SRE team, Supporting Multiple Services with a Single SRE Team
+SREs sharing ownership with developers, Share Ownership with Developers
+sustaining an effective ongoing relationship between SRE and development teams, Sustaining an Effective Ongoing Relationship-Understand differences in communication
+
+DevOpsabout, Background on DevOps
+accidents, view of, Accidents Are Normal
+comparing and contrasting with SRE, Compare and Contrast
+elimination of silos, No More Silos
+gradual change, Change Should Be Gradual
+implementation by SRE, Background on SRE
+interrelation of tooling and culture, Tooling and Culture Are Interrelated
+measurement as crucial, Measurement Is Crucial
+organizational context and fostering successful adoption, Organizational Context and Fostering Successful Adoption-Strive for Parity of Esteem: Career and Financial
+
+disaster and recovery testing, practicing with customers, Step 5: Practice, Practice, Practice
+disaster recovery testing (DiRT) at Google, Drills, Plan for Dependency Failure
+diskerase, Case Study
+Display Ads Spiderweb, simplification of (case study), Background
+distributed SRE teams, running, Running Cohesive Distributed SRE Teams
+distributed SREs, Distributed SREs
+documentationcreating and maintaining for data processing pipelines, Create and Maintain Pipeline Documentation
+Spotify case study, customer integration and support, Documentation
+
+domain-specific languages (DSLs) for configuration, Pitfall 5: Using an Existing General-Purpose Scripting Language Like Python, Ruby, or Lua
+domain-specific optimization (excessive) in configurations, Pitfall 3: Building Too Much Domain-Specific Optimization
+draining requests away from buggy system elements, Mitigation delay
+drills (incident management), Drills
+dropping work, Prioritize and triage within one quarter
+durability SLI, A Worked Example
+duration parameter (alerts), incrementing, 3: Incrementing Alert Duration
+
+E
+ease of implementation and transparencyfor data processing pipeline, Pipeline maturity matrix
+
+emergency response, practicing, Identification delay
+emotion-based models for change management, Emotion-Based Models
+end-to-end measurement for data processing pipeline SLOs, End-to-end measurement
+ending SRE engagements, Ending the Relationship-Decommissioncase study, Ares, Case Study 1: Ares-Case Study 1: Ares
+case study, data analysis pipeline, Case Study 2: Data Analysis Pipeline
+
+Equal-Cost Multi-Path (ECMP) forwarding, Maglev
+error budgets, Introduction of SLOs: A Journey in Progress(see also service level objectives)
+addressing missed SLO caused by a dependency, Modeling Dependencies
+adjusting priorities according to, Adjusting Priorities According to Your SLOs and Error Budget
+agreed-upon by SRE and development teams for a service, Setting Ground Rules
+alerting on burn rate, 4: Alert on Burn Ratemultiple alarms, 5: Multiple Burn Rate Alerts
+multiwindow, multi-burn-rate alerts, 6: Multiwindow, Multi-Burn-Rate Alerts
+
+calculating, What to Measure: Using SLIs
+dashboard showing error budget consumption, Dashboards and Reports
+decision making using, Decision Making Using SLOs and Error Budgets-Advanced Topics
+documenting error budget policy, Documenting the SLO and Error Budget Policy
+establishing error budget policy, Establishing an Error Budget Policy
+example policy, Service Overview-Background
+for example game service, Error Budget
+low-traffic services and error budget alerting, Low-Traffic Services and Error Budget Alerting-Extreme Availability Goalscombining services, Combining Services
+generating artificial traffic, Generating Artificial Traffic
+lowering the SLO or increasing the window, Lowering the SLO or Increasing the Window
+making service and infrastructure changes, Making Service and Infrastructure Changes
+
+minimizing risk to by canarying releases, Minimizing Risk to SLOs and the Error Budget
+prerequisites for adopting as SRE approach, Getting Started
+reliability targets and, Reliability Targets and Error Budgets
+rolling back recent changes and, Mitigation delay
+support tickets per day vs. measured loss in budget, Improving the Quality of Your SLO
+
+errorsalerting for target error rate over SLO threshold, 1: Target Error Rate ≥ SLO Threshold
+debugging in different monitoring systems, Problem
+defining SLOs for in Home Depot case study, Errors
+errors per hour metric in canary deployment, Requirements on Monitoring Data
+increased alert window for SLO errors, 2: Increased Alert Window
+measurement in Home Depot case study, The SLO Culture Project
+
+evangelism, SLOs at Home Depot, The SLO Culture Project, Evangelizing SLOs
+eventsevent delivery in Spotify case study, Event Delivery
+event processing to order or structure data, Event Processing/Data Transformation to Order or Structure Data
+
+Evernote, SLO case study, Evernote’s SLO Story-Current Statecurrent state of SLO use and practice, Current State
+introduction of SLOs, journey in progress, Introduction of SLOs: A Journey in Progress-Introduction of SLOs: A Journey in Progress
+why Evernote adopted SRE model, Why Did Evernote Adopt the SRE Model?
+
+extract, transform, load (ETL) model, Event Processing/Data Transformation to Order or Structure DataETL pipelines, Event Processing/Data Transformation to Order or Structure Data
+in Spotify case study, Extract Transform Load
+
+F
+failures, Accidents Are Normaldata processing pipeline, prevention and response, Pipeline Failures: Prevention and Response-Region-level outagepotential causes, Pipeline dependencies
+potential failure modes, Delayed data
+
+dependency failure in data processing pipeline, Plan for Dependency Failure
+failure tolerance in data processing pipeline, Pipeline maturity matrix
+handling mistakes appropriately, Handling Mistakes Appropriately
+not passing off blame for, It’s Better to Fix It Yourself; Don’t Blame Someone Else
+reducing cost of, Move Fast by Reducing the Cost of Failure
+
+feature isolation, Mitigation delay
+featuresfeature coverage in SRE with customers, Be Thoughtful and Disciplined
+planning for data processing pipelines, What Features Do You Need?
+separating feature launches from binary releases, Balancing Release Velocity and Reliability
+tradeoffs between feature velocity and reliability, Reliability Targets and Error Budgets
+
+feedback from users, toil management with, Use Feedback to Improve
+finger pointing in postmortems, Counterproductive finger pointing
+follow-up to pager alerts, rigor in, Rigor of follow-up
+follow-up to postmortems, Postmortem follow-up
+forming your first SRE team, Forming
+Four Golden Signals, The SLO Culture Project, Dependencies
+freshnessdata freshness SLOs for data processing pipeline, Data freshness
+of data in monitoring system, Speed
+
+freshness SLI, A Worked Exampleimplementation for pipeline freshness, Pipeline freshness, coverage, and correctness
+
+funding and hiring (SREs), SRE Funding and Hiring
+future protection from overload, Protect yourself in the future
+
+G
+G Suite Team Drive, What We Decided to Do
+GCE (see Google Compute Engine)
+GCLB (Google Cloud Load Balancer), Google Cloud Load Balancing(see also Google Cloud Load Balancing)
+
+general availability phase (service lifecycle), SRE engagement in, Phase 4: General Availability
+generic mitigations, What could have been handled better?useful, in GKE CreateCluster failure case study, What could have been handled better?
+
+geographical splits (SRE teams), Geographical Splitsfinance, travel budget, Finance: Travel budget
+leadership, joint ownership of a service, Leadership: Joint ownership of a service
+parity, distributing work and avoiding a night shift, Parity: Distributing Work Between Offices and Avoiding a “Night Shift”
+people and projects, seeding the team, People and projects: Seeding the team
+placement, and having three shifts, Placement: What about having three shifts?
+placement, time zones apart, Placement: Ho

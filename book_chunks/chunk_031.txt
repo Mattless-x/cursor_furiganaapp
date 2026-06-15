@@ -1,0 +1,127 @@
+=== The Site Reliability Workbook ===
+=== Chunk 31/100 ===
+
+
+
+
+What we decided to do
+
+
+We modified a low-level component in Google production to maintain a list of current IP addresses for nearby Svelte servers in local storage for all Google production machines. In addition to breaking the circular dependency described earlier, this change also eliminated an implicit dependency on pDNS for most other Google services.
+
+
+To avoid similar issues, we also introduced a method for whitelisting the set of services allowed to communicate with pDNS, and slowly worked to reduce that set. As a result, each service lookup in production now has a simpler and more reliable path through the system.
+
+
+
+
+
+Lessons learned
+
+
+Be careful about your service’s dependencies—use an explicit whitelist to prevent accidental additions. Also, be on the lookout for circular dependencies.
+
+
+
+
+
+
+
+
+
+Conclusion
+
+
+Simplicity is a natural goal for SREs because simple systems tend to be reliable and easy to run. It’s not easy to quantitatively measure simplicity (or its inverse, complexity) for distributed systems, but there are reasonable proxies, and it’s worth picking some and working to improve them.
+
+
+Because of their end-to-end understanding of a system, SREs are in an excellent position to identify, prevent, and fix sources of complexity, whether they are found in software design, system architecture, configuration, deployment processes, or elsewhere. SREs should be involved in design discussions early on to provide their unique perspective about the costs and benefits of alternatives, with a particular eye toward simplicity. SREs can also proactively develop standards to homogenize production.
+
+
+As an SRE, pushing for simplicity is an important part of your job description. We strongly recommend that SRE leadership empower SRE teams to push for simplicity, and to explicitly reward these efforts. Systems inevitably creep toward complexity as they evolve, so the fight for simplicity requires continuous attention and commitment—but it is very much worth pursuing.
+
+
+
+1 If you’re interested in learning more, read this recent review of trends in software complexity, or read Horst Zuse, Software Complexity: Measures and Methods (Berlin: Walter de Gruyter, 1991).
+2 Although there are examples of it—for example, “Automated Formal Reasoning about AWS Systems”.
+3 As a result, SRE may be a useful investment for product development leads who wish to attack complexity as a proxy for technical debt, but find it hard to justify that work within the scope of their existing team.
+4 As Dijkstra said, “If we wish to count lines of code, we should not regard them as ‘lines produced’ but as ‘lines spent.’”
+5 Reserving some portion of time for simplicity projects (10%, for example) doesn’t mean the team has a green light to introduce complexity with the other 90%. It just means you are setting aside some effort with the specific goal of simplification.
+
+Practices
+
+Part II. Practices
+
+
+Building upon the solid foundation of SRE principles covered in Part I, Part II dives deep into how to conduct SRE-related activities that Google has found important for operating at scale.
+
+Some of these topics, such as data processing pipelines and managing load, won’t apply to all organizations. Other topics, such as safely handling changes with configuration and canarying, on-call practices, and what to do when things go wrong, contain valuable lessons for any SRE team.
+
+This part also introduces an important SRE skill—Non-Abstract Large System Design (NALSD)—and presents a detailed example of how to practice this design process.
+
+As we move from SRE foundations to practices, we wanted to provide a bit more context on the relationship between operational duties and project work, and the engineering it takes to accomplish both strategically.
+
+
+Defining Operational Work (Versus Project Work and Overhead)
+
+Before we move from foundations to practices, we wanted to touch on the difference between operational and project work, and how these two types of work inform each other. The topic is an area of philosophical debate in the SRE community, so this interlude presents how we define the two types of work in the context of this book.
+
+SRE practices apply software engineering solutions to operational problems. Because our SRE teams are responsible for the day-to-day functioning of the systems we support, our engineering work often focuses on tasks that might be operations elsewhere: we automate release processes instead of performing them manually; we implement sharding to make our services more reliable and less demanding of human attention; we utilize algorithmic approaches to capacity planning so that engineers don’t have to perform error-prone manual calculations.
+
+While engineering and operational work do inform each other, we can conceptualize the work any given SRE team performs as two separate categories, as shown in Figure II-1. Over the years, we’ve worked toward ways to maximize the efficiency and scalability of each bucket of work.
+
+
+
+Figure II-1. The two categories of SRE work
+
+
+We can break down operational work into four general categories:
+
+
+On-call work
+
+
+Customer requests (most commonly, tickets)
+
+
+Incident response
+
+
+Postmortems
+
+
+
+Each of these categories receives its own detailed treatment in both our first book (Chapter 11; Chapter 14; Chapter 15) and this one (Chapter 6; Chapter 8; Chapter 9; Chapter 10). Here, we show how all four are interconnected, and why it’s important to consider these types of work as closely related.
+
+What types of work are not included in operational work? As shown in Figure II-1, project work is the other main bucket of SRE work. When a team’s interrupt work is well managed, they have time for longer-term engineering work to achieve stability, reliability, and availability goals. This might include software engineering projects aimed at improving the reliability of a service, or systems engineering projects like safely rolling out a new feature to a globally replicated service.
+
+Also shown in Figure II-1, overhead is the administrivia necessary to working at a company: meetings, training, responding to emails, tracking your accomplishments, filling out paperwork, and so on. Overhead isn’t immediately important to the discussion at hand, but all team members spend time on it.
+
+You might notice that we don’t specifically call out documentation as a separate activity. This is because we believe that healthy documentation procedures embed themselves into all of your work. You don’t need to think about documenting code, playbooks, and service features—or even making sure that tickets and bugs contain all of the information they should—as separate from your project or operational tasks. It’s simply another facet of those tasks.
+
+At Google, we specify that SREs should spend at least 50% of their time on project work; anything less makes for unsustainable engineering and burned-out, unhealthy teams. While every team and organization needs to find its own healthy balance, we’ve found that about one-third of time spent on operational tasks and two-thirds of time spent on project work is just about right (this ratio also informs an ideal on-call rotation size, where your engineers are only on-call one-third of the time).
+
+We encourage teams to conduct periodic reviews to track whether you’re striking the appropriate balance between types of work. At Google, we conduct regular Production Excellence (ProdEx) Reviews, which allow senior SRE leadership a view into the state of every SRE team using a clearly defined rubric. You’ll need to determine the appropriate time intervals and rubric according to your own constraints and organizational maturity, but the key here is to generate metrics about team health that you can track over time.
+
+Remember one caveat when finding your ideal balance: a team that spends too little of its time on operational tasks risks operational underload. In this situation, engineers might start to forget crucial aspects of the service they are responsible for. You can counter operational underload by taking more risks and moving faster—for example, shorten your release cycles, push more features per release, or perform more disaster recovery testing. If your team is perpetually underloaded, consider onboarding related services or handing back a service that no longer needs SRE support to the development team (for more discussion of team size, see Chapter 8).
+
+The Relationship Between Operational Work and Project Work
+
+While they are different classes of work, operational and project work aren’t entirely separate concerns. In fact, the issues raised in the former should feed into the latter: SRE project work should be strategic initiatives that make the system more efficient, scalable, and reliable, and/or that reduce operational load and toil. As shown in Figure II-1, there should be a continuous feedback loop between the sources of operational load and the project work that systematically improves production. This longer-term work might involve moving to more robust storage systems, redesigning frameworks to reduce brittleness or maintenance load, or addressing systemic sources of outages and incidents. These initiatives are developed and implemented via projects, defined as temporary endeavors (with a clear beginning and end) that deliver a specified objective or deliverable.
+
+On-Call
+
+Chapter 8. On-Call
+
+
+By Ollie Cook, Sara Smollett, Andrea Spadaccini,
+
+Cara Donnelly, Jian Ma, and Garrett Plasky (Evernote)
+
+with Stephen Thorne and Jessie Yang
+
+
+Being on-call means being available during a set period of time, and being ready to respond to production incidents during that time with appropriate urgency. Site Reliability Engineers (SREs) are often required to take part in on-call rotations. During on-call shifts, SREs diagnose, mitigate, fix, or escalate incidents as needed. In addition, SREs are regularly responsible for nonurgent production duties.
+
+
+At Google, being on-call is one of the defining characteristics of SRE. SRE teams mitigate incidents, repair production problems, and automate operational tasks. Since most of our SRE teams have not yet fully automated all their operational tasks, escalations need human points of contact—on-call engineers. Depending on how critical the supported systems are, or the state of development the systems are in, not all SRE teams may need to be on-call. In our experience, most SRE teams staff on-call 
