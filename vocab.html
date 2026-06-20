@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Genki II Vocabulary</title>
+  <script src="genki2_vocab.js"></script>
+  <style>
+    /* ── Reset & Base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:      #0f1117;
+      --surface: #1a1d27;
+      --card:    #22263a;
+      --border:  #2e3350;
+      --accent:  #6c63ff;
+      --accent2: #ff6b9d;
+      --text:    #e8eaf0;
+      --muted:   #7c82a0;
+      --green:   #4caf7d;
+      --yellow:  #f9c846;
+      --red:     #ff5a5f;
+      --radius:  10px;
+
+      /* POS palette */
+      --pos-verb-u:   #3d9970;
+      --pos-verb-ru:  #27ae60;
+      --pos-verb-irr: #16a085;
+      --pos-noun:     #2980b9;
+      --pos-i-adj:    #e67e22;
+      --pos-na-adj:   #d35400;
+      --pos-adverb:   #8e44ad;
+      --pos-expression:#c0392b;
+      --pos-conjunction:#1abc9c;
+      --pos-counter:  #e74c3c;
+      --pos-particle: #7f8c8d;
+      --pos-prefix:   #95a5a6;
+      --pos-suffix:   #bdc3c7;
+    }
+    html { font-size: 15px; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+    }
+    .jp { font-family: 'Noto Sans JP', 'Hiragino Sans', 'MS PGothic', sans-serif; }
+
+    /* ── Layout ── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .logo { font-size: 1.2rem; font-weight: 700; color: var(--accent); white-space: nowrap; }
+    .logo span { color: var(--text); }
+    .stats-bar {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+    .stat { display: flex; flex-direction: column; align-items: center; }
+    .stat strong { font-size: 1.1rem; color: var(--text); }
+    .tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--bg);
+      border-radius: var(--radius);
+      padding: 4px;
+      margin-left: auto;
+    }
+    .tab {
+      padding: 6px 16px;
+      border-radius: 7px;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: all .15s;
+    }
+    .tab.active { background: var(--accent); color: #fff; }
+    .tab:hover:not(.active) { background: var(--border); color: var(--text); }
+
+    main { padding: 24px; max-width: 1100px; margin: 0 auto; }
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* ── Filters row ── */
+    .filters {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .search-box {
+      flex: 1;
+      min-width: 180px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 8px 14px;
+      color: var(--text);
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color .15s;
+    }
+    .search-box:focus { border-color: var(--accent); }
+    .filter-select {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 8px 12px;
+      color: var(--text);
+      font-size: 0.85rem;
+      cursor: pointer;
+      outline: none;
+    }
+    .filter-select:focus { border-color: var(--accent); }
+    .chip-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+    .chip {
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all .12s;
+      font-weight: 600;
+    }
+    .chip.active { color: #fff; border-color: transparent; }
+    .chip:hover:not(.active) { border-color: var(--accent); color: var(--text); }
+    .btn {
+      padding: 8px 16px;
+      border-radius: var(--radius);
+      border: none;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: all .12s;
+    }
+    .btn-ghost { background: var(--surface); color: var(--muted); border: 1px solid var(--border); }
+    .btn-ghost:hover { color: var(--text); border-color: var(--accent); }
+    .btn-accent { background: var(--accent); color: #fff; }
+    .btn-accent:hover { opacity: .85; }
+    .btn-green { background: var(--green); color: #fff; }
+    .btn-red { background: var(--red); color: #fff; }
+
+    /* ── Table ── */
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      background: var(--surface);
+      padding: 10px 14px;
+      text-align: left;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
+      border-bottom: 1px solid var(--border);
+    }
+    th:hover { color: var(--text); }
+    th.sorted { color: var(--accent); }
+    td {
+      padding: 9px 14px;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.88rem;
+      vertical-align: middle;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(108,99,255,.06); }
+    .jp-cell { font-size: 1.05rem; }
+    .reading-cell { color: var(--muted); font-size: 0.8rem; }
+    .lesson-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      background: var(--card);
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .pos-tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: #fff;
+      white-space: nowrap;
+    }
+    .known-star {
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: transform .1s;
+      user-select: none;
+    }
+    .known-star:hover { transform: scale(1.2); }
+    .row-count {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 10px;
+    }
+    .toggle-reading-btn {
+      font-size: 0.75rem;
+      padding: 4px 10px;
+    }
+
+    /* ── Flashcard ── */
+    .fc-controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .fc-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+    .fc-progress-text {
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+    .fc-card-wrap {
+      perspective: 900px;
+      width: 100%;
+      max-width: 540px;
+      height: 240px;
+      cursor: pointer;
+    }
+    .fc-card {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform .45s cubic-bezier(.4,0,.2,1);
+    }
+    .fc-card.flipped { transform: rotateY(180deg); }
+    .fc-face {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      padding: 24px;
+      text-align: center;
+    }
+    .fc-front {}
+    .fc-back { transform: rotateY(180deg); background: var(--surface); }
+    .fc-hint { font-size: 0.72rem; color: var(--muted); }
+    .fc-japanese { font-size: 2rem; }
+    .fc-reading { font-size: 1rem; color: var(--muted); }
+    .fc-english { font-size: 1.1rem; line-height: 1.4; }
+    .fc-pos-tag { margin-top: 4px; }
+    .fc-lesson { font-size: 0.7rem; color: var(--muted); }
+    .fc-nav {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .fc-dot-row {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+      justify-content: center;
+      max-width: 540px;
+    }
+    .fc-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--border);
+      cursor: pointer;
+      transition: background .1s;
+    }
+    .fc-dot.current { background: var(--accent); }
+    .fc-dot.known   { background: var(--green); }
+    .fc-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    /* ── Quiz ── */
+    .quiz-area { max-width: 560px; margin: 0 auto; }
+    .quiz-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+    .quiz-score { font-size: 0.85rem; color: var(--muted); }
+    .quiz-progress-bar {
+      width: 100%;
+      height: 5px;
+      background: var(--border);
+      border-radius: 3px;
+      margin-bottom: 22px;
+      overflow: hidden;
+    }
+    .quiz-progress-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 3px;
+      transition: width .3s;
+    }
+    .quiz-question {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .quiz-q-label { font-size: 0.72rem; color: var(--muted); margin-bottom: 10px; }
+    .quiz-q-japanese { font-size: 1.9rem; margin-bottom: 4px; }
+    .quiz-q-reading { font-size: 0.85rem; color: var(--muted); min-height: 20px; }
+    .quiz-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .quiz-option {
+      padding: 14px 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all .12s;
+      text-align: left;
+      line-height: 1.4;
+    }
+    .quiz-option:hover:not(:disabled) { border-color: var(--accent); background: rgba(108,99,255,.1); }
+    .quiz-option.correct { background: rgba(76,175,125,.2); border-color: var(--green); color: var(--green); }
+    .quiz-option.wrong   { background: rgba(255,90,95,.2);  border-color: var(--red);   color: var(--red);   }
+    .quiz-option:disabled { cursor: default; }
+    .quiz-result {
+      text-align: center;
+      padding: 32px;
+      background: var(--card);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+    }
+    .quiz-result h2 { font-size: 1.6rem; margin-bottom: 8px; }
+    .quiz-result .big-score { font-size: 3rem; font-weight: 800; color: var(--accent); line-height: 1.1; }
+    .quiz-result p { color: var(--muted); margin: 8px 0; }
+    .quiz-mode-sel { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+    .quiz-mode-sel label { font-size: 0.8rem; color: var(--muted); display: flex; align-items: center; gap: 5px; cursor: pointer; }
+
+    /* ── Progress overview ── */
+    .progress-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+      margin-top: 20px;
+    }
+    .lesson-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+    }
+    .lesson-card h3 { font-size: 0.85rem; margin-bottom: 8px; }
+    .lesson-bar {
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 6px;
+    }
+    .lesson-bar-fill { height: 100%; background: var(--green); border-radius: 3px; transition: width .4s; }
+    .lesson-meta { font-size: 0.72rem; color: var(--muted); display: flex; justify-content: space-between; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Genki <span>II</span> Vocab</div>
+  <div class="stats-bar" id="global-stats"></div>
+  <div class="tabs">
+    <button class="tab active" data-tab="browse">Browse</button>
+    <button class="tab" data-tab="flashcards">Flashcards</button>
+    <button class="tab" data-tab="quiz">Quiz</button>
+    <button class="tab" data-tab="progress">Progress</button>
+  </div>
+</header>
+
+<main>
+
+  <!-- ════════════════════════════════════ BROWSE ════════════════════════════════════ -->
+  <div class="panel active" id="panel-browse">
+    <div class="filters">
+      <input class="search-box" id="browse-search" placeholder="Search Japanese, reading, English…" />
+      <select class="filter-select" id="browse-lesson">
+        <option value="">All lessons</option>
+        <option value="13">Lesson 13</option>
+        <option value="14">Lesson 14</option>
+        <option value="15">Lesson 15</option>
+        <option value="16">Lesson 16</option>
+        <option value="17">Lesson 17</option>
+        <option value="18">Lesson 18</option>
+        <option value="19">Lesson 19</option>
+        <option value="20">Lesson 20</option>
+        <option value="21">Lesson 21</option>
+        <option value="22">Lesson 22</option>
+        <option value="23">Lesson 23</option>
+      </select>
+      <select class="filter-select" id="browse-pos">
+        <option value="">All parts of speech</option>
+        <option value="noun">Noun</option>
+        <option value="verb-u">Verb (u)</option>
+        <option value="verb-ru">Verb (ru)</option>
+        <option value="verb-irr">Verb (irr.)</option>
+        <option value="i-adj">い-adj</option>
+        <option value="na-adj">な-adj</option>
+        <option value="adverb">Adverb</option>
+        <option value="expression">Expression</option>
+        <option value="conjunction">Conjunction</option>
+        <option value="counter">Counter</option>
+        <option value="particle">Particle</option>
+      </select>
+      <button class="btn btn-ghost toggle-reading-btn" id="toggle-reading">Hide reading</button>
+      <button class="btn btn-ghost" id="browse-reset">Reset</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th data-col="lesson" class="sorted">L <span class="sort-arrow">↑</span></th>
+            <th data-col="japanese">Japanese</th>
+            <th data-col="reading" id="reading-th">Reading</th>
+            <th data-col="english">English</th>
+            <th data-col="pos">POS</th>
+            <th title="Mark as known">★</th>
+          </tr>
+        </thead>
+        <tbody id="browse-tbody"></tbody>
+      </table>
+    </div>
+    <div class="row-count" id="browse-count"></div>
+  </div>
+
+  <!-- ════════════════════════════════════ FLASHCARDS ════════════════════════════════════ -->
+  <div class="panel" id="panel-flashcards">
+    <div class="fc-controls">
+      <select class="filter-select" id="fc-lesson">
+        <option value="">All lessons</option>
+        <option value="13">Lesson 13</option>
+        <option value="14">Lesson 14</option>
+        <option value="15">Lesson 15</option>
+        <option value="16">Lesson 16</option>
+        <option value="17">Lesson 17</option>
+        <option value="18">Lesson 18</option>
+        <option value="19">Lesson 19</option>
+        <option value="20">Lesson 20</option>
+        <option value="21">Lesson 21</option>
+        <option value="22">Lesson 22</option>
+        <option value="23">Lesson 23</option>
+      </select>
+      <select class="filter-select" id="fc-pos">
+        <option value="">All POS</option>
+        <option value="noun">Noun</option>
+        <option value="verb-u">Verb (u)</option>
+        <option value="verb-ru">Verb (ru)</option>
+        <option value="verb-irr">Verb (irr.)</option>
+        <option value="i-adj">い-adj</option>
+        <option value="na-adj">な-adj</option>
+        <option value="adverb">Adverb</option>
+        <option value="expression">Expression</option>
+      </select>
+      <label style="font-size:.8rem;color:var(--muted);display:flex;align-items:center;gap:6px;cursor:pointer;">
+        <input type="checkbox" id="fc-unknown-only" /> Unknown only
+      </label>
+      <label style="font-size:.8rem;color:var(--muted);display:flex;align-items:center;gap:6px;cursor:pointer;">
+        <input type="checkbox" id="fc-mode-en" /> EN → JP
+      </label>
+      <button class="btn btn-ghost" id="fc-shuffle">🔀 Shuffle</button>
+      <button class="btn btn-accent" id="fc-restart">Restart</button>
+    </div>
+    <div class="fc-area">
+      <div class="fc-progress-text" id="fc-progress-text"></div>
+      <div class="fc-card-wrap" id="fc-card-wrap">
+        <div class="fc-card" id="fc-card">
+          <div class="fc-face fc-front" id="fc-front"></div>
+          <div class="fc-face fc-back"  id="fc-back"></div>
+        </div>
+      </div>
+      <div class="fc-actions">
+        <button class="btn btn-red"   id="fc-unknown">✗ Don't know</button>
+        <button class="btn btn-ghost" id="fc-flip">Flip (Space)</button>
+        <button class="btn btn-green" id="fc-known">✓ Know it</button>
+      </div>
+      <div class="fc-nav">
+        <button class="btn btn-ghost" id="fc-prev">← Prev</button>
+        <button class="btn btn-ghost" id="fc-next">Next →</button>
+      </div>
+      <div class="fc-dot-row" id="fc-dots"></div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════ QUIZ ════════════════════════════════════ -->
+  <div class="panel" id="panel-quiz">
+    <div class="quiz-area">
+      <div id="quiz-setup">
+        <h2 style="margin-bottom:16px;font-size:1.1rem;">Quiz settings</h2>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px;">
+          <select class="filter-select" id="quiz-lesson">
+            <option value="">All lessons</option>
+            <option value="13">Lesson 13</option>
+            <option value="14">Lesson 14</option>
+            <option value="15">Lesson 15</option>
+            <option value="16">Lesson 16</option>
+            <option value="17">Lesson 17</option>
+            <option value="18">Lesson 18</option>
+            <option value="19">Lesson 19</option>
+            <option value="20">Lesson 20</option>
+            <option value="21">Lesson 21</option>
+            <option value="22">Lesson 22</option>
+            <option value="23">Lesson 23</option>
+          </select>
+          <select class="filter-select" id="quiz-size">
+            <option value="10">10 questions</option>
+            <option value="20" selected>20 questions</option>
+            <option value="40">40 questions</option>
+            <option value="0">All</option>
+          </select>
+        </div>
+        <div class="quiz-mode-sel">
+          <label><input type="radio" name="quiz-dir" value="jp-en" checked /> JP → English</label>
+          <label><input type="radio" name="quiz-dir" value="en-jp" /> English → JP</label>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
+          <label style="font-size:.8rem;color:var(--muted);display:flex;align-items:center;gap:5px;cursor:pointer;">
+            <input type="checkbox" id="quiz-unknown-only" /> Unknown words only
+          </label>
+        </div>
+        <button class="btn btn-accent" id="quiz-start" style="margin-top:8px;">Start Quiz</button>
+      </div>
+      <div id="quiz-playing" style="display:none;">
+        <div class="quiz-header">
+          <span id="quiz-num" class="quiz-score"></span>
+          <span id="quiz-score-disp" class="quiz-score" style="color:var(--green);"></span>
+        </div>
+        <div class="quiz-progress-bar"><div class="quiz-progress-fill" id="quiz-fill"></div></div>
+        <div class="quiz-question">
+          <div class="quiz-q-label" id="quiz-q-label"></div>
+          <div class="quiz-q-japanese jp" id="quiz-q-japanese"></div>
+          <div class="quiz-q-reading jp" id="quiz-q-reading"></div>
+        </div>
+        <div class="quiz-options" id="quiz-options"></div>
+        <div style="text-align:center;margin-top:14px;">
+          <button class="btn btn-ghost" id="quiz-next-btn" style="display:none;">Next →</button>
+        </div>
+      </div>
+      <div id="quiz-done" style="display:none;">
+        <div class="quiz-result">
+          <h2>Quiz complete!</h2>
+          <div class="big-score" id="quiz-final-score"></div>
+          <p id="quiz-final-detail"></p>
+          <p id="quiz-final-grade" style="font-size:1.1rem;font-weight:700;margin-top:12px;"></p>
+          <div style="margin-top:20px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+            <button class="btn btn-accent" id="quiz-again">Try again</button>
+            <button class="btn btn-ghost"  id="quiz-to-setup">Change settings</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════ PROGRESS ════════════════════════════════════ -->
+  <div class="panel" id="panel-progress">
+    <h2 style="font-size:1rem;margin-bottom:6px;">Your progress</h2>
+    <p style="font-size:.8rem;color:var(--muted);margin-bottom:4px;">Words marked as "known" in flashcard or browse mode are tracked here.</p>
+    <button class="btn btn-ghost" id="clear-progress" style="font-size:.75rem;margin-bottom:16px;">Reset all progress</button>
+    <div class="progress-grid" id="progress-grid"></div>
+  </div>
+
+</main>
+
+<script>
+'use strict';
+
+/* ═══════════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════════ */
+const STORAGE_KEY = 'genki2_known';
+let known = new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'));
+function saveKnown() { localStorage.setItem(STORAGE_KEY, JSON.stringify([...known])); }
+
+/* ═══════════════════════════════════════════════════
+   HELPERS
+═══════════════════════════════════════════════════ */
+const POS_COLOR = {
+  'verb-u':    '#3d9970', 'verb-ru':   '#27ae60', 'verb-irr':  '#16a085',
+  'noun':      '#2980b9', 'i-adj':     '#e67e22',  'na-adj':    '#d35400',
+  'adverb':    '#8e44ad', 'expression':'#c0392b', 'conjunction':'#1abc9c',
+  'counter':   '#e74c3c', 'particle':  '#7f8c8d',  'prefix':    '#95a5a6',
+  'suffix':    '#bdc3c7'
+};
+const POS_LABEL = {
+  'verb-u':'v.u', 'verb-ru':'v.ru', 'verb-irr':'v.irr',
+  'noun':'n.', 'i-adj':'い', 'na-adj':'な',
+  'adverb':'adv.', 'expression':'exp.', 'conjunction':'conj.',
+  'counter':'ctr.', 'particle':'prt.', 'prefix':'pfx.', 'suffix':'sfx.'
+};
+function posTag(pos) {
+  const c = POS_COLOR[pos] || '#555';
+  const l = POS_LABEL[pos] || pos;
+  return `<span class="pos-tag" style="background:${c}">${l}</span>`;
+}
+function posTagEl(pos) {
+  const el = document.createElement('span');
+  el.className = 'pos-tag';
+  el.style.background = POS_COLOR[pos] || '#555';
+  el.textContent = POS_LABEL[pos] || pos;
+  return el;
+}
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+function wordKey(w) { return `${w.lesson}::${w.reading}`; }
+
+/* ═══════════════════════════════════════════════════
+   GLOBAL STATS
+═══════════════════════════════════════════════════ */
+function renderGlobalStats() {
+  const total = GENKI2_VOCAB.length;
+  const knownCount = GENKI2_VOCAB.filter(w => known.has(wordKey(w))).length;
+  const pct = total ? Math.round(knownCount / total * 100) : 0;
+  document.getElementById('global-stats').innerHTML = `
+    <div class="stat"><strong>${total}</strong>words</div>
+    <div class="stat"><strong>11</strong>lessons</div>
+    <div class="stat"><strong style="color:var(--green)">${knownCount}</strong>known</div>
+    <div class="stat"><strong>${pct}%</strong>mastered</div>
+  `;
+}
+
+/* ═══════════════════════════════════════════════════
+   TABS
+═══════════════════════════════════════════════════ */
+document.querySelectorAll('.tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+    if (btn.dataset.tab === 'progress') renderProgress();
+    if (btn.dataset.tab === 'flashcards') initFlashcards();
+  });
+});
+
+/* ═══════════════════════════════════════════════════
+   BROWSE
+═══════════════════════════════════════════════════ */
+let browseShowReading = true;
+let browseSort = { col: 'lesson', dir: 1 };
+
+function getBrowseFiltered() {
+  const q = document.getElementById('browse-search').value.toLowerCase();
+  const lesson = document.getElementById('browse-lesson').value;
+  const pos = document.getElementById('browse-pos').value;
+  return GENKI2_VOCAB.filter(w => {
+    if (lesson && String(w.lesson) !== lesson) return false;
+    if (pos && w.pos !== pos) return false;
+    if (q && !w.japanese.toLowerCase().includes(q)
+           && !w.reading.toLowerCase().includes(q)
+           && !w.english.toLowerCase().includes(q)) return false;
+    return true;
+  });
+}
+
+function renderBrowse() {
+  const data = getBrowseFiltered();
+  const col = browseSort.col, dir = browseSort.dir;
+  const sorted = [...data].sort((a, b) => {
+    let av = a[col] ?? '', bv = b[col] ?? '';
+    if (typeof av === 'number') return dir * (av - bv);
+    return dir * String(av).localeCompare(String(bv));
+  });
+
+  const tbody = document.getElementById('browse-tbody');
+  tbody.innerHTML = sorted.map(w => {
+    const k = wordKey(w);
+    const isKnown = known.has(k);
+    return `<tr>
+      <td><span class="lesson-badge">L${w.lesson}</span></td>
+      <td class="jp jp-cell">${w.japanese}</td>
+      <td class="jp reading-cell" ${browseShowReading ? '' : 'style="filter:blur(5px);user-select:none"'}>${w.reading}</td>
+      <td>${w.english}</td>
+      <td>${posTag(w.pos)}</td>
+      <td><span class="known-star" data-key="${k}" title="${isKnown ? 'Mark unknown' : 'Mark known'}">${isKnown ? '★' : '☆'}</span></td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('browse-count').textContent = `${sorted.length} of ${GENKI2_VOCAB.length} words`;
+
+  tbody.querySelectorAll('.known-star').forEach(star => {
+    star.addEventListener('click', () => {
+      const k = star.dataset.key;
+      if (known.has(k)) { known.delete(k); star.textContent = '☆'; star.title = 'Mark known'; }
+      else               { known.add(k);    star.textContent = '★'; star.title = 'Mark unknown'; }
+      saveKnown();
+      renderGlobalStats();
+    });
+  });
+
+  // Update sort arrows
+  document.querySelectorAll('th[data-col]').forEach(th => {
+    th.classList.toggle('sorted', th.dataset.col === col);
+    const arrow = th.querySelector('.sort-arrow');
+    if (arrow) arrow.textContent = (th.dataset.col === col) ? (dir === 1 ? '↑' : '↓') : '';
+  });
+}
+
+document.getElementById('browse-search').addEventListener('input', renderBrowse);
+document.getElementById('browse-lesson').addEventListener('change', renderBrowse);
+document.getElementById('browse-pos').addEventListener('change', renderBrowse);
+document.getElementById('browse-reset').addEventListener('click', () => {
+  document.getElementById('browse-search').value = '';
+  document.getElementById('browse-lesson').value = '';
+  document.getElementById('browse-pos').value = '';
+  renderBrowse();
+});
+document.getElementById('toggle-reading').addEventListener('click', function() {
+  browseShowReading = !browseShowReading;
+  this.textContent = browseShowReading ? 'Hide reading' : 'Show reading';
+  renderBrowse();
+});
+document.querySelectorAll('th[data-col]').forEach(th => {
+  th.addEventListener('click', () => {
+    if (browseSort.col === th.dataset.col) browseSort.dir *= -1;
+    else { browseSort.col = th.dataset.col; browseSort.dir = 1; }
+    renderBrowse();
+  });
+});
+
+/* ═══════════════════════════════════════════════════
+   FLASHCARDS
+═══════════════════════════════════════════════════ */
+let fcDeck = [], fcIndex = 0, fcFlipped = false;
+
+function getFCDeck() {
+  const lesson = document.getElementById('fc-lesson').value;
+  const pos = document.getElementById('fc-pos').value;
+  const unknownOnly = document.getElementById('fc-unknown-only').checked;
+  return GENKI2_VOCAB.filter(w => {
+    if (lesson && String(w.lesson) !== lesson) return false;
+    if (pos && w.pos !== pos) return false;
+    if (unknownOnly && known.has(wordKey(w))) return false;
+    return true;
+  });
+}
+
+function initFlashcards() {
+  fcDeck = getFCDeck();
+  if (document.getElementById('fc-shuffle').fcShuffled) fcDeck = shuffle(fcDeck);
+  fcIndex = 0;
+  fcFlipped = false;
+  renderFC();
+}
+
+function renderFC() {
+  if (!fcDeck.length) {
+    document.getElementById('fc-front').innerHTML = '<p style="color:var(--muted)">No cards match your filters.</p>';
+    document.getElementById('fc-back').innerHTML = '';
+    document.getElementById('fc-progress-text').textContent = '';
+    document.getElementById('fc-dots').innerHTML = '';
+    return;
+  }
+  const w = fcDeck[fcIndex];
+  const k = wordKey(w);
+  const enToJp = document.getElementById('fc-mode-en').checked;
+
+  const front = document.getElementById('fc-front');
+  const back  = document.getElementById('fc-back');
+
+  if (!enToJp) {
+    front.innerHTML = `
+      <div class="fc-hint">Click to reveal English</div>
+      <div class="fc-japanese jp">${w.japanese}</div>
+      <div class="fc-reading jp">${w.reading !== w.japanese ? w.reading : ''}</div>
+      <span class="fc-lesson">Lesson ${w.lesson}</span>
+    `;
+    back.innerHTML = `
+      <div class="fc-japanese jp" style="font-size:1.1rem;margin-bottom:4px;">${w.japanese}</div>
+      <div class="fc-reading jp">${w.reading}</div>
+      <div class="fc-english">${w.english}</div>
+      <span class="fc-pos-tag">${posTag(w.pos)}</span>
+    `;
+  } else {
+    front.innerHTML = `
+      <div class="fc-hint">Click to reveal Japanese</div>
+      <div class="fc-english" style="font-size:1.25rem;">${w.english}</div>
+      <span class="fc-lesson">Lesson ${w.lesson} · ${posTag(w.pos)}</span>
+    `;
+    back.innerHTML = `
+      <div class="fc-japanese jp">${w.japanese}</div>
+      <div class="fc-reading jp">${w.reading}</div>
+      <div class="fc-english" style="margin-top:6px;color:var(--muted);font-size:.85rem;">${w.english}</div>
+    `;
+  }
+
+  // Flip state
+  const card = document.getElementById('fc-card');
+  card.classList.toggle('flipped', fcFlipped);
+
+  document.getElementById('fc-progress-text').textContent =
+    `${fcIndex + 1} / ${fcDeck.length}  ·  ${[...known].filter(k => fcDeck.some(w => wordKey(w) === k)).length} known`;
+
+  // Dots (max 50 shown)
+  const dots = document.getElementById('fc-dots');
+  const maxDots = 60;
+  if (fcDeck.length <= maxDots) {
+    dots.innerHTML = fcDeck.map((w, i) => {
+      const cls = i === fcIndex ? 'current' : known.has(wordKey(w)) ? 'known' : '';
+      return `<div class="fc-dot ${cls}" data-i="${i}"></div>`;
+    }).join('');
+    dots.querySelectorAll('.fc-dot').forEach(d => {
+      d.addEventListener('click', () => { fcIndex = +d.dataset.i; fcFlipped = false; renderFC(); });
+    });
+  } else {
+    dots.innerHTML = '';
+  }
+}
+
+function fcFlip() { fcFlipped = !fcFlipped; document.getElementById('fc-card').classList.toggle('flipped', fcFlipped); }
+
+document.getElementById('fc-card-wrap').addEventListener('click', fcFlip);
+document.getElementById('fc-flip').addEventListener('click', fcFlip);
+document.getElementById('fc-prev').addEventListener('click', () => {
+  if (fcIndex > 0) { fcIndex--; fcFlipped = false; renderFC(); }
+});
+document.getElementById('fc-next').addEventListener('click', () => {
+  if (fcIndex < fcDeck.length - 1) { fcIndex++; fcFlipped = false; renderFC(); }
+});
+document.getElementById('fc-known').addEventListener('click', () => {
+  if (!fcDeck.length) return;
+  known.add(wordKey(fcDeck[fcIndex]));
+  saveKnown();
+  renderGlobalStats();
+  if (fcIndex < fcDeck.length - 1) { fcIndex++; fcFlipped = false; }
+  renderFC();
+});
+document.getElementById('fc-unknown').addEventListener('click', () => {
+  if (!fcDeck.length) return;
+  known.delete(wordKey(fcDeck[fcIndex]));
+  saveKnown();
+  renderGlobalStats();
+  if (fcIndex < fcDeck.length - 1) { fcIndex++; fcFlipped = false; }
+  renderFC();
+});
+document.getElementById('fc-restart').addEventListener('click', initFlashcards);
+document.getElementById('fc-shuffle').addEventListener('click', function() {
+  this.fcShuffled = !this.fcShuffled;
+  this.style.background = this.fcShuffled ? 'var(--accent)' : '';
+  this.style.color = this.fcShuffled ? '#fff' : '';
+  initFlashcards();
+});
+['fc-lesson','fc-pos'].forEach(id => document.getElementById(id).addEventListener('change', initFlashcards));
+document.getElementById('fc-unknown-only').addEventListener('change', initFlashcards);
+document.getElementById('fc-mode-en').addEventListener('change', () => { fcFlipped = false; renderFC(); });
+
+document.addEventListener('keydown', e => {
+  const fc = document.getElementById('panel-flashcards');
+  if (!fc.classList.contains('active')) return;
+  if (e.code === 'Space') { e.preventDefault(); fcFlip(); }
+  if (e.code === 'ArrowRight') document.getElementById('fc-next').click();
+  if (e.code === 'ArrowLeft')  document.getElementById('fc-prev').click();
+  if (e.code === 'KeyK') document.getElementById('fc-known').click();
+  if (e.code === 'KeyU') document.getElementById('fc-unknown').click();
+});
+
+/* ═══════════════════════════════════════════════════
+   QUIZ
+═══════════════════════════════════════════════════ */
+let quizDeck = [], quizIdx = 0, quizScore = 0, quizAnswered = false, quizDir = 'jp-en';
+
+function getQuizPool() {
+  const lesson = document.getElementById('quiz-lesson').value;
+  const unknownOnly = document.getElementById('quiz-unknown-only').checked;
+  return GENKI2_VOCAB.filter(w => {
+    if (lesson && String(w.lesson) !== lesson) return false;
+    if (unknownOnly && known.has(wordKey(w))) return false;
+    return true;
+  });
+}
+
+function buildQuizDeck() {
+  const pool = getQuizPool();
+  const sizeVal = +document.getElementById('quiz-size').value;
+  const size = sizeVal === 0 ? pool.length : Math.min(sizeVal, pool.length);
+  return shuffle(pool).slice(0, size);
+}
+
+function startQuiz() {
+  quizDir = document.querySelector('input[name="quiz-dir"]:checked').value;
+  quizDeck = buildQuizDeck();
+  if (!quizDeck.length) { alert('No words match the selected filters.'); return; }
+  quizIdx = 0; quizScore = 0; quizAnswered = false;
+  document.getElementById('quiz-setup').style.display = 'none';
+  document.getElementById('quiz-playing').style.display = 'block';
+  document.getElementById('quiz-done').style.display = 'none';
+  renderQuiz();
+}
+
+function renderQuiz() {
+  const w = quizDeck[quizIdx];
+  const total = quizDeck.length;
+  document.getElementById('quiz-num').textContent = `Question ${quizIdx + 1} / ${total}`;
+  document.getElementById('quiz-score-disp').textContent = `Score: ${quizScore}`;
+  document.getElementById('quiz-fill').style.width = `${(quizIdx / total) * 100}%`;
+
+  if (quizDir === 'jp-en') {
+    document.getElementById('quiz-q-label').textContent = 'What does this mean?';
+    document.getElementById('quiz-q-japanese').textContent = w.japanese;
+    document.getElementById('quiz-q-reading').textContent = w.reading !== w.japanese ? w.reading : '';
+  } else {
+    document.getElementById('quiz-q-label').textContent = 'How do you say this in Japanese?';
+    document.getElementById('quiz-q-japanese').textContent = w.english;
+    document.getElementById('quiz-q-reading').textContent = '';
+  }
+
+  // 4 options: 1 correct + 3 random from same lesson first, then any
+  const sameLessonPool = GENKI2_VOCAB.filter(x => x.lesson === w.lesson && wordKey(x) !== wordKey(w));
+  const otherPool = GENKI2_VOCAB.filter(x => x.lesson !== w.lesson);
+  const distractors = shuffle([...sameLessonPool, ...otherPool]).slice(0, 3);
+  const options = shuffle([w, ...distractors]);
+
+  const optDiv = document.getElementById('quiz-options');
+  optDiv.innerHTML = options.map((o, i) => {
+    const label = quizDir === 'jp-en' ? o.english : `<span class="jp">${o.japanese}</span><br><small class="jp" style="color:var(--muted)">${o.reading}</small>`;
+    return `<button class="quiz-option" data-key="${wordKey(o)}" data-correct="${wordKey(o) === wordKey(w)}">${label}</button>`;
+  }).join('');
+
+  quizAnswered = false;
+  document.getElementById('quiz-next-btn').style.display = 'none';
+
+  optDiv.querySelectorAll('.quiz-option').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (quizAnswered) return;
+      quizAnswered = true;
+      const isCorrect = btn.dataset.correct === 'true';
+      if (isCorrect) { quizScore++; btn.classList.add('correct'); }
+      else {
+        btn.classList.add('wrong');
+        optDiv.querySelector('[data-correct="true"]').classList.add('correct');
+      }
+      optDiv.querySelectorAll('.quiz-option').forEach(b => b.disabled = true);
+      document.getElementById('quiz-score-disp').textContent = `Score: ${quizScore}`;
+      document.getElementById('quiz-next-btn').style.display = 'inline-block';
+    });
+  });
+}
+
+document.getElementById('quiz-next-btn').addEventListener('click', () => {
+  quizIdx++;
+  if (quizIdx >= quizDeck.length) showQuizResult();
+  else renderQuiz();
+});
+document.getElementById('quiz-start').addEventListener('click', startQuiz);
+document.getElementById('quiz-again').addEventListener('click', startQuiz);
+document.getElementById('quiz-to-setup').addEventListener('click', () => {
+  document.getElementById('quiz-setup').style.display = 'block';
+  document.getElementById('quiz-playing').style.display = 'none';
+  document.getElementById('quiz-done').style.display = 'none';
+});
+
+function showQuizResult() {
+  document.getElementById('quiz-playing').style.display = 'none';
+  document.getElementById('quiz-done').style.display = 'block';
+  const total = quizDeck.length;
+  const pct = Math.round(quizScore / total * 100);
+  document.getElementById('quiz-final-score').textContent = `${pct}%`;
+  document.getElementById('quiz-final-detail').textContent = `${quizScore} correct out of ${total}`;
+  const grade = pct >= 90 ? '🏆 Excellent!' : pct >= 70 ? '👍 Good job!' : pct >= 50 ? '📚 Keep studying!' : '💪 Keep going!';
+  document.getElementById('quiz-final-grade').textContent = grade;
+}
+
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('panel-quiz').classList.contains('active')) return;
+  if (e.code === 'Enter' || e.code === 'Space') {
+    const btn = document.getElementById('quiz-next-btn');
+    if (btn.style.display !== 'none') { e.preventDefault(); btn.click(); }
+  }
+  if (quizAnswered) return;
+  const opts = document.querySelectorAll('.quiz-option:not(:disabled)');
+  const map = { Digit1:'0', Digit2:'1', Digit3:'2', Digit4:'3' };
+  if (map[e.code] !== undefined) opts[+map[e.code]]?.click();
+});
+
+/* ═══════════════════════════════════════════════════
+   PROGRESS
+═══════════════════════════════════════════════════ */
+const LESSON_THEMES = {
+  13:'Giving & Receiving', 14:'Hometown & Geography', 15:'Memories & Experience',
+  16:'Health & Body', 17:'Complaints & Causative', 18:'Travel & Passive',
+  19:'Weather & Potential', 20:'Cooking & Food', 21:'Technology & Communication',
+  22:'Formal Speech (Keigo)', 23:'Society & Future'
+};
+
+function renderProgress() {
+  const grid = document.getElementById('progress-grid');
+  grid.innerHTML = '';
+  for (let l = 13; l <= 23; l++) {
+    const words = GENKI2_VOCAB.filter(w => w.lesson === l);
+    const knownCount = words.filter(w => known.has(wordKey(w))).length;
+    const pct = words.length ? Math.round(knownCount / words.length * 100) : 0;
+    const card = document.createElement('div');
+    card.className = 'lesson-card';
+    card.innerHTML = `
+      <h3>Lesson ${l} · <span style="color:var(--muted);font-weight:400;font-size:.75rem">${LESSON_THEMES[l]}</span></h3>
+      <div class="lesson-bar"><div class="lesson-bar-fill" style="width:${pct}%"></div></div>
+      <div class="lesson-meta"><span>${knownCount} / ${words.length} known</span><span>${pct}%</span></div>
+    `;
+    grid.appendChild(card);
+  }
+}
+
+document.getElementById('clear-progress').addEventListener('click', () => {
+  if (!confirm('Reset all progress?')) return;
+  known.clear();
+  saveKnown();
+  renderGlobalStats();
+  renderProgress();
+  renderBrowse();
+});
+
+/* ═══════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════ */
+renderGlobalStats();
+renderBrowse();
+initFlashcards();
+</script>
+</body>
+</html>
