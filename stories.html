@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DEAD CHANNEL — Night Notes</title>
+  <meta name="description" content="Night Notes — first-person dispatches recorded late and played back later." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&family=Oswald:wght@400;500;600&family=Share+Tech+Mono&family=VT323&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to broadcast</a>
+
+  <div class="fx-overlay fx-vignette" aria-hidden="true"></div>
+  <div class="fx-overlay fx-scanlines" aria-hidden="true"></div>
+  <div class="fx-overlay fx-grain" aria-hidden="true"></div>
+  <div class="letterbox letterbox--top" aria-hidden="true"></div>
+  <div class="letterbox letterbox--bottom" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <div class="transport">
+      <div class="brand">
+        <span class="ch-block" aria-hidden="true">CH&nbsp;03&nbsp;·&nbsp;SP</span>
+        <a class="wordmark flicker" href="index.html" aria-label="DEAD CHANNEL — home">DEAD CHANNEL</a>
+      </div>
+      <button class="eject" aria-expanded="false" aria-controls="primary-nav">EJECT ▲</button>
+      <nav class="transport-nav" id="primary-nav" aria-label="Primary">
+        <button class="key" type="button" data-rewind aria-label="Rewind — previous page">
+          <span class="glyph" aria-hidden="true">◄◄</span><span class="label-text">REW</span>
+        </button>
+        <a class="key" href="index.html" aria-label="Play — home, now broadcasting">
+          <span class="glyph" aria-hidden="true">►</span><span class="label-text">PLAY</span>
+        </a>
+        <a class="key" href="film.html" aria-label="Film — Screening Room">
+          <span class="glyph" aria-hidden="true">❚❚</span><span class="label-text">FILM</span>
+        </a>
+        <a class="key" href="books.html" aria-label="Books — The Stacks">
+          <span class="glyph" aria-hidden="true">❚❚</span><span class="label-text">BOOKS</span>
+        </a>
+        <a class="key" href="photos.html" aria-label="Photos — The Darkroom">
+          <span class="glyph" aria-hidden="true">❚❚</span><span class="label-text">PHOTOS</span>
+        </a>
+        <a class="key is-active" href="stories.html" aria-label="Stories — Night Notes" aria-current="page">
+          <span class="glyph" aria-hidden="true">❚❚</span><span class="label-text">STORIES</span>
+        </a>
+      </nav>
+      <div class="status-cluster" aria-hidden="true">
+        <span class="rec"><span class="rec-dot"></span>REC</span>
+        <span class="timecode js-timecode">► 00:00:00:00</span>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="screen">
+      <header class="section-head">
+        <h1>Night Notes</h1>
+        <p class="sub">STORIES · RECORDED LATE</p>
+        <p class="osd-line">DISPATCHES FROM BETWEEN STATIONS</p>
+      </header>
+
+      <section class="listing" aria-label="Story entries">
+
+        <article class="listing-row cat-stories">
+          <span class="idx" aria-hidden="true">01</span>
+          <div>
+            <h2 class="row-title"><a href="post.html">Static Between Stations: A Journal Entry</a></h2>
+            <p class="row-meta">REC 1997.01.03 · RUNTIME 04:37 · <span class="chip chip--stories">STORIES</span></p>
+          </div>
+          <a class="continue" href="post.html" aria-label="Continue playback — Static Between Stations">► CONTINUE PLAYBACK</a>
+        </article>
+
+        <article class="listing-row cat-stories">
+          <span class="idx" aria-hidden="true">02</span>
+          <div>
+            <h2 class="row-title"><a href="post.html">The Diner Closes at Two and So Do I</a></h2>
+            <p class="row-meta">REC 1996.09.15 · RUNTIME 06:02 · <span class="chip chip--stories">STORIES</span></p>
+          </div>
+          <a class="continue" href="post.html" aria-label="Continue playback — The Diner Closes at Two">► CONTINUE PLAYBACK</a>
+        </article>
+
+        <article class="listing-row cat-stories">
+          <span class="idx" aria-hidden="true">03</span>
+          <div>
+            <h2 class="row-title"><a href="post.html">A Phone Booth in the Rain, Ringing</a></h2>
+            <p class="row-meta">REC 1995.03.22 · RUNTIME 05:14 · <span class="chip chip--stories">STORIES</span></p>
+          </div>
+          <a class="continue" href="post.html" aria-label="Continue playback — A Phone Booth in the Rain">► CONTINUE PLAYBACK</a>
+        </article>
+
+      </section>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="screen">
+      <p class="footer-rule">■ END OF BROADCAST</p>
+      <p class="footer-mark">DEAD CHANNEL</p>
+      <p class="legal-crawl">
+        This program has been modified from its original broadcast. DEAD CHANNEL is a work of memory and fiction.
+        All transmissions recorded in SP mode. Please be kind, rewind. ⦿ No signal beyond this point.
+      </p>
+      <div class="footer-controls">
+        <label class="tracking">
+          TRACKING ◄
+          <input type="range" class="js-tracking" min="0" max="100" value="50" aria-label="Tracking — adjust scanline and grain intensity" />
+          ►
+        </label>
+        <div class="sp-lp" role="group" aria-label="Tape speed">
+          <button type="button" class="js-speed is-active" data-speed="sp">SP</button>
+          <button type="button" class="js-speed" data-speed="lp">LP</button>
+        </div>
+      </div>
+      <p class="copyright">© 2026 DEAD CHANNEL&nbsp;&nbsp;►&nbsp;&nbsp;<span>SIGNAL LOST</span></p>
+    </div>
+  </footer>
+
+  <script src="js/main.js" defer></script>
+</body>
+</html>

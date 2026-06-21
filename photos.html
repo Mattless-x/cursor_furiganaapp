@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DEAD CHANNEL — The Darkroom</title>
+  <meta name="description" content="The Darkroom — 35mm film photography, a contact sheet from the small hours." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&family=Oswald:wght@400;500;600&family=Share+Tech+Mono&family=VT323&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to broadcast</a>
+
+  <div class="fx-overlay fx-vignette" aria-hidden="true"></div>
+  <div class="fx-overlay fx-scanlines" aria-hidden="true"></div>
+  <div class="fx-overlay fx-grain" aria-hidden="true"></div>
+  <div class="letterbox letterbox--top" aria-hidden="true"></div>
+  <div class="letterbox letterbox--bottom" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <div class="transport">
+      <div class="brand">
+        <span class="ch-block" aria-hidden="true">CH&nbsp;03&nbsp;·&nbsp;SP</span>
+        <a class="wordmark flicker" href="index.html" aria-label="DEAD CHANNEL — home">DEAD CHANNEL</a>
+      </div>
+      <button class="eject" aria-expanded="false" aria-controls="primary-nav">EJECT ▲</button>
+      <nav class="transport-nav" id="primary-nav" aria-label="Primary">
+        <button class="key" type="button" data-rewind aria-label="Rewind — previous page">
+          <span class="glyph" aria-hidden="true">◄◄</span><span class="label-text">REW</span>
+        </button>
+        <a class="key" href="index.html" aria-label="Play — home, now broadcasting">
+          <span class="glyph" aria-hidden="true">►</span><span class="label-text">PLAY</span>
+        </a>
+        <a class="key" href="film.html" aria-label="Film — Screening Room">
+          <span class="glyph" aria-hidden="true">❚❚</span><span class="label-text">FILM</span>
+        </a>
+        <a class="key" href="books.html" aria-label="Books — The Stacks">
+          <span class="glyph" aria-hidden="true">❚❚</span><span class="label-text">BOOKS</span>
+        </a>
+        <a class="key is-active" href="photos.html" aria-label="Photos — The Darkroom" aria-current="page">
+          <span class="glyph" aria-hidden="true">❚❚</span><span class="label-text">PHOTOS</span>
+        </a>
+        <a class="key" href="stories.html" aria-label="Stories — Night Notes">
+          <span class="glyph" aria-hidden="true">❚❚</span><span class="label-text">STORIES</span>
+        </a>
+      </nav>
+      <div class="status-cluster" aria-hidden="true">
+        <span class="rec"><span class="rec-dot"></span>REC</span>
+        <span class="timecode js-timecode">► 00:00:00:00</span>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="screen">
+      <header class="section-head">
+        <h1>The Darkroom</h1>
+        <p class="sub">PHOTOS · ROLL 35 — KODAK TRI-X 400</p>
+        <p class="osd-line">CONTACT SHEET · 09 FRAMES · DEVELOPED AT HOME</p>
+      </header>
+
+      <section class="contact-sheet" aria-label="Contact sheet — click a frame to enlarge">
+
+        <button class="frame" type="button"
+          data-full="https://picsum.photos/seed/dc-diner/1200/1200?grayscale"
+          data-caption="Empty diner, last booth"
+          data-exif="f/2 · 1/60 · TRI-X 400 · PORTLAND, OR">
+          <img src="https://picsum.photos/seed/dc-diner/500/500?grayscale" alt="An empty diner booth lit by a single overhead lamp." loading="lazy" />
+          <span class="frame-no">22A</span>
+        </button>
+
+        <button class="frame" type="button"
+          data-full="https://picsum.photos/seed/dc-motel/1200/1200?grayscale"
+          data-caption="Motel sign, no vacancy"
+          data-exif="f/2.8 · 1/125 · TRI-X 400 · BOISE, ID">
+          <img src="https://picsum.photos/seed/dc-motel/500/500?grayscale" alt="A neon motel sign against a dark sky." loading="lazy" />
+          <span class="frame-no">23</span>
+        </button>
+
+        <button class="frame" type="button"
+          data-full="https://picsum.photos/seed/dc-road/1200/1200?grayscale"
+          data-caption="Two-lane road, headlights"
+          data-exif="f/4 · 1/30 · TRI-X 400 · HWY 26">
+          <img src="https://picsum.photos/seed/dc-road/500/500?grayscale" alt="A rural two-lane road at night with distant headlights." loading="lazy" />
+          <span class="frame-no">23A</span>
+        </button>
+
+        <button class="frame" type="button"
+          data-full="https://picsum.photos/seed/dc-curtains/1200/1200?grayscale"
+          data-caption="Curtains, no one behind them"
+          data-exif="f/1.8 · 1/15 · TRI-X 400 · INTERIOR">
+          <img src="https://picsum.photos/seed/dc-curtains/500/500?grayscale" alt="Heavy curtains half-drawn across a doorway." loading="lazy" />
+          <span class="frame-no">24</span>
+        </button>
+
+        <button class="frame" type="button"
+          data-full="https://picsum.photos/seed/dc-tv/1200/1200?grayscale"
+          data-caption="TV on, channel three"
+          data-exif="f/2 · 1/8 · TRI-X 400 · INTERIOR">
+          <img src="https://picsum.photos/seed/dc-tv/500/500?grayscale" alt="An old television glowing in a dark room." loading="lazy" />
+          <span class="frame-no">24A</span>
+        </button>
+
+        <button class="frame" type="button"
+          data-full="https://picsum.photos/seed/dc-payphone/1200/1200?grayscale"
+          data-caption="Payphone, ringing"
+          data-exif="f/2.8 · 1/60 · TRI-X 400 · DOWNTOWN">
+          <img src="https://picsum.photos/seed/dc-payphone/500/500?grayscale" alt="A lone payphone on a wet city street." loading="lazy" />
+          <span class="frame-no">25</span>
+        </button>
+
+        <button class="frame" type="button"
+          data-full="https://picsum.photos/seed/dc-stairwell/1200/1200?grayscale"
+          data-caption="Stairwell, going down"
+          data-exif="f/2 · 1/30 · TRI-X 400 · APT. 81">
+          <img src="https://picsum.photos/seed/dc-stairwell/500/500?grayscale" alt="A dim apartment stairwell descending into shadow." loading="lazy" />
+          <span class="frame-no">25A</span>
+        </button>
+
+        <button class="frame" type="button"
+          data-full="https://picsum.photos/seed/dc-window/1200/1200?grayscale"
+          data-caption="Window, rain, midnight"
+          data-exif="f/1.8 · 1/15 · TRI-X 400 · INTERIOR">
+          <img src="https://picsum.photos/seed/dc-window/500/500?grayscale" alt="Rain streaking down a window at night." loading="lazy" />
+          <span class="frame-no">26</span>
+        </button>
+
+        <button class="frame" type="button"
+          data-full="https://picsum.photos/seed/dc-forest/1200/1200?grayscale"
+          data-caption="Treeline, the owls"
+          data-exif="f/2.8 · 1/60 · TRI-X 400 · TWIN PINES">
+          <img src="https://picsum.photos/seed/dc-forest/500/500?grayscale" alt="A dark treeline against a pale night sky." loading="lazy" />
+          <span class="frame-no">26A</span>
+        </button>
+
+      </section>
+    </div>
+  </main>
+
+  <!-- Lightbox: single projected frame on black -->
+  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer">
+    <button class="lb-close" type="button" aria-label="Close viewer">✕ CLOSE</button>
+    <button class="lb-btn lb-prev" type="button" aria-label="Previous frame">◄</button>
+    <img id="lb-image" src="" alt="" />
+    <button class="lb-btn lb-next" type="button" aria-label="Next frame">►</button>
+    <p class="lb-caption" id="lb-caption"></p>
+    <p class="lb-exif" id="lb-exif"></p>
+  </div>
+
+  <footer class="site-footer">
+    <div class="screen">
+      <p class="footer-rule">■ END OF BROADCAST</p>
+      <p class="footer-mark">DEAD CHANNEL</p>
+      <p class="legal-crawl">
+        This program has been modified from its original broadcast. DEAD CHANNEL is a work of memory and fiction.
+        All transmissions recorded in SP mode. Please be kind, rewind. ⦿ No signal beyond this point.
+      </p>
+      <div class="footer-controls">
+        <label class="tracking">
+          TRACKING ◄
+          <input type="range" class="js-tracking" min="0" max="100" value="50" aria-label="Tracking — adjust scanline and grain intensity" />
+          ►
+        </label>
+        <div class="sp-lp" role="group" aria-label="Tape speed">
+          <button type="button" class="js-speed is-active" data-speed="sp">SP</button>
+          <button type="button" class="js-speed" data-speed="lp">LP</button>
+        </div>
+      </div>
+      <p class="copyright">© 2026 DEAD CHANNEL&nbsp;&nbsp;►&nbsp;&nbsp;<span>SIGNAL LOST</span></p>
+    </div>
+  </footer>
+
+  <script src="js/main.js" defer></script>
+  <script src="js/gallery.js" defer></script>
+</body>
+</html>

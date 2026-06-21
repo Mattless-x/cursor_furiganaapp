@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DEAD CHANNEL — Now Broadcasting</title>
+  <meta name="description" content="DEAD CHANNEL — a personal media broadcast on movies, books, film photography and stories. Recorded late. Played back later." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&family=Oswald:wght@400;500;600&family=Share+Tech+Mono&family=VT323&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to broadcast</a>
+
+  <!-- Decorative analogue overlays (above all, never interactive) -->
+  <div class="fx-overlay fx-vignette" aria-hidden="true"></div>
+  <div class="fx-overlay fx-scanlines" aria-hidden="true"></div>
+  <div class="fx-overlay fx-grain" aria-hidden="true"></div>
+  <div class="letterbox letterbox--top" aria-hidden="true"></div>
+  <div class="letterbox letterbox--bottom" aria-hidden="true"></div>
+
+  <!-- ============ HEADER / TRANSPORT BAR ============ -->
+  <header class="site-header">
+    <div class="transport">
+      <div class="brand">
+        <span class="ch-block" aria-hidden="true">CH&nbsp;03&nbsp;·&nbsp;SP</span>
+        <a class="wordmark flicker" href="index.html" aria-label="DEAD CHANNEL — home">DEAD CHANNEL</a>
+      </div>
+
+      <button class="eject" aria-expanded="false" aria-controls="primary-nav">EJECT ▲</button>
+
+      <nav class="transport-nav" id="primary-nav" aria-label="Primary">
+        <button class="key" type="button" data-rewind aria-label="Rewind — previous page">
+          <span class="glyph" aria-hidden="true">◄◄</span><span class="label-text">REW</span>
+        </button>
+        <a class="key is-active" href="index.html" aria-label="Play — home, now broadcasting" aria-current="page">
+          <span class="glyph" aria-hidden="true">►</span><span class="label-text">PLAY</span>
+        </a>
+        <a class="key" href="film.html" aria-label="Film — Screening Room">
+          <span class="glyph" aria-hidden="true">❚❚</span><span class="label-text">FILM</span>
+        </a>
+        <a class="key" href="books.html" aria-label="Books — The Stacks">
+          <span class="glyph" aria-hidden="true">❚❚</span><span class="label-text">BOOKS</span>
+        </a>
+        <a class="key" href="photos.html" aria-label="Photos — The Darkroom">
+          <span class="glyph" aria-hidden="true">❚❚</span><span class="label-text">PHOTOS</span>
+        </a>
+        <a class="key" href="stories.html" aria-label="Stories — Night Notes">
+          <span class="glyph" aria-hidden="true">❚❚</span><span class="label-text">STORIES</span>
+        </a>
+      </nav>
+
+      <div class="status-cluster" aria-hidden="true">
+        <span class="rec"><span class="rec-dot"></span>REC</span>
+        <span class="timecode js-timecode">► 00:00:00:00</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ MAIN ============ -->
+  <main id="main">
+    <div class="screen">
+
+      <!-- Broadcast hero -->
+      <section class="hero" aria-label="Now broadcasting">
+        <div class="hero-static" aria-hidden="true"></div>
+        <div class="hero-vignette" aria-hidden="true"></div>
+        <div class="hero-trackband" aria-hidden="true"></div>
+        <h1 class="hero-wordmark">DEAD CHANNEL</h1>
+        <p class="hero-tagline js-tagline">PLEASE STAND BY — TRANSMISSION RESUMING</p>
+        <div class="hero-osd" aria-hidden="true">■ REC&nbsp;&nbsp;SP&nbsp;&nbsp;CH 03&nbsp;&nbsp;<span class="js-timecode">► 00:00:01:00</span></div>
+      </section>
+
+      <!-- Tapes grid -->
+      <div class="grid-head">
+        <h2>The Tape Box</h2>
+        <span class="count">06 ENTRIES · UNLABELED</span>
+      </div>
+
+      <section class="tapes-grid" aria-label="Recent transmissions">
+
+        <a class="card cat-film" href="post.html" aria-label="Red Room, No Coffee — Notes on Fire Walk With Me (Film)">
+          <span class="screw tl" aria-hidden="true"></span><span class="screw tr" aria-hidden="true"></span>
+          <div class="tape-window" aria-hidden="true"></div>
+          <div class="label">
+            <h3 class="card-title">Red Room, No Coffee: Notes on Fire Walk With Me</h3>
+            <p class="meta">REC 1994.11.02 · RUNTIME 06:11 · SOURCE VHS</p>
+            <span class="chip chip--film">FILM</span>
+          </div>
+        </a>
+
+        <a class="card cat-film" href="film.html" aria-label="I Want to Believe — Re-watching The X-Files at 3 A.M. (Film / Stories)">
+          <span class="screw tl" aria-hidden="true"></span><span class="screw tr" aria-hidden="true"></span>
+          <div class="tape-window" aria-hidden="true"></div>
+          <div class="label">
+            <h3 class="card-title">I Want to Believe: Re-watching The X-Files at 3 A.M.</h3>
+            <p class="meta">REC 1996.02.18 · RUNTIME 09:44 · SOURCE VHS</p>
+            <span class="chip chip--film">FILM</span>
+          </div>
+        </a>
+
+        <a class="card cat-photos card--photo" href="photos.html" aria-label="Tri-X After Midnight — A Roll Through an Empty Diner (Photos)">
+          <div class="film-frame">
+            <img src="https://picsum.photos/seed/deadchannel-diner/640/640?grayscale" alt="Empty diner booth photographed on grainy black-and-white film at night." loading="lazy" />
+          </div>
+          <div class="caption-strip">Tri-X After Midnight · ROLL 35 · FRAME 22A <span class="chip chip--photos">PHOTOS</span></div>
+        </a>
+
+        <a class="card cat-film" href="film.html" aria-label="Down by Law and the Geometry of Loneliness (Film)">
+          <span class="screw tl" aria-hidden="true"></span><span class="screw tr" aria-hidden="true"></span>
+          <div class="tape-window" aria-hidden="true"></div>
+          <div class="label">
+            <h3 class="card-title">Down by Law and the Geometry of Loneliness</h3>
+            <p class="meta">REC 1991.07.30 · RUNTIME 07:02 · SOURCE VHS</p>
+            <span class="chip chip--film">FILM</span>
+          </div>
+        </a>
+
+        <a class="card cat-books" href="books.html" aria-label="The Stack on My Nightstand — Noir Paperbacks, Spring (Books)">
+          <span class="screw tl" aria-hidden="true"></span><span class="screw tr" aria-hidden="true"></span>
+          <div class="tape-window" aria-hidden="true"></div>
+          <div class="label">
+            <h3 class="card-title">The Stack on My Nightstand: Noir Paperbacks, Spring</h3>
+            <p class="meta">REC 1995.04.09 · RUNTIME 05:20 · SOURCE PRINT</p>
+            <span class="chip chip--books">BOOKS</span>
+          </div>
+        </a>
+
+        <a class="card cat-stories" href="stories.html" aria-label="Static Between Stations — A Journal Entry (Stories)">
+          <span class="screw tl" aria-hidden="true"></span><span class="screw tr" aria-hidden="true"></span>
+          <div class="tape-window" aria-hidden="true"></div>
+          <div class="label">
+            <h3 class="card-title">Static Between Stations: A Journal Entry</h3>
+            <p class="meta">REC 1997.01.03 · RUNTIME 04:37 · SOURCE VHS</p>
+            <span class="chip chip--stories">STORIES</span>
+          </div>
+        </a>
+
+      </section>
+    </div>
+  </main>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="site-footer">
+    <div class="screen">
+      <p class="footer-rule">■ END OF BROADCAST</p>
+      <p class="footer-mark">DEAD CHANNEL</p>
+      <p class="legal-crawl">
+        This program has been modified from its original broadcast. DEAD CHANNEL is a work of memory and fiction.
+        All transmissions recorded in SP mode. Please be kind, rewind. ⦿ No signal beyond this point.
+      </p>
+      <div class="footer-controls">
+        <label class="tracking">
+          TRACKING ◄
+          <input type="range" class="js-tracking" min="0" max="100" value="50" aria-label="Tracking — adjust scanline and grain intensity" />
+          ►
+        </label>
+        <div class="sp-lp" role="group" aria-label="Tape speed">
+          <button type="button" class="js-speed is-active" data-speed="sp">SP</button>
+          <button type="button" class="js-speed" data-speed="lp">LP</button>
+        </div>
+      </div>
+      <p class="copyright">© 2026 DEAD CHANNEL&nbsp;&nbsp;►&nbsp;&nbsp;<span>SIGNAL LOST</span></p>
+    </div>
+  </footer>
+
+  <script src="js/main.js" defer></script>
+</body>
+</html>
